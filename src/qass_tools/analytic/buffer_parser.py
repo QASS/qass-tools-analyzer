@@ -393,7 +393,9 @@ class Buffer:
         The measurement data is fetched for the given range of spectrums and converted to a numpy array.
         The numpy array's dtype depends on the data type and resolution of the Buffer's data.
 
-        :param conversion: Conversion (log/delog) of the measurement data, defaults to None -> no conversion
+        :param specFrom (optional): Start spectrum for fetching, defaults to None -> in this case Spec will be set 0
+        :param specTo (optional): End spectrum for fetching, defaults to None -> in this case Spec will be to last spec avaible
+        :param conversion (optional): Conversion (log/delog) of the measurement data, defaults to None -> no conversion
         """
         if specTo and specTo > self.spec_count:
             raise InvalidArgumentError('specTo is out of range')
@@ -411,7 +413,30 @@ class Buffer:
             return self._get_data(specFrom, specTo, 1, conversion).reshape(-1)
         else:
             return self._get_data(specFrom, specTo, self.__frq_bands, conversion)
+    
+    def getArray(self, specFrom=None, specTo=None, delog = True):
+        """
+        Wrapper function for get_data
+        
+        .. seealso: get_data()
 
+        :param specFrom (optional): Start spectrum for fetching, defaults to None -> in this case Spec will be set 0
+        :param specTo (optional): End spectrum for fetching, defaults to None -> in this case Spec will be to last spec avaible
+        :param delog (optional): Decides which way the data will be presented (loged/deloged), defaults to True -> data is deloged
+        """
+        if delog:
+            return self.get_data(specFrom, specTo, conversion="delog")
+        else:
+            return self.get_data(specFrom, specTo, conversion="log")
+    
+    def getSpecDuration(self):
+        """
+        Wrapper Function for property spec_duration.
+
+        .. seealso: Property spec_duration
+        """
+        return self.spec_duration
+    
     def _parse_db_header(self, content: bytearray) -> dict:
         db_metainfo = {}
 
@@ -622,6 +647,12 @@ class Buffer:
     def sample_count(self):
         without_header = self.file_size - self.__header_size
         return int((without_header - self.__db_count * self.__db_header_size) / self.__bytes_per_sample)
+    
+    def getRealSpecCount(self):
+        """
+        Wrapper function for property spec_count which is identical to analyzer funtion RealSpecCount
+        """
+        return self.spec_count
 
     @property
     def spec_count(self):
@@ -699,6 +730,12 @@ class Buffer:
 
 
 def filter_buffers(directory, filters):
+    """
+    Diese (top-level) Funktion filtert Buffer files aus einem angegeben Ordnerpfad heraus, auf welche entsprechende Filterkriterien zutreffen. Die Implementierten Filtern k�nnen der Tabelle weiter unten entnommen werden.
+    
+    :param directory: directory path with buffer files which need to be filtered
+    :param filters: dictionary with filters
+    """
     from pathlib import Path
 
     pattern = '*p*'
@@ -717,6 +754,10 @@ def filter_buffers(directory, filters):
         try:
             with Buffer(file) as buff:
                 if 'process' in filters and buff.process != filters['process']:
+                    continue
+                if 'unwanted_process' in filters and buff.process in filters['unwanted_process']:
+                    continue
+                if 'wanted_process' in filters and buff.process not in filters['wanted_process']:
                     continue
                 if 'channel' in filters and filters['channel'] != buff.channel:
                     continue
