@@ -414,7 +414,7 @@ class Buffer:
         else:
             return self._get_data(specFrom, specTo, self.__frq_bands, conversion)
     
-    def getArray(self, specFrom=None, specTo=None, conversion: str = None):
+    def getArray(self, specFrom=None, specTo=None, delog = True):
         """
         Wrapper function for get_data
         
@@ -422,9 +422,12 @@ class Buffer:
 
         :param specFrom (optional): Start spectrum for fetching, defaults to None -> in this case Spec will be set 0
         :param specTo (optional): End spectrum for fetching, defaults to None -> in this case Spec will be to last spec avaible
-        :param conversion (optional): Conversion (log/delog) of the measurement data, defaults to None -> no conversion
+        :param delog (optional): Decides which way the data will be presented (loged/deloged), defaults to True -> data is deloged
         """
-        return self.get_data(specFrom, specTo, conversion)
+        if delog:
+            return self.get_data(specFrom, specTo, conversion="delog")
+        else:
+            return self.get_data(specFrom, specTo, conversion="log")
     
     def getSpecDuration(self):
         """
