@@ -170,27 +170,19 @@ class Buffer:
                                                        HeaderDtype.INT32), ("frqmasks----", HeaderDtype.UINT32),
             ("frqinmas----", HeaderDtype.UINT32), ("eheaderf----",
                                                    HeaderDtype.UINT32), ("adc_type----", HeaderDtype.INT32),
-            ("adbitres----", HeaderDtype.INT32), ("baserate--------",
-                                                  HeaderDtype.INT64), ("interpol----", HeaderDtype.INT32),
-            ("dcoffset----", HeaderDtype.INT32), ("dispralo----",
-                                                  HeaderDtype.INT32), ("disprahi----", HeaderDtype.INT32),
-            ("rngtibeg--------", HeaderDtype.INT64), ("rngtiend--------",
-                                                      HeaderDtype.INT64), ("realsoff--------", HeaderDtype.INT64),
-            ("extendid--------", HeaderDtype.UINT64), ("sim_mode----", HeaderDtype.INT32), ("partnoid----",
-                                                                                            HeaderDtype.UINT32), ("asc_part----", HeaderDtype.UINT32),
-            ("asc_desc----", HeaderDtype.UINT32), ("comments----",
-                                                   HeaderDtype.UINT32), ("sparemem----", HeaderDtype.UINT32), ("headsend", None)
+            ("adbitres----", HeaderDtype.INT32), ("baserate--------", HeaderDtype.INT64), ("interpol----", HeaderDtype.INT32),
+            ("dcoffset----", HeaderDtype.INT32), ("dispralo----", HeaderDtype.INT32), ("disprahi----", HeaderDtype.INT32),
+            ("rngtibeg--------", HeaderDtype.INT64), ("rngtiend--------", HeaderDtype.INT64), ("realsoff--------", HeaderDtype.INT64),
+            ("extendid--------", HeaderDtype.UINT64), ("sim_mode----", HeaderDtype.INT32), ("partnoid----", HeaderDtype.UINT32), ("asc_part----", HeaderDtype.UINT32),
+            ("asc_desc----", HeaderDtype.UINT32), ("comments----", HeaderDtype.UINT32), ("sparemem----", HeaderDtype.UINT32), ("headsend", None)
         ]
 
         self.__db_keywords = [
-            ("blochead----", HeaderDtype.INT32), ("firstsam--------",
-                                                  HeaderDtype.INT64), ("lastsamp--------", HeaderDtype.INT64), ("dbfilled----", HeaderDtype.INT32),
-            ("mux_port----", HeaderDtype.INT32), ("pampgain----", HeaderDtype.INT32), ("dispgain----",
-                                                                                       HeaderDtype.INT32), ("io_ports----", HeaderDtype.INT32),
-            ("dversion----", HeaderDtype.INT32), ("sine_frq----", HeaderDtype.INT32), ("sine_amp----",
-                                                                                       HeaderDtype.INT32), ("sd_dimen----", HeaderDtype.INT32),
+            ("blochead----", HeaderDtype.INT32), ("firstsam--------", HeaderDtype.INT64), ("lastsamp--------", HeaderDtype.INT64), ("dbfilled----", HeaderDtype.INT32),
+            ("mux_port----", HeaderDtype.INT32), ("pampgain----", HeaderDtype.INT32), ("dispgain----", HeaderDtype.INT32), ("io_ports----", HeaderDtype.INT32),
+            ("dversion----", HeaderDtype.INT32), ("sine_frq----", HeaderDtype.INT32), ("sine_amp----", HeaderDtype.INT32), ("sd_dimen----", HeaderDtype.INT32),
             ("sd_rsize----", HeaderDtype.INT32), ("sd_dsize----", HeaderDtype.INT32), ("begin_subdat", HeaderDtype.INT32), ("end___subdat",
-                                                                                                                            HeaderDtype.INT32), ("blockend", HeaderDtype.INT32)  # datatypes for last three keywords guessed
+            HeaderDtype.INT32), ("blockend", HeaderDtype.INT32)  # datatypes for last three keywords guessed
         ]
         self.__metainfo = {}
         self.__db_headers = {}
@@ -335,10 +327,16 @@ class Buffer:
         db_start = int(pos_start / self.__db_size)
         db_end = int(pos_end / self.__db_size)
 
+        # The following if clauses check whether the datatype is 2 or 4 bytes long. In case of 4 bytes
+        # it checks whether bit 3 is set in p__flags because bit 3 indicates a float buffer.
+        
         if self.__bytes_per_sample == 2:
             dtype = np.uint16
         elif self.__bytes_per_sample == 4:
-            dtype = np.uint32
+            if (self.__metainfo['p__flags'] & 8) == 0:
+                dtype = np.uint32
+            else:
+                dtype = np.float32
         else:
             raise ValueError("Unknown value for bytes_per_sample")
 
