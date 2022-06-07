@@ -392,12 +392,12 @@ class Buffer:
         :param conversion: Conversion ('log' or 'delog') of the data.
         :type conversion: string, optional
 
-        :raise InvalidArgumentError: The specFrom value is out of range
-        :raise InvalidArgumentError: The specTo value is out of range
-        :raise ValueError: The given indices exceed the buffer file's size
-        :raise InvalidArgumentError: The given conversion is unknown
+        :raises InvalidArgumentError: The specFrom value is out of range
+        :raises InvalidArgumentError: The specTo value is out of range
+        :raises ValueError: The given indices exceed the buffer file's size
+        :raises InvalidArgumentError: The given conversion is unknown
 
-        :return: The buffers data
+        :return: The buffers data.
         :rtype: numpy ndarray
 
         :Example:
@@ -440,17 +440,17 @@ class Buffer:
         numpy array. The data can be logarithmized or not. The datatype of the
         array depends on the type of buffer.
 
-        :param specFrom: First spectrum to be retrieved (default first available spectrum)
+        :param specFrom: First spectrum to be retrieved (default first available spectrum).
         :type specFrom: int, optional
-        :param specTo: Last spectrum to be retrieved (default last available spectrum)
+        :param specTo: Last spectrum to be retrieved (default last available spectrum).
         :type specTo: int, optional
         :param delog: To de-logarithmize the data (default True).
         :type delog: boolean, optional
 
-        :raise InvalidArgumentError: The specFrom value is out of range
-        :raise InvalidArgumentError: The specTo value is out of range
+        :raise InvalidArgumentError: The specFrom value is out of range.
+        :raise InvalidArgumentError: The specTo value is out of range.
 
-        :return: The buffers data
+        :return: The buffers data.
         :rtype: numpy ndarray
 
         :Example:
@@ -515,7 +515,7 @@ class Buffer:
             # Function to retrieve the size of the data block
             def db_size(db_idx)
                 db_header_dict = db_header(0)
-                return(db_header_dict.get('dbfilled', 0)
+                return(db_header_dict.get('dbfilled', 0))
         """
         if db_idx > self.__db_count:
             raise ValueError('db_idx is out of bounds')
@@ -534,14 +534,22 @@ class Buffer:
 
     def db_header_spec(self, spec: int):
         """
-        The method returns the data block header of the data block containing
-        the spectrum whose index is provided.
+        The method returns the data block header as a dictionary of the data
+        block containing the spectrum whose index is provided.
         
         :param spec: The index of a spectrum.
         :type spec: int
         
-        :return: The data block header
-        :rtype: string (???)
+        :return: The data block header with keywords and values.
+        :rtype: dictionary
+
+        :Example:
+            # The index of the spectrum is 50
+             spec = 50
+            # Function to retrieve the size of the data block
+            def db_size(spec)
+                db_header_dict = db_header_spec(spec)
+                return(db_header_dict.get('dbfilled', 0))
         """
         db_idx = int(spec * self.__frq_bands / self.db_sample_count)
         return self.db_header(db_idx)
@@ -557,18 +565,21 @@ class Buffer:
         :param key: The string containing the key word.
         :type key: string
 
-        :return: The data block value for the given key
-        :rtype: depending on key (INT32, INT64)
+        :return: The data block value for the given key.
+        :rtype: int
         """
         return self.db_header(db_idx)[key]
 
     def io_ports(self, db_idx: int, byte: int = None, bit: int = None):
         """
-        The state of the io ports is stored in the data blocks. There is a key
-        regarding the io ports in the data block header and that is accessed
-        with this method. However this location is much to coarse to be used.
-        The io port settings which should be used can be found in the sub
-        data block.
+        Deprecated method!
+        This method provides the state of the io ports at the time the
+        dateblock (indicated by its number db_idx) is written. It does not
+        provide information wether the state of any io port changes within the
+        datablock. This method will be replaced by a method which analyses the
+        data within the sub data block, which is part of the data block header
+        and provides information regarding the state of the io ports at a
+        higher accuracy.
 
         :param db_idx: Index of the data block
         :type db_idx: int
@@ -581,8 +592,8 @@ class Buffer:
         :raises ValueError: The given byte has to be one out of [1, 2, 4].
         :raises ValueError: The given bit is out of range.
 
-        :return: ???
-        :rtype: ???
+        :return: byte with the appropriate bits set as an int
+        :rtype: int
         """
         io_word = ~(self.db_value(db_idx, 'io_ports')) & 0xffffff
 
@@ -611,11 +622,14 @@ class Buffer:
 
     def io_ports_spec(self, spec: int, byte: int, bit: int):
         """
-        The state of the io ports is stored in the data blocks. There is a key
-        regarding the io ports in the data block header and that is accessed
-        with this method. However this location is much to coarse to be used.
-        The io port settings which should be used can be found in the sub
-        data block.
+        Deprecated method!
+        This method provides the state of the io ports at the time the
+        dateblock (indicated by the spec number within the data block) is
+        written. It does not provide information wether the state of any io
+        port changes within the datablock. This method will be replaced by a
+        method which analyses the data within the sub data block, which is
+        part of the data block header and provides information regarding the
+        state of the io ports at a higher accuracy.
 
         :param spec: Index of the spectrum
         :type spec: int
@@ -628,8 +642,8 @@ class Buffer:
         :raises ValueError: The given byte has to be one out of [1, 2, 4].
         :raises ValueError: The given bit is out of range.
 
-        :return: ???
-        :rtype: ???
+        :return: byte with the appropriate bits set as an int
+        :rtype: int
         """
         db_idx = int(spec * self.__frq_bands / self.db_sample_count)
         return self.io_ports_byte(db_idx, byte, bit)
@@ -640,39 +654,37 @@ class Buffer:
         but retrieved using the operating system.
         
         :return: file size in bytes
-        :rtype: INT32
+        :rtype: int
         """
         return self.file_size
 
     @property
     def metainfo(self):
         """
-        The file header of a buffer file contains numerous key words and
-        corresponding values. These key words and values are parsed and
-        stored in the metainfo dictionary.
+        The buffer header properties as a dictionary.
         
         :return: The metainfo dictionary
         :rtype: dictionary
         
         :Example:
-        key = 'qassdata'
-        def keyword(key)
-            return buffer.metainfo[key]
-
-        # The above example leads to a runtime error if the keyword is not a
-        # key in the dictionary. It would be better to query this beforehand
-        # and to provide a default value, thus:
-
-        def keyword(key):
-            if key in buffer.metainfo.keys:
+            key = 'qassdata'
+            def keyword(key)
                 return buffer.metainfo[key]
-            else:
-                return default_value
 
-        # or shorter:
+            # The above example leads to a runtime error if the keyword is not a
+            # key in the dictionary. It would be better to query this beforehand
+            # and to provide a default value, thus:
 
-        def keyword(key):
-            return buffer.metainfo.get(key, default_value)
+            def keyword(key):
+                if key in buffer.metainfo.keys:
+                    return buffer.metainfo[key]
+                else:
+                    return default_value
+
+            # or shorter:
+
+            def keyword(key):
+                return buffer.metainfo.get(key, default_value)
         """
         return self.__metainfo
 
@@ -690,30 +702,30 @@ class Buffer:
     def header_size(self):
         """
         Each buffer file has a header. This property provides the size of the
-        header in bytes (The usual value is 2000 bytes).
+        header in bytes (The normal value is 2000 bytes).
 
-        :return: size in bytes
-        :rtype: INT32
+        :return: Size in bytes.
+        :rtype: int
         """
         return self.__header_size
 
     @property
     def process(self):
         """
-        The process number
+        The process number.
         
-        :return: The process number
-        :rtype: INT32
+        :return: The process number.
+        :rtype: int
         """
         return self.__metainfo["proc_cnt"]
 
     @property
     def channel(self):
         """
-        The channel number
+        The channel number used.
         
-        :return: The channel number
-        :rtype: INT32
+        :return: The channel number.
+        :rtype: int
         """
         return self.__metainfo["dumpchan"] + 1
 
@@ -725,18 +737,19 @@ class Buffer:
         DATAMODE_SIGNAL.
         
         :return: The data mode constant
-        :rtype: INT32
+        :rtype: enum class defined in :class:`.DATAMODE`
         """
         return self.DATAMODE(self.__metainfo["datamode"])
 
     @property
     def datakind(self):
         """
-        The data kind constant is a constant which specifies additional
-        buffer specifications.
+        The data kind constant is a constant which provides additional
+        buffer specifications. A common value often is
+        KIND_UNDEF
         
-        :return: The data kind constant
-        :rtype: INT32
+        :return: The data kind constant.
+        :rtype: enum class defined in :class:`.DATAKIND`
         """
         return self.DATAKIND(self.__metainfo["datakind"])
 
@@ -747,65 +760,67 @@ class Buffer:
         compression and buffer types. The most important one being
         COMP_RAW.
         
-        :return: The data type constant
-        :rtype: INT32
+        :return: The data type constant.
+        :rtype: enum class defined in :class:`.DATATYPE`
         """
-        return self.DATATYPE(self.__metainfo["datatype"])
+        return self.DATATYPE(self.__metainfo.get("datatype", -1))
 
     @property
     def process_time(self):
         """
         Returns the Posix timestamp of creation of the file
-        in seconds since Thursday, January 1st 1970.
+        in seconds since Thursday, January 1st 1970. Please note that the
+        creation time and measure time might be different. 
         
-        :return: The timestamp as a number of seconds
-        :rtype: UINT32
+        :return: The timestamp as a number of seconds.
+        :rtype: int
         """
-        return self.__metainfo['proctime']
+        return self.__metainfo.get('proctime', 0)
 
     @property
     def process_date_time(self):
-        from datetime import datetime
         """
-        Returns a timestamp of the creation as a string
+        Returns a timestamp of the creation of the file as a string.
 
         :return: The timestamp in the form 'yyyy-mm-dd hh:mm:ss'
         :rtype: string
         """
+        from datetime import datetime
         return datetime.utcfromtimestamp(int(self.__metainfo['proctime'])).strftime('%Y-%m-%d %H:%M:%S')
 
     @property
     def process_measure_timestamp(self):
         """
-        Returns the Posix timestamp at measure start time of process in milliseconds
-        If epoctime (measure time) is not available due to older buffer format, -1 is returned
+        Returns the Posix timestamp at measure start of the process in
+        milliseconds. If epoctime (measure time) is not available due to an
+        older buffer format, the creation time of the buffer is returned.
+        Please note: The creation time may not be the same as epoc time.
+        This is particularly true for compressed buffers which may be created
+        much later!
 
-        :return:
-        :rtype:
+        :return: The timestamp as a number in seconds.
+        :rtype: int
         """
-        # is measure timestamp available? If not use creation time
-        if 'epoctime' in self.__metainfo:
-            return self.__metainfo['epoctime']
-        else:
-            return -1
+        return self.__metainfo.get('epoctime', self.__metainfo.get('proctime') * 1000)
 
     @property
     def process_measure_time_string(self):
         """
-        Returns the measure start datetime of process in ISO format
+        Returns the time in ISO format at measure start of the process. If
+        epoctime (measure time) is not available due to an older buffer
+        format, the creation time of the buffer is returned. Please note:
+        The creation time may not be the same as epoc time. This is
+        particularly true for compressed buffers which may be created
+        much later!
 
-        :return: The timestamp in the form 'yyyy-mm-dd hh:mm:ss'
+        :return: The timestamp in the form 'yyyy-mm-dd hh:mm:ss'.
         :rtype: string
         """
         from datetime import datetime
-        # is measure timestamp available? If not use creation time
-        if 'epoctime' in self.__metainfo:
-            tsms = int(self.__metainfo['epoctime'])
-        else:
-            tsms = self.__metainfo['proctime'] * 1000
+        tsms = self.__metainfo.get('epoctime', self.__metainfo.get('proctime') * 1000)
 
         datestr = datetime.utcfromtimestamp(
-            tsms // 1000).strftime('%Y-%m-%dT%H:%M:%S.')
+            tsms // 1000).strftime('%Y-%m-%d %H:%M:%S.')
         datestr += format(tsms % 1000, "03")
         return datestr
 
@@ -815,30 +830,31 @@ class Buffer:
         Returns the Posix timestamp of last modification of the file
         in seconds since Thursday, January 1st 1970.
         
-        :return: The timestamp as a number of seconds
-        :rtype: UINT32
+        :return: The timestamp as a number in seconds.
+        :rtype: int
         """
-        return self.__metainfo['lmodtime']
+        return self.__metainfo.get('lmodtime', 0)
 
     @property
     def last_modification_date_time(self):
         from datetime import datetime
         """
-        Returns a timestamp of the last modification as a string
+        Returns a timestamp of the last modification as a string.
 
         :return: The timestamp in the form 'yyyy-mm-dd hh:mm:ss'
         :rtype: string
         """
-        return datetime.utcfromtimestamp(int(self.__metainfo['lmodtime'])).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.utcfromtimestamp(int(self.__metainfo.get('lmodtime', 0))).strftime('%Y-%m-%d %H:%M:%S')
 
     @property
     def db_header_size(self):
         """
         Each data block has a header. This property provides the size of the
-        data block header in bytes.
+        data block header in bytes. The sizes of all data block headers are
+        equal.
 
-        :return: size in bytes
-        :rtype: INT32
+        :return: Size in bytes
+        :rtype: int
         """
         return self.__db_header_size
 
@@ -847,31 +863,31 @@ class Buffer:
         """
         Number of bytes per sample.
         
-        :return: Number of bytes per sample
-        :rtype: INT32
+        :return: Number of bytes per sample (usually 2 bytes).
+        :rtype: int
         """
         return self.__bytes_per_sample
 
     @property
     def db_count(self):
         """
-        Number of data blocks
+        Returns the number of data blocks.
         
-        :return: Number of data blocks
-        :rtype INT32
+        :return: Number of data blocks.
+        :rtype int
         """
         return self.__db_count
 
     @property
     def full_blocks(self):
         """
-        All but the last data block are of the same size. In order to
-        calculate the number of completely filled data blocks the
-        header size is substracted from the file size. This figure is divided
-        by the sum of the data block header size and data block size and
-        rounded down to the nearest integer.
-        
-        :return: number of full data blocks
+        All but the last data block are usually completly filled. In order to
+        calculate the number of those data blocks which are completely filled
+        the header size of the file is substracted from the file size. This
+        figure is divided by the sum of the data block header size and data
+        block size and rounded down to the nearest integer.
+
+        :return: Number of full data blocks.
         :rtype: int
         """
         return math.floor((self.file_size - self.__header_size) / (self.__db_header_size + self.__db_size))
@@ -893,7 +909,7 @@ class Buffer:
         It is calculated by dividing the data block size by the number of
         bytes per sample.
         
-        :return: Number of samples
+        :return: Number of samples.
         :rtype: int
         """
         return math.floor(self.__db_size / self.__bytes_per_sample)
@@ -906,8 +922,8 @@ class Buffer:
         the frequency axis. The corresponding key word in the metainfo
         dictionary 's_p_fram' (samples per frame).
 
-        :return: Number of frequency bands
-        :rtype: INT32
+        :return: Number of frequency bands.
+        :rtype: int
         """
         return self.__frq_bands
 
@@ -918,7 +934,7 @@ class Buffer:
         dividing the number of samples in a data block by the number of
         frequency bands.
 
-        :return: Number of spectra in a filled data block
+        :return: Number of spectra in a filled data block.
         :rtype: int
         """
         return int(self.db_sample_count / self.__frq_bands)
@@ -928,8 +944,8 @@ class Buffer:
         """
         Property which returns the frequency compression factor.
         
-        :return: Frequency compression factor
-        :rtype: INT32
+        :return: Frequency compression factor.
+        :rtype: int
         """
         return self.__metainfo["frqratio"]
 
@@ -938,8 +954,8 @@ class Buffer:
         """
         Property which returns the time compression factor.
         
-        :return: Time compression factor
-        :rtype: INT32
+        :return: Time compression factor.
+        :rtype: int
         """
         return self.__metainfo["comratio"]
 
@@ -949,8 +965,8 @@ class Buffer:
         Property which returns the moving average factor along the
         time axis.
 
-        :return: Factor of the moving average
-        :rtype: INT32
+        :return: Factor of the moving average.
+        :rtype: int
         """
         return self.__metainfo.get("auxpara1", 1)
 
@@ -960,8 +976,8 @@ class Buffer:
         Property which returns the moving average factor along the
         frequency axis.
         
-        :return: Factor of the moving average
-        :rtype: INT32
+        :return: Factor of the moving average.
+        :rtype: int
         """
         return self.__metainfo.get("auxpara2", 1)
 
@@ -971,7 +987,7 @@ class Buffer:
         The property returns the time for one spectrum in
         nanoseconds.
         
-        :return: Time in nanoseconds
+        :return: Time in nanoseconds.
         :rtype: float
         """
         return self.__metainfo["framedur"]
@@ -982,7 +998,7 @@ class Buffer:
         The property returns the frequency range per band. The maximum number
         of bands is 512.
 
-        :return: Frequency range in Hertz (Hz) for one band
+        :return: Frequency range in Hertz (Hz) for one band.
         :rtype: float
         """
         return self.__metainfo["frqpband"]
@@ -1010,7 +1026,7 @@ class Buffer:
         dividing the number of samples in a data block by the number of
         frequency bands.
         
-        :return: Number of spectra in a filled data block
+        :return: Number of spectra in a filled data block.
         :rtype: int
         """
         return self.spec_count
@@ -1033,7 +1049,7 @@ class Buffer:
         ADC_TYPE with the most important being ADC_16BIT and ADC_24BIT.
 
         :return: type defined in class ADC_TYPE
-        :rtype: int
+        :rtype: enum class reference :class:`ADCTYPE`
         """
         return self.ADCTYPE(self.__metainfo["adc_type"])
 
@@ -1044,8 +1060,8 @@ class Buffer:
         analog digital converter used. The usual value is 16. If no logarithm
         is applied to the data the value is 32.
         
-        :return: The bit resolution in bit
-        :rtype: INT32
+        :return: The bit resolution.
+        :rtype: int
         """
         return self.__metainfo["adbitres"]
 
@@ -1055,8 +1071,8 @@ class Buffer:
         Base of the logarithm applied to the data. Please note that a 1 needs
         to be added to the value.
         
-        :return: Base of the logarithm
-        :rtype: INT32
+        :return: Base of the logarithm.
+        :rtype: int
         """
         return self.__metainfo["fftlogsh"]
 
@@ -1089,17 +1105,21 @@ class Buffer:
     @staticmethod
     def delog(data_arr, fft_log_shift, ad_bit_resolution):
         """
-        Method to de-logarithmize a data array.
+        Method to de-logarithmize a data array. Usually when data are measured
+        with the Optimizer the data are logarithmized. The problem with
+        logarithms is that adding them up constitutes a multiplication of the
+        non logarithmized data. So in order to carry out calculations such as
+        calculating sums etc. it is crucial to use de-logarithmized data.
 
-        :param data_arr: The data array
+        :param data_arr: Array with the logarithmized data.
         :type data_arr: numpy ndarray
-        :param fft_log_shift: 
+        :param fft_log_shift: Base of the logarithm.
         :type fft_log_shift: int
-        :param ad_bit_resolution: The bit resolution (usually 16)
+        :param ad_bit_resolution: The bit resolution (usually 16).
         :type ad_bit_resolution: int
     
-        :return: 
-        :rtype: numpy ndarray
+        :return: Array with de-logarithmized data.
+        :rtype: numpy ndarray of floats
         """
         shift = fft_log_shift - 1
         bits = ad_bit_resolution if ad_bit_resolution >= 1 else 16
@@ -1125,17 +1145,23 @@ class Buffer:
     @staticmethod
     def log(data_arr, fft_log_shift, ad_bit_resolution):
         """
-        Method to logarithmize a data array.
+        Method to logarithmize a data array. Usually when data are measured
+        with the Optimizer the data are logarithmized. The problem with
+        logarithms is that adding them up constitutes a multiplication of the
+        non logarithmized data. So in order to carry out calculations such as
+        calculating sums etc. it is crucial to use de-logarithmized data.
+        Sometimes it is necessary to logarithmize data which were artificially
+        created or measured without a logarithm.
 
-        :param data_arr:
-        :type data_arr: numpy ndarray
-        :param fft_log_shift:
+        :param data_arr: Array with non-logarithmized data.
+        :type data_arr: numpy ndarray of floats
+        :param fft_log_shift: Base of the logarithm.
         :type fft_log_shift: int
-        :param ad_bit_resolution: The bit resolution (usually 16)
+        :param ad_bit_resolution: The bit resolution (usually 16).
         :type ad_bit_resolution: int
     
-        :return: 
-        :rtype: numpy ndarray
+        :return: Array with logarithmized data.
+        :rtype: numpy ndarray of floats
         """
         shift = fft_log_shift - 1
         bits = ad_bit_resolution if ad_bit_resolution >= 1 else 16
