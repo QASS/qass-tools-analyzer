@@ -748,7 +748,7 @@ class Buffer:
         COMP_RAW.
         
         :return: The data type constant
-        :rtype: INT32
+        :rtype: int
         """
         return self.DATATYPE(self.__metainfo["datatype"])
 
