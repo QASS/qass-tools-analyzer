@@ -4,7 +4,11 @@ import os
 import glob
 from typing import List
 import shutil
-from Analyzer.Core import Log_IF
+
+try:
+    from Analyzer.Core import Log_IF
+except:
+    pass
 
 __all__ = ["DeleteHandler"]
 
@@ -43,7 +47,7 @@ class DeleteHandler():
     def delete_by_amount(self, max_amount: int) -> None:
         """Provided function to delete files based on file amount in location if amount overruns defined limit.
 
-        :param max_amount: Maximum amount (limit) of files allowed in thisn directory which are match pattern.
+        :param max_amount: Maximum amount (limit) of files allowed in this directory which are match pattern.
         :type max_amount: int
         :raise OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
@@ -52,10 +56,11 @@ class DeleteHandler():
         # calc how many files have to be deletet in order to satisfy limit
         amount_to_delete = dir_amount - max_amount
         # if there are any files to delete:
-        
+
         if amount_to_delete > 0:
             # search for files in directory which match pattern
-            delete_list = glob.glob(self.path + self.pattern) # delete_list is saved with full path
+            full_path = str(self.path / self.pattern)
+            delete_list = glob.glob(full_path) # delete_list is saved with full path
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
             
@@ -64,12 +69,12 @@ class DeleteHandler():
                     self.__delete_file(sorted_list[idx][1])
                 print("Deleting successfull")
             except OSError as e:
-                Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
+                #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
                 print(e)
                 print("Deleting process could not be completed. Check your setted Limit and your Files.")
             
     def delete_by_disk_space(self, disk_usage_limit: float) ->None:
-        """Provided method to delete by disk space.
+        """Provided method to delete files by a given maximum disk space usage.
 
         :param disk_usage_limit: Limit how much disk memory is allowed to use at maximum. Parsed as part of the whole.
         :type disk_usage_limit: float
@@ -100,7 +105,7 @@ class DeleteHandler():
                     self.__delete_file(sorted_list[idx][1])
                     print("Deleting successfull")
             except OSError as e:
-                Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
+                #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
                 print(e)
                 print("Deleting process could not be completed. Check your setted Limit and your Files.")
 
@@ -151,11 +156,11 @@ class DeleteHandler():
 def main():
     """ Function to execute codes below by executing complete script. That means if complete code-file gets started the lines in this function will be executed."""
     # define path
-    PATH = "./"
+    PATH = "/home/opti/tmp_dir/"
     # create instance
-    file_deleter = DeleteHandler(PATH, "*.npy")
+    file_deleter = DeleteHandler(PATH, "*.txt")
     # delete by 90% used disk space
-    file_deleter.delete_by_disk_space(.90)
+    file_deleter.delete_by_amount(2)
 
 if __name__ == "main":
     main()
