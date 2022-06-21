@@ -45,7 +45,7 @@ class DeleteHandler():
 
         :param max_amount: Maximum amount (limit) of files allowed in thisn directory which are match pattern.
         :type max_amount: int
-        :raise OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
+        :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # read out amount of files in directory
         dir_amount = len(os.listdir(self.path))
@@ -73,7 +73,7 @@ class DeleteHandler():
 
         :param disk_usage_limit: Limit how much disk memory is allowed to use at maximum. Parsed as part of the whole.
         :type disk_usage_limit: float
-        :raise OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
+        :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # read out currently used disk usage
         disk_usage = shutil.disk_usage(self.path)
