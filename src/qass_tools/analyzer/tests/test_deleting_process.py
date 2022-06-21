@@ -39,12 +39,15 @@ def test_delete_by_amount():
     # Act
     deleter = DeleteHandler(tmp_data_directory, pattern)
     deleter.delete_by_amount(amount_limit)
-    
-    # Assert
-    assert len(os.listdir(tmp_data_directory)) == expected_length
-
+    real_length = len(os.listdir(tmp_data_directory))
+   
     # delete tmp_directory
     delete_directory(tmp_data_directory)
+    
+    # Assert
+    assert  real_length == expected_length
+
+    
 
 def test_delete_by_disk_space():
     # Arrange
@@ -60,11 +63,13 @@ def test_delete_by_disk_space():
     deleter = DeleteHandler(tmp_data_directory, pattern)
     deleter.delete_by_disk_space(space_limit)
     
-    # Assert
-    assert len(os.listdir(tmp_data_directory)) == expected_length
-
+    real_length = len(os.listdir(tmp_data_directory))
+   
     # delete tmp_directory
     delete_directory(tmp_data_directory)
+    
+    # Assert
+    assert  real_length == expected_length
 
 # mocked version
 """ 
