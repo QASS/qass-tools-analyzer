@@ -3,6 +3,8 @@ from pathlib import Path
 import os
 import shutil
 import pytest
+import mock
+
 
 def create_tmp_dir():
     current_path = Path(__file__).parent.resolve()
@@ -47,8 +49,6 @@ def test_delete_by_amount():
     # Assert
     assert  real_length == expected_length
 
-    
-
 def test_delete_by_disk_space():
     # Arrange
     pattern = "*.txt"
@@ -72,30 +72,28 @@ def test_delete_by_disk_space():
     assert  real_length == expected_length
 
 # mocked version
-""" 
 @pytest.fixture
-def mock_env_path(monkeypatch):
+def deletehandler_obj_helper():
     current_path = Path(__file__).parent.resolve()
-    tmp_data_directory = current_path / "tmp_dir"
-    monkeypatch.setenv("self.path", tmp_data_directory)
-
-@pytest.fixture
-def mock_env_pattern(monkeypatch):
     pattern = "*.txt"
-    monkeypatch.setenv("self.pattern", pattern)
 
-def test_delete_by_amount_two(monkeypatch, mock_env_path, mock_env_pattern):
+    obj = DeleteHandler(current_path, pattern)
+    return obj
 
-    def delete(file_list):
-        pass
-
-    limit_amount = 1
+def test_delete_by_amount_two(mocker, monkeypatch, obj_deleter):
+    # Arrange
+    amount_limit = 1
     amount = 3
-    expected_result = 1
 
-    monkeypatch.setattr(DeleteHandler, "__delete_file", delete)
+    def get_oldest_wrapper(some_list):
+        return some_list
+
     monkeypatch.setenv("dir_amount", amount)
+    monkeypatch.setattr(DeleteHandler, "__get_oldest", get_oldest_wrapper)
+    mock_deleting = mocker.patch("deleting_process.DeleteHandler.__delete_files", return_value=None)
     
-    # assert expected_result to result 
-    assert DeleteHandler.delete_by_amount(limit_amount) == expected_result
-"""
+    # Act
+    obj_deleter.delete_by_amount(amount_limit)
+    
+    # Assert
+    assert mock_deleting.assert_called()
