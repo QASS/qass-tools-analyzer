@@ -49,7 +49,7 @@ class DeleteHandler():
 
         :param max_amount: Maximum amount (limit) of files allowed in this directory which are match pattern.
         :type max_amount: int
-        :raise OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
+        :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # read out amount of files in directory
         dir_amount = len(os.listdir(self.path))
@@ -73,12 +73,12 @@ class DeleteHandler():
                 print(e)
                 print("Deleting process could not be completed. Check your setted Limit and your Files.")
             
-    def delete_by_disk_space(self, disk_usage_limit: float) ->None:
+    def delete_by_disk_space(self, disk_usage_limit: float) -> None:
         """Provided method to delete files by a given maximum disk space usage.
 
         :param disk_usage_limit: Limit how much disk memory is allowed to use at maximum. Parsed as part of the whole.
         :type disk_usage_limit: float
-        :raise OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
+        :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # read out currently used disk usage
         disk_usage = shutil.disk_usage(self.path)
@@ -89,8 +89,8 @@ class DeleteHandler():
         space_to_make =  target_free_space - disk_usage[2]
         
         if space_to_make > 0:
-            # search for files in directory which match pattern
-            delete_list = glob.glob(self.path + self.pattern) # delete_list is saved with full path
+            full_path = str(self.path / self.pattern)
+            delete_list = glob.glob(full_path) # delete_list is saved with full path# sort list for oldest files
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
             # helper
