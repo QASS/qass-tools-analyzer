@@ -86,7 +86,7 @@ class DeleteHandler():
         # calc free space that is required based on user limit
         target_free_space = disk_usage[0] * (1 - disk_usage_limit)
         # calc therefore required space
-        space_to_make =  target_free_space - disk_usage[2]
+        space_to_make = abs(target_free_space - disk_usage[2])
         
         if space_to_make > 0:
             full_path = str(self.path / self.pattern)
@@ -95,8 +95,8 @@ class DeleteHandler():
             sorted_list = self.__get_oldest(delete_list)
             # helper
             filesize = 0
-            n = -1
-            for n, (date, file)in enumerate(sorted_list):
+            #n = -1
+            for n, (date, file) in enumerate(sorted_list):
                 filesize = filesize + os.path.getsize(file)
                 if filesize >= space_to_make:
                     break

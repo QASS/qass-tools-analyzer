@@ -1,4 +1,6 @@
 from subprocess import call
+
+from psutil import disk_usage
 from deleting_process import DeleteHandler
 from pathlib import Path
 import os
@@ -95,23 +97,30 @@ def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_
     amount = "3"
 
     os_mock = Mock()
-
-    #def get_oldest_wrapper(self, some_list):
-    #    test_list = [(2010,"filepath1"),(2011,"filepath2"),(2012,"filepath3")]
-    #    return test_list
-    
     
     monkeypatch.setenv("dir_amount", amount)
-    #monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
     monkeypatch.setattr(os, "remove", os_mock)
-
     #mock_deleting = mocker.patch("deleting_process.DeleteHandler._DeleteHandler__delete_file", return_value=None)
-    
     
     # Act
     deletehandler_obj_helper.delete_by_amount(amount_limit)
     
     # Assert
-    #os_mock.assert_has_calls(calls, any_order=True)
     assert os_mock.call_count == 1
 
+def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
+    # Arrange
+    usage_limit = 0.1
+
+    os_mock = Mock()
+    shutil_mock = Mock(return_value=(1000, 950, 50))
+    filesize_mock = Mock(return_value=25)
+    monkeypatch.setattr(shutil, "disk_usage", shutil_mock)
+    monkeypatch.setattr(os, "remove", os_mock)
+    monkeypatch.setattr(os.path, "getsize", filesize_mock)
+    
+    # Act
+    deletehandler_obj_helper.delete_by_disk_space(usage_limit)
+    
+    # Assert
+    assert os_mock.call_count == 2
