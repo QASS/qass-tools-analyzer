@@ -54,7 +54,7 @@ class DeleteHandler():
         # read out amount of files in directory
         dir_amount = len(os.listdir(self.path))
         # calc how many files have to be deletet in order to satisfy limit
-        amount_to_delete = dir_amount - max_amount
+        amount_to_delete = int(dir_amount) - max_amount
         # if there are any files to delete:
 
         if amount_to_delete > 0:
@@ -72,7 +72,7 @@ class DeleteHandler():
                 #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
                 print(e)
                 print("Deleting process could not be completed. Check your setted Limit and your Files.")
-            
+        
     def delete_by_disk_space(self, disk_usage_limit: float) -> None:
         """Provided method to delete files by a given maximum disk space usage.
 

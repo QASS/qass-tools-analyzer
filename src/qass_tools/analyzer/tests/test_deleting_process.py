@@ -1,10 +1,11 @@
+from subprocess import call
 from deleting_process import DeleteHandler
 from pathlib import Path
 import os
 import shutil
 import pytest
 import mock
-
+from unittest.mock import Mock
 
 def create_tmp_dir():
     current_path = Path(__file__).parent.resolve()
@@ -80,20 +81,33 @@ def deletehandler_obj_helper():
     obj = DeleteHandler(current_path, pattern)
     return obj
 
-def test_delete_by_amount_two(mocker, monkeypatch, obj_deleter):
+
+def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper):
     # Arrange
     amount_limit = 1
-    amount = 3
+    amount = "3"
 
-    def get_oldest_wrapper(some_list):
-        return some_list
+    os_mock = Mock()
 
+    def get_oldest_wrapper(self, some_list):
+        test_list = [(2010,"filepath1"),(2011,"filepath2"),(2012,"filepath3")]
+        return test_list
+    
+    
     monkeypatch.setenv("dir_amount", amount)
-    monkeypatch.setattr(DeleteHandler, "__get_oldest", get_oldest_wrapper)
-    mock_deleting = mocker.patch("deleting_process.DeleteHandler.__delete_files", return_value=None)
+    monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
+    monkeypatch.setattr(os, "remove", os_mock)
+
+    #mock_deleting = mocker.patch("deleting_process.DeleteHandler._DeleteHandler__delete_file", return_value=None)
+    
     
     # Act
-    obj_deleter.delete_by_amount(amount_limit)
+    deletehandler_obj_helper.delete_by_amount(amount_limit)
+    #calls = [call(1), call("filepath2")]
     
     # Assert
-    assert mock_deleting.assert_called()
+    #os_mock.assert_has_calls(calls, any_order=True)
+    assert os_mock.call_count == 1
+
+def test_delete_by_disk_space_two():
+    
