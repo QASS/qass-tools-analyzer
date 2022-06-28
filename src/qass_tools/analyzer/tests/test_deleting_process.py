@@ -81,21 +81,28 @@ def deletehandler_obj_helper():
     obj = DeleteHandler(current_path, pattern)
     return obj
 
+@pytest.fixture
+def get_oldest_helper(monkeypatch):
+    def get_oldest_wrapper(self, some_list):
+        test_list = [(2010,"filepath1"),(2011,"filepath2"),(2012,"filepath3")]
+        return test_list
+    
+    monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
 
-def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper):
+def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
     # Arrange
     amount_limit = 1
     amount = "3"
 
     os_mock = Mock()
 
-    def get_oldest_wrapper(self, some_list):
-        test_list = [(2010,"filepath1"),(2011,"filepath2"),(2012,"filepath3")]
-        return test_list
+    #def get_oldest_wrapper(self, some_list):
+    #    test_list = [(2010,"filepath1"),(2011,"filepath2"),(2012,"filepath3")]
+    #    return test_list
     
     
     monkeypatch.setenv("dir_amount", amount)
-    monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
+    #monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
     monkeypatch.setattr(os, "remove", os_mock)
 
     #mock_deleting = mocker.patch("deleting_process.DeleteHandler._DeleteHandler__delete_file", return_value=None)
@@ -103,11 +110,8 @@ def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper):
     
     # Act
     deletehandler_obj_helper.delete_by_amount(amount_limit)
-    #calls = [call(1), call("filepath2")]
     
     # Assert
     #os_mock.assert_has_calls(calls, any_order=True)
     assert os_mock.call_count == 1
 
-def test_delete_by_disk_space_two():
-    
