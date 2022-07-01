@@ -1,5 +1,5 @@
 from xmlrpc.client import Boolean
-from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DATETIME, BOOLEAN
+from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DATETIME, BOOLEAN, Identity
 from sqlalchemy.orm import declarative_base, relationships
 from datetime import datetime
 
@@ -8,7 +8,7 @@ Base = declarative_base()
 
 class ProcessBuffer(Base):
 	__tablename__ = "process_buffer"
-	id = Column(Integer, primary_key = True)
+	id = Column(Integer, Identity(start = 1), primary_key = True)
 	process_id = Column(Integer, nullable = False) # TODO FK
 	projectid = Column(BigInteger, nullable = False) # TODO FK
 	buffer_id = Column(BigInteger, nullable = False, default = 0)

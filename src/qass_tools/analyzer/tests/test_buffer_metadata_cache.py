@@ -11,8 +11,8 @@ def buffer_objects():
 	filenames = ("foo.000", "bar.000", "hoo.000")
 	buffers = []
 
-	for idx, file in enumerate(filenames):
-		buffers.append(ProcessBuffer(id = idx, process_id = idx, projectid = idx, filename = file,
+	for file in filenames:
+		buffers.append(ProcessBuffer(process_id = 1, projectid = 1, filename = file,
 		duration = 1, sizebytes = 1, datamode = 1, datatype = 1, dataflags = 1, channel = 1, compress = 1,
 		skip_samples = 1, skip_time = 1, trunc_samples = 1, trunc_time = 1, skip_lofrq = 1, trunc_hifrq = 1,
 		subprocess = 1, polycyclic_part = 1, polycyclic_num = 1))
