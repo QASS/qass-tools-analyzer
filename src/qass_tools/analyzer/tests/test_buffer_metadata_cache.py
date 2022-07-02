@@ -1,4 +1,5 @@
 import sys, datetime
+
 sys.path.append("../")
 sys.path.append("../../")
 from importlib import reload
@@ -7,6 +8,23 @@ from sqlalchemy import create_engine, MetaData, create_mock_engine, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 import pytest
 reload(bmc)
+
+@pytest.fixture
+def mock_buffer():
+	class Mock_Buffer:
+		def __init__(self, *args): pass
+		def __enter__(self):
+			return self
+		def __exit__(self, *args): pass
+		@property
+		def filepath(self): return "./foo.000"
+		@property
+		def process(self): return 1
+		@property
+		def channel(self): return 1
+		@property
+		def foo(self): return "foo"
+	return Mock_Buffer
 
 @pytest.fixture()
 def buffer_objects():
@@ -60,18 +78,8 @@ def test_get_non_synchronized_files(db_session, buffer_objects):
 	assert not "foo.000" in cache.get_non_synchronized_files(None, ["foo.000", "hello.000"])
 	assert len(cache.get_non_synchronized_files(None, ["foo.000", "bar.000"])) == 0
 
-def test_buffer_to_buffer_metadata():
-	class Mock_Buffer:
-		@property
-		def filepath(self): return "./foo.000"
-		@property
-		def process(self): return 1
-		@property
-		def channel(self): return 1
-		@property
-		def foo(self): return "foo"
-
-	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(Mock_Buffer())
+def test_buffer_to_buffer_metadata(mock_buffer):
+	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(mock_buffer())
 	assert buffer_metadata.filepath == "./"
 	assert buffer_metadata.filename == "foo.000"
 	assert buffer_metadata.process == 1
@@ -94,9 +102,25 @@ def test_buffer_to_buffer_metadata_different_filepath():
 	assert buffer_metadata.filepath == ".\\"
 
 
+def test_add_files_to_cache(db_session, mock_buffer, mocker):
+	
+	bm_cache = bmc.BufferMetadataCache(db_session, mock_buffer)
+	mocker.patch.object(bm_cache._db, "commit") # ensure the database session doesn't commit
+	bm_cache.add_files_to_cache("./", ["foo.000"])
+	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).one()
+	assert buffer_metadata.filename == "foo.000"
+	bm_cache._db.commit.assert_called_once()
 
+def test_synchronize_directory(db_session, mock_buffer, mocker):
 
-
+	cache = bmc.BufferMetadataCache(db_session, mock_buffer) # it's important that the filename property of mock_bfufer returns "foo.000"
+	mocker.patch("os.listdir", return_value = ["foo.000"])
+	mocker.patch("os.path.isfile", return_value = True)
+	mocker.patch("os.path.join", return_value = "./foo.000")
+	mocker.patch.object(cache._db, "commit") # ensure the database session doesn't commit
+	cache.synchronize_directory("./", sync_subdirectories = False)
+	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).one()
+	assert buffer_metadata.filename == "foo.000"
 
 
 
