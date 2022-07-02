@@ -123,7 +123,36 @@ def test_synchronize_directory(db_session, mock_buffer, mocker):
 	assert buffer_metadata.filename == "foo.000"
 
 
-
-
-
-
+def test_get_matching_files_single_property(db_session, mock_buffer):
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo.000", process = 1))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "hoo.000", process = 2))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "bar.000", process = 1))
+	cache = bmc.BufferMetadataCache(db_session, mock_buffer)
+	db_session.query(bmc.BufferMetadataCache.BufferMetadata).all() # this is needed in order for the session to have the objects ready
+	metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1)
+	assert "./foo.000" in cache.get_matching_files(metadata)
+	assert "./bar.000" in cache.get_matching_files(metadata)
+	assert not "./hoo.000" in cache.get_matching_files(metadata)
+	
+def test_get_matching_files_multiple_properties(db_session, mock_buffer):
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo.000", process = 1, frq_bands = 16))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "hoo.000", process = 2, channel = 2, frq_bands = 512))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "bar.000", process = 1, channel = 1, frq_bands = 16))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo_bar.000", process = 1, channel = 2, frq_bands = 512))
+	cache = bmc.BufferMetadataCache(db_session, mock_buffer)
+	db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
+	metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1)
+	assert "./foo.000" in cache.get_matching_files(metadata)
+	assert not "./hoo.000" in cache.get_matching_files(metadata)
+	assert "./bar.000" in cache.get_matching_files(metadata)
+	assert "./foo_bar.000" in cache.get_matching_files(metadata)
+	metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, channel = 2)
+	assert not "./foo.000" in cache.get_matching_files(metadata)
+	assert not "./hoo.000" in cache.get_matching_files(metadata)
+	assert not "./bar.000" in cache.get_matching_files(metadata)
+	assert "./foo_bar.000" in cache.get_matching_files(metadata)
+	metadata = bmc.BufferMetadataCache.BufferMetadata(frq_bands = 16, channel = 1)
+	assert not "./foo.000" in cache.get_matching_files(metadata)
+	assert not "./hoo.000" in cache.get_matching_files(metadata)
+	assert "./bar.000" in cache.get_matching_files(metadata)
+	assert not "./foo_bar.000" in cache.get_matching_files(metadata)

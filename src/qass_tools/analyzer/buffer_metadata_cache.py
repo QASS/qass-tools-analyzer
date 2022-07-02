@@ -54,6 +54,16 @@ class BufferMetadataCache:
 				buffer_metadata = self.buffer_to_metadata(buffer)
 				self._db.add(buffer_metadata)
 		self._db.commit()
+
+	def get_matching_files(self, buffer_metadata):
+		q = "SELECT * FROM buffer_metadata WHERE "
+		for prop in self.BufferMetadata.properties:
+			prop_value = getattr(buffer_metadata, prop)
+			if prop_value is not None:
+				q += f"{prop} = {prop_value} AND "
+		q = q[:-4]# prune the last AND
+		buffers = [self.BufferMetadata(**{prop: value for prop, value in zip(self.BufferMetadata.properties, buffer_result)}) for buffer_result in self._db.execute(q)]
+		return [buffer.filepath for buffer in buffers]
 		
 
 	@staticmethod
@@ -65,6 +75,7 @@ class BufferMetadataCache:
 							tables = [BufferMetadataCache.__Base.metadata.tables["buffer_metadata"]])
 		return session
 
+
 	@staticmethod
 	def buffer_to_metadata(buffer):
 		"""Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
@@ -73,18 +84,13 @@ class BufferMetadataCache:
 		:param buffer: Buffer object
 		:type buffer: buffer_parser.Buffer
 		"""
-		properties = ("header_size", "process", "channel", "datamode", "datakind", "datatype", "process_time",
-					"process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
-					"db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
-					"avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", "bit_resolution",
-					"fft_log_shift")
 		if "/" in buffer.filepath:
 			filename = buffer.filepath.split("/")[-1]
 		elif "\\" in buffer.filepath:
 			filename = buffer.filepath.split("\\")[-1]
 		directory_path = buffer.filepath[:-len(filename)]
 		buffer_metadata = BufferMetadataCache.BufferMetadata(filename = filename, directory_path = directory_path)
-		for prop in properties:
+		for prop in BufferMetadataCache.BufferMetadata.properties:
 			try: # try to map all the buffer properties and skip on error
 				setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
 			except:
@@ -147,6 +153,11 @@ class BufferMetadataCache:
 	__Base = declarative_base()
 	class BufferMetadata(__Base):
 		__tablename__ = "buffer_metadata"
+		properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", "process_time",
+					"process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
+					"db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
+					"avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", "bit_resolution",
+					"fft_log_shift")
 
 		id = Column(Integer, Identity(start = 1), primary_key = True)
 		projectid = Column(Integer)
