@@ -30,8 +30,8 @@ class BufferMetadataCache:
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
 			unsynchronized_files = self.get_non_synchronized_files(path, files)
 			self.add_files_to_cache(path, unsynchronized_files)
-		if sync_subdirectories:
-			self.synchronize_directory(*subdirectories, sync_subdirectories = True)
+			if sync_subdirectories:
+				self.synchronize_directory(*subdirectories, sync_subdirectories = True)
 
 
 	def synchronize_database(self, *sync_connections):
@@ -112,10 +112,11 @@ class BufferMetadataCache:
 	__Base = declarative_base()
 	class BufferMetadata(__Base):
 		__tablename__ = "buffer_metadata"
-		properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", "process_time",
-					"process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
+		properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", #"datamode", "datakind", "datatype", 
+					"process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
 					"db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
-					"avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", "bit_resolution",
+					"avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", #"adc_type", 
+					"bit_resolution",
 					"fft_log_shift")
 
 		id = Column(Integer, Identity(start = 1), primary_key = True)
@@ -125,11 +126,11 @@ class BufferMetadataCache:
 		header_size = Column(Integer)
 		process = Column(Integer)
 		channel = Column(Integer)
-		datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
-		datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
-		datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
-		process_time = Column(BigInteger) # TODO this is an ENUM in buffer_parser
-		process_date_time = Column(DATETIME)
+		# datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
+		# datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
+		# datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
+		process_time = Column(BigInteger)
+		process_date_time = Column(String)
 		db_header_size = Column(Integer)
 		bytes_per_sample = Column(Integer)
 		db_count = Column(Integer)
@@ -146,7 +147,7 @@ class BufferMetadataCache:
 		frq_per_band = Column(Float)
 		sample_count = Column(Integer)
 		spec_count = Column(Integer)
-		adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
+		# adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
 		bit_resolution = Column(Integer)
 		fft_log_shift = Column(Integer)
 
