@@ -2,13 +2,9 @@ import os
 from datetime import datetime
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, DATETIME, BOOLEAN, Identity
 from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from qass_tools.analytic import buffer_parser as bp
-# from analyzer.database_model import Base, ProcessBuffer
-
-
-
-
 
 
 class BufferMetadataCache:
@@ -19,7 +15,13 @@ class BufferMetadataCache:
 
 
 	def synchronize_directory(self, *paths, sync_subdirectories = True):
-
+		"""synchronize the buffer files in the given paths with the database
+		
+		:param paths: The absolute paths to the directory
+		:type paths: str
+		:param sync_subdirectories: When True synchronize all of the subdirectories recursively, defaults to True
+		:type sync_subdirectories: bool, optional
+		"""
 		for path in paths:
 			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and file.endswith("000"))
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
@@ -27,6 +29,7 @@ class BufferMetadataCache:
 			self.add_files_to_cache(path, unsynchronized_files)
 		if sync_subdirectories:
 			self.synchronize_directory(*subdirectories, sync_subdirectories = True)
+
 
 	def synchronize_database(self, *sync_connections):
 		pass
@@ -79,8 +82,8 @@ class BufferMetadataCache:
 			filename = buffer.filepath.split("/")[-1]
 		elif "\\" in buffer.filepath:
 			filename = buffer.filepath.split("\\")[-1]
-		filepath = buffer.filepath[:-len(filename)]
-		buffer_metadata = BufferMetadataCache.BufferMetadata(filename = filename, filepath = filepath)
+		directory_path = buffer.filepath[:-len(filename)]
+		buffer_metadata = BufferMetadataCache.BufferMetadata(filename = filename, directory_path = directory_path)
 		for prop in properties:
 			try: # try to map all the buffer properties and skip on error
 				setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
@@ -147,7 +150,7 @@ class BufferMetadataCache:
 
 		id = Column(Integer, Identity(start = 1), primary_key = True)
 		projectid = Column(Integer)
-		filepath = Column(String, nullable = False)
+		directory_path = Column(String, nullable = False)
 		filename = Column(String, nullable = False)
 		header_size = Column(Integer)
 		process = Column(Integer)
@@ -176,6 +179,10 @@ class BufferMetadataCache:
 		adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
 		bit_resolution = Column(Integer)
 		fft_log_shift = Column(Integer)
+
+		@hybrid_property
+		def filepath(self):
+			return self.directory_path + self.filename
 
 
 

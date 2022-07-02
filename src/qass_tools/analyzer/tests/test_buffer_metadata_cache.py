@@ -32,7 +32,7 @@ def buffer_objects():
 	buffers = []
 
 	for file in filenames:
-		buffers.append(bmc.BufferMetadataCache.BufferMetadata(filepath = "./" + file, filename = file))
+		buffers.append(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./" + file, filename = file))
 	return buffers
 
 @pytest.fixture(scope="session")
@@ -74,13 +74,13 @@ def test_session_creation():
 def test_get_non_synchronized_files(db_session, buffer_objects):
 	db_session.add_all(buffer_objects)
 	cache = bmc.BufferMetadataCache(db_session)
-	assert "hello.000" in cache.get_non_synchronized_files(None, ["foo.000", "hello.000"])
-	assert not "foo.000" in cache.get_non_synchronized_files(None, ["foo.000", "hello.000"])
+	assert "hello.000" in cache.get_non_synchronized_files("./", ["foo.000", "hello.000"])
+	assert not "foo.000" in cache.get_non_synchronized_files("./", ["foo.000", "hello.000"])
 	assert len(cache.get_non_synchronized_files(None, ["foo.000", "bar.000"])) == 0
 
 def test_buffer_to_buffer_metadata(mock_buffer):
 	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(mock_buffer())
-	assert buffer_metadata.filepath == "./"
+	assert buffer_metadata.directory_path == "./"
 	assert buffer_metadata.filename == "foo.000"
 	assert buffer_metadata.process == 1
 	assert buffer_metadata.channel == 1
@@ -99,7 +99,7 @@ def test_buffer_to_buffer_metadata_different_filepath():
 		def foo(self): return "foo"
 	
 	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(Mock_Buffer())
-	assert buffer_metadata.filepath == ".\\"
+	assert buffer_metadata.directory_path == ".\\"
 
 
 def test_add_files_to_cache(db_session, mock_buffer, mocker):
@@ -107,7 +107,7 @@ def test_add_files_to_cache(db_session, mock_buffer, mocker):
 	bm_cache = bmc.BufferMetadataCache(db_session, mock_buffer)
 	mocker.patch.object(bm_cache._db, "commit") # ensure the database session doesn't commit
 	bm_cache.add_files_to_cache("./", ["foo.000"])
-	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).one()
+	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).first()
 	assert buffer_metadata.filename == "foo.000"
 	bm_cache._db.commit.assert_called_once()
 
