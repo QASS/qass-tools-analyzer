@@ -1,5 +1,6 @@
 import sys, datetime
 sys.path.append("../")
+sys.path.append("../../")
 from importlib import reload
 from analyzer import buffer_metadata_cache as bmc
 from sqlalchemy import create_engine, MetaData, create_mock_engine, inspect
@@ -59,10 +60,38 @@ def test_get_non_synchronized_files(db_session, buffer_objects):
 	assert not "foo.000" in cache.get_non_synchronized_files(None, ["foo.000", "hello.000"])
 	assert len(cache.get_non_synchronized_files(None, ["foo.000", "bar.000"])) == 0
 
+def test_buffer_to_buffer_metadata():
+	class Mock_Buffer:
+		@property
+		def filepath(self): return "./foo.000"
+		@property
+		def process(self): return 1
+		@property
+		def channel(self): return 1
+		@property
+		def foo(self): return "foo"
 
+	buffer_metadata = bmc.BufferMetadataCache.buffer_to_buffer_metadata(Mock_Buffer())
+	assert buffer_metadata.filepath == "./"
+	assert buffer_metadata.filename == "foo.000"
+	assert buffer_metadata.process == 1
+	assert buffer_metadata.channel == 1
+	with pytest.raises(AttributeError) as e: # invalid props shouldn't be copied
+		getattr(buffer_metadata, "foo")
 
-
-
+def test_buffer_to_buffer_metadata_different_filepath():
+	class Mock_Buffer:
+		@property
+		def filepath(self): return ".\\foo.000"
+		@property
+		def process(self): return 1
+		@property
+		def channel(self): return 1
+		@property
+		def foo(self): return "foo"
+	
+	buffer_metadata = bmc.BufferMetadataCache.buffer_to_buffer_metadata(Mock_Buffer())
+	assert buffer_metadata.filepath == ".\\"
 
 
 

@@ -56,8 +56,9 @@ class BufferMetadataCache:
 		return session
 
 	@staticmethod
-	def buffer_to_buffer_metadata(self, buffer):
-		"""Converts a Buffer object to a BufferMetadata database object 
+	def buffer_to_buffer_metadata(buffer):
+		"""Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
+		object putting them in the BufferMetadata object
 
 		:param buffer: Buffer object
 		:type buffer: buffer_parser.Buffer
@@ -67,14 +68,18 @@ class BufferMetadataCache:
 					"db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
 					"avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", "bit_resolution",
 					"fft_log_shift")
-		filename = buffer.filepath.split("\\")[-1]
+		if "/" in buffer.filepath:
+			filename = buffer.filepath.split("/")[-1]
+		elif "\\" in buffer.filepath:
+			filename = buffer.filepath.split("\\")[-1]
 		filepath = buffer.filepath[:-len(filename)]
-		buffer_metadata = self.BufferMetadata(filename = filename, filepath = filepath)
+		buffer_metadata = BufferMetadataCache.BufferMetadata(filename = filename, filepath = filepath)
 		for prop in properties:
 			try: # try to map all the buffer properties and skip on error
-				setattr(buffer_metadata, getattr(buffer, prop))
+				setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
 			except:
 				continue
+		return buffer_metadata
 
 		# return ProcessBuffer( # TODO create custom buffer thingy
 		# process_id = buffer.,
