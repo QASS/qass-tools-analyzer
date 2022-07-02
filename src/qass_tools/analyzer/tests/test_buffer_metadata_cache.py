@@ -1,10 +1,11 @@
 import sys, datetime
 sys.path.append("../")
+from importlib import reload
 from analyzer import buffer_metadata_cache as bmc
-from analyzer.database_model import ProcessBuffer
 from sqlalchemy import create_engine, MetaData, create_mock_engine, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 import pytest
+reload(bmc)
 
 @pytest.fixture()
 def buffer_objects():
@@ -12,10 +13,7 @@ def buffer_objects():
 	buffers = []
 
 	for file in filenames:
-		buffers.append(ProcessBuffer(process_id = 1, projectid = 1, filename = file,
-		duration = 1, sizebytes = 1, datamode = 1, datatype = 1, dataflags = 1, channel = 1, compress = 1,
-		skip_samples = 1, skip_time = 1, trunc_samples = 1, trunc_time = 1, skip_lofrq = 1, trunc_hifrq = 1,
-		subprocess = 1, polycyclic_part = 1, polycyclic_num = 1))
+		buffers.append(bmc.BufferMetadataCache.BufferMetadata(filepath = "./" + file, filename = file))
 	return buffers
 
 @pytest.fixture(scope="session")
@@ -52,7 +50,7 @@ def test_session_creation():
 	session = bmc.BufferMetadataCache.create_session()
 	engine = session.get_bind()
 	inspector = inspect(engine)
-	assert "process_buffer" in inspector.get_table_names()
+	assert "buffer_metadata" in inspector.get_table_names()
 
 def test_get_non_synchronized_files(db_session, buffer_objects):
 	db_session.add_all(buffer_objects)
