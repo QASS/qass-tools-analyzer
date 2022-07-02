@@ -19,6 +19,7 @@ class BufferMetadataCache:
 
 
 	def synchronize_directory(self, *paths, sync_subdirectories = True):
+
 		for path in paths:
 			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and file.endswith("000"))
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
@@ -47,7 +48,7 @@ class BufferMetadataCache:
 	def add_files_to_cache(self, filepath, files):
 		for file in files:
 			with self.Buffer_cls(os.path.join(filepath, file)) as buffer:
-				buffer_metadata = self.buffer_to_metadata()
+				buffer_metadata = self.buffer_to_metadata(buffer)
 				self._db.add(buffer_metadata)
 		self._db.commit()
 		
