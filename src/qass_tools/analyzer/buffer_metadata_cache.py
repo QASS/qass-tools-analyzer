@@ -46,7 +46,7 @@ class BufferMetadataCache:
 
 	def add_files_to_cache(self, filepath, files):
 		for file in files:
-			with open(self.Buffer_cls(os.path.join(filepath, file))) as buffer:
+			with self.Buffer_cls(os.path.join(filepath, file)) as buffer:
 				buffer_metadata = self.buffer_to_metadata()
 				self._db.add(buffer_metadata)
 		self._db.commit()
