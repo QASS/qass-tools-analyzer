@@ -71,7 +71,7 @@ def test_buffer_to_buffer_metadata():
 		@property
 		def foo(self): return "foo"
 
-	buffer_metadata = bmc.BufferMetadataCache.buffer_to_buffer_metadata(Mock_Buffer())
+	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(Mock_Buffer())
 	assert buffer_metadata.filepath == "./"
 	assert buffer_metadata.filename == "foo.000"
 	assert buffer_metadata.process == 1
@@ -90,7 +90,7 @@ def test_buffer_to_buffer_metadata_different_filepath():
 		@property
 		def foo(self): return "foo"
 	
-	buffer_metadata = bmc.BufferMetadataCache.buffer_to_buffer_metadata(Mock_Buffer())
+	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(Mock_Buffer())
 	assert buffer_metadata.filepath == ".\\"
 
 

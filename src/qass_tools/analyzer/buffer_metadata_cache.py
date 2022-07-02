@@ -23,7 +23,7 @@ class BufferMetadataCache:
 			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and file.endswith("000"))
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
 			unsynchronized_files = self.get_non_synchronized_files(path, files)
-			self.add_files(unsynchronized_files)
+			self.add_files_to_cache(path, unsynchronized_files)
 		if sync_subdirectories:
 			self.synchronize_directory(*subdirectories, sync_subdirectories = True)
 
@@ -44,9 +44,12 @@ class BufferMetadataCache:
 		unsynchronized_files = set(files).difference(synchronized_buffers)
 		return unsynchronized_files
 
-	def add_files(self, filepath, files):
+	def add_files_to_cache(self, filepath, files):
 		for file in files:
-			pass
+			with open(self.Buffer_cls(os.path.join(filepath, file))) as buffer:
+				buffer_metadata = self.buffer_to_metadata()
+				self._db.add(buffer_metadata)
+		self._db.commit()
 		
 
 	@staticmethod
@@ -59,7 +62,7 @@ class BufferMetadataCache:
 		return session
 
 	@staticmethod
-	def buffer_to_buffer_metadata(buffer):
+	def buffer_to_metadata(buffer):
 		"""Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
 		object putting them in the BufferMetadata object
 
