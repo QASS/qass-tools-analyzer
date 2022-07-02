@@ -56,6 +56,13 @@ class BufferMetadataCache:
 		self._db.commit()
 
 	def get_matching_files(self, buffer_metadata):
+		"""Query the Cache for all files matching the properties that are set in the BufferMetadata object
+
+		:param buffer_metadata: A metadata object acting as the filter
+		:type buffer_metadata: BufferMetadata
+		:return: A list with the paths to the buffer files that match the buffer_metadata
+		:rtype: list[str]
+		"""
 		q = "SELECT * FROM buffer_metadata WHERE "
 		for prop in self.BufferMetadata.properties:
 			prop_value = getattr(buffer_metadata, prop)
