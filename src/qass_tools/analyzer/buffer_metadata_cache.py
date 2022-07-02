@@ -9,7 +9,9 @@ from qass_tools.analytic import buffer_parser as bp
 __all__ = ["BufferMetadataCache"]
 
 class BufferMetadataCache:
-
+	"""This class acts as a Cache for Buffer Metadata. It uses a database session with a buffer_metadata table to map
+	metadata to files on the disk. The cache can be queried a lot faster than manually opening a lot of buffer files.
+	"""
 	def __init__(self, session, Buffer_cls = None): # 		
 		self._db = session
 		self.Buffer_cls = Buffer_cls
@@ -33,6 +35,7 @@ class BufferMetadataCache:
 
 
 	def synchronize_database(self, *sync_connections):
+		# TODO
 		pass
 
 
@@ -104,58 +107,6 @@ class BufferMetadataCache:
 			except:
 				continue
 		return buffer_metadata
-
-		# return ProcessBuffer( # TODO create custom buffer thingy
-		# process_id = buffer.,
-		# projectid = buffer.,
-		# buffer_id = buffer.,
-		# date_creation = buffer.process_measure_timestamp,
-		# date_modified = buffer.last_modification_date_time,
-		# partition_uuid = buffer.,
-		# extid = buffer.,
-		# path = buffer.filepath,
-		# comment = buffer.,
-		# duration = buffer.spec_duration * buffer.spec_count,
-		# sizebytes = buffer.file_size(),
-		# datamode = buffer.datamode,
-		# datatype = buffer.datakind,
-		# dataflags = -1,
-		# channel = buffer.channel,
-		# compress = buffer.compression_time,
-		# fcompress = buffer.compression_frq,
-		# auxpara0 = buffer.,
-		# auxpara1 = buffer.,
-		# auxpara2 = buffer.,
-		# auxpara3 = buffer.,
-		# auxpara4 = buffer.,
-		# auxpara5 = buffer.,
-		# simmode = buffer.,
-		# skip_samples = buffer.,
-		# skip_time = buffer.,
-		# trunc_samples = buffer.,
-		# trunc_time = buffer.,
-		# skip_lofrq = buffer.,
-		# trunc_hifrq = buffer.,
-		# buffer_idx = buffer.,
-		# process = buffer.process,
-		# processrange = buffer.,
-		# subprocess = buffer.,
-		# polycyclic_part = buffer.,
-		# polycyclic_id = buffer.,
-		# polycyclic_num = buffer.,
-		# modusagemask = buffer.,
-		# datafilever = buffer.,
-		# bytespersample = buffer.bytes_per_sample,
-		# samplesperframe = buffer.,
-		# adctype = buffer.adc_type,
-		# adcbitres = buffer.bit_resolution,
-		# samplefreq = buffer.,
-		# interpolated = buffer.,
-		# bufcomppara_txt = buffer.,
-		# transformations_txt = buffer.,
-		# islikelymeasure = buffer.,
-		# measurerestarted = buffer.,
-		# flags = buffer.)
 
 
 	__Base = declarative_base()
