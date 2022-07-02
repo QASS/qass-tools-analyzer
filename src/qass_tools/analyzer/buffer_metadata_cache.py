@@ -18,14 +18,14 @@ class BufferMetadataCache:
 		self.Buffer_cls = Buffer_cls
 
 
-	def synchronize(self, *paths, sync_subdirectories = True):
+	def synchronize_directory(self, *paths, sync_subdirectories = True):
 		for path in paths:
 			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and file.endswith("000"))
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
 			unsynchronized_files = self.get_non_synchronized_files(path, files)
 			self.add_files(unsynchronized_files)
 		if sync_subdirectories:
-			self.synchronize(*subdirectories, sync_subdirectories = True)
+			self.synchronize_directory(*subdirectories, sync_subdirectories = True)
 
 
 	def get_non_synchronized_files(self, filepath, files):
