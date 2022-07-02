@@ -13,7 +13,7 @@ from qass_tools.analytic import buffer_parser as bp
 
 class BufferMetadataCache:
 
-	def __init__(self, session, *sync_connections, Buffer_cls = None): # 		
+	def __init__(self, session, Buffer_cls = None): # 		
 		self._db = session
 		self.Buffer_cls = Buffer_cls
 
@@ -26,6 +26,9 @@ class BufferMetadataCache:
 			self.add_files(unsynchronized_files)
 		if sync_subdirectories:
 			self.synchronize_directory(*subdirectories, sync_subdirectories = True)
+
+	def synchronize_database(self, *sync_connections):
+		pass
 
 
 	def get_non_synchronized_files(self, filepath, files):
