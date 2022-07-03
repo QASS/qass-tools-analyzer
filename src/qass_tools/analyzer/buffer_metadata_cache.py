@@ -51,8 +51,9 @@ class BufferMetadataCache:
 		:type files: str
 		:return: The set of files that are not synchronized
 		"""
-		synchronized_buffers = set(buffer.filename for buffer in self._db.query(self.BufferMetadata).all())
-		unsynchronized_files = set(files).difference(synchronized_buffers)
+		synchronized_buffers = set(buffer.filepath for buffer in self._db.query(self.BufferMetadata).all())
+		files = (os.path.join(filepath, file) for file in files)
+		unsynchronized_files = set(files).difference(synchronized_buffers)		
 		return unsynchronized_files
 
 	def add_files_to_cache(self, filepath, files):

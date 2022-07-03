@@ -33,7 +33,7 @@ def buffer_objects():
 	buffers = []
 
 	for file in filenames:
-		buffers.append(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./" + file, filename = file))
+		buffers.append(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = file))
 	return buffers
 
 @pytest.fixture(scope="session")
@@ -75,9 +75,9 @@ def test_session_creation():
 def test_get_non_synchronized_files(db_session, buffer_objects):
 	db_session.add_all(buffer_objects)
 	cache = bmc.BufferMetadataCache(db_session)
-	assert "hellop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
-	assert not "foop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
-	assert len(cache.get_non_synchronized_files(None, ["foop1c0b.000", "barp1c0b.000"])) == 0
+	assert "./hellop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
+	assert not "./foop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
+	assert len(cache.get_non_synchronized_files("./", ["foop1c0b.000", "barp1c0b.000"])) == 0
 
 def test_get_non_synchronized_files_more_files(db_session):
 	N = 1000
