@@ -1,4 +1,4 @@
-import os
+import os, re
 from datetime import datetime
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, DATETIME, BOOLEAN, Identity
 from sqlalchemy.orm import Session, declarative_base
@@ -17,7 +17,7 @@ class BufferMetadataCache:
 		self.Buffer_cls = Buffer_cls
 
 
-	def synchronize_directory(self, *paths, sync_subdirectories = True):
+	def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_]*[p][0-9]*[c][a-zA-Z0-9_]{1}[b]"):
 		"""synchronize the buffer files in the given paths with the database
 		
 		:param paths: The absolute paths to the directory
@@ -25,8 +25,9 @@ class BufferMetadataCache:
 		:param sync_subdirectories: When True synchronize all of the subdirectories recursively, defaults to True
 		:type sync_subdirectories: bool, optional
 		"""
+		pattern = re.compile(regex_pattern)
 		for path in paths:
-			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and file.endswith("000"))
+			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and pattern.match(file))
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
 			unsynchronized_files = self.get_non_synchronized_files(path, files)
 			self.add_files_to_cache(path, unsynchronized_files)
@@ -59,7 +60,7 @@ class BufferMetadataCache:
 				self._db.add(buffer_metadata)
 		self._db.commit()
 
-	def get_matching_files(self, buffer_metadata):
+	def get_matching_files(self, buffer_metadata = None, filter_function = None):
 		"""Query the Cache for all files matching the properties that are set in the BufferMetadata object
 
 		:param buffer_metadata: A metadata object acting as the filter
@@ -67,15 +68,21 @@ class BufferMetadataCache:
 		:return: A list with the paths to the buffer files that match the buffer_metadata
 		:rtype: list[str]
 		"""
-		q = "SELECT * FROM buffer_metadata WHERE "
-		for prop in self.BufferMetadata.properties:
-			prop_value = getattr(buffer_metadata, prop)
-			if prop_value is not None:
-				q += f"{prop} = {prop_value} AND "
-		q = q[:-4]# prune the last AND
+		if (buffer_metadata is not None):
+			q = "SELECT * FROM buffer_metadata WHERE "
+			for prop in self.BufferMetadata.properties:
+				prop_value = getattr(buffer_metadata, prop)
+				if prop_value is not None:
+					q += f"{prop} = {prop_value} AND "
+			q = q[:-4]# prune the last AND
+		elif filter_function is not None:
+			q = "SELECT * FROM buffer_metadata"
+		else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
 		buffers = [self.BufferMetadata(**{prop: value for prop, value in zip(self.BufferMetadata.properties, buffer_result)}) for buffer_result in self._db.execute(q)]
+		if filter_function is not None:
+			buffers = [buffer for buffer in buffers if filter_function(buffer)]
 		return [buffer.filepath for buffer in buffers]
-		
+
 
 	@staticmethod
 	def create_session(engine = None, db_url = "sqlite:///buffer_metadata_db"):

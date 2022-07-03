@@ -1,4 +1,5 @@
 import sys, datetime
+from uuid import uuid4
 
 sys.path.append("../")
 sys.path.append("../../")
@@ -17,7 +18,7 @@ def mock_buffer():
 			return self
 		def __exit__(self, *args): pass
 		@property
-		def filepath(self): return "./foo.000"
+		def filepath(self): return "./foop1c0b.000"
 		@property
 		def process(self): return 1
 		@property
@@ -28,7 +29,7 @@ def mock_buffer():
 
 @pytest.fixture()
 def buffer_objects():
-	filenames = ("foo.000", "bar.000", "hoo.000")
+	filenames = ("foop1c0b.000", "barp1c0b.000", "hoop1c0b.000")
 	buffers = []
 
 	for file in filenames:
@@ -74,14 +75,33 @@ def test_session_creation():
 def test_get_non_synchronized_files(db_session, buffer_objects):
 	db_session.add_all(buffer_objects)
 	cache = bmc.BufferMetadataCache(db_session)
-	assert "hello.000" in cache.get_non_synchronized_files("./", ["foo.000", "hello.000"])
-	assert not "foo.000" in cache.get_non_synchronized_files("./", ["foo.000", "hello.000"])
-	assert len(cache.get_non_synchronized_files(None, ["foo.000", "bar.000"])) == 0
+	assert "hellop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
+	assert not "foop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
+	assert len(cache.get_non_synchronized_files(None, ["foop1c0b.000", "barp1c0b.000"])) == 0
+
+def test_get_non_synchronized_files_more_files(db_session):
+	N = 1000
+	files = [str(uuid4()) for _ in range(N)]
+	path = "/home/"
+	cache = bmc.BufferMetadataCache(db_session)
+	assert len(cache.get_non_synchronized_files(path, files)) == N
+
+def test_get_non_synchronized_files_more_files_duplicates(db_session):
+	N = 1000
+	DUPLICATES = 100
+	files = [str(uuid4()) for _ in range(N)]
+	path = "/home/"
+	for _ in range(100):
+		filename = str(uuid4())
+		db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = path, filename = filename))
+		files.append(filename)
+	cache = bmc.BufferMetadataCache(db_session)
+	assert len(cache.get_non_synchronized_files(path, files)) == N
 
 def test_buffer_to_buffer_metadata(mock_buffer):
 	buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(mock_buffer())
 	assert buffer_metadata.directory_path == "./"
-	assert buffer_metadata.filename == "foo.000"
+	assert buffer_metadata.filename == "foop1c0b.000"
 	assert buffer_metadata.process == 1
 	assert buffer_metadata.channel == 1
 	with pytest.raises(AttributeError) as e: # invalid props shouldn't be copied
@@ -90,7 +110,7 @@ def test_buffer_to_buffer_metadata(mock_buffer):
 def test_buffer_to_buffer_metadata_different_filepath():
 	class Mock_Buffer:
 		@property
-		def filepath(self): return ".\\foo.000"
+		def filepath(self): return ".\\foop1c0b.000"
 		@property
 		def process(self): return 1
 		@property
@@ -106,53 +126,53 @@ def test_add_files_to_cache(db_session, mock_buffer, mocker):
 	
 	bm_cache = bmc.BufferMetadataCache(db_session, mock_buffer)
 	mocker.patch.object(bm_cache._db, "commit") # ensure the database session doesn't commit
-	bm_cache.add_files_to_cache("./", ["foo.000"])
+	bm_cache.add_files_to_cache("./", ["foop1c0b.000"])
 	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).first()
-	assert buffer_metadata.filename == "foo.000"
+	assert buffer_metadata.filename == "foop1c0b.000"
 	bm_cache._db.commit.assert_called_once()
 
 def test_synchronize_directory(db_session, mock_buffer, mocker):
 
 	cache = bmc.BufferMetadataCache(db_session, mock_buffer) # it's important that the filename property of mock_bfufer returns "foo.000"
-	mocker.patch("os.listdir", return_value = ["foo.000"])
+	mocker.patch("os.listdir", return_value = ["foop1c0b.000"])
 	mocker.patch("os.path.isfile", return_value = True)
-	mocker.patch("os.path.join", return_value = "./foo.000")
+	mocker.patch("os.path.join", return_value = "./foop1c0b.000")
 	mocker.patch.object(cache._db, "commit") # ensure the database session doesn't commit
 	cache.synchronize_directory("./", sync_subdirectories = False)
 	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).one()
-	assert buffer_metadata.filename == "foo.000"
+	assert buffer_metadata.filename == "foop1c0b.000"
 
 
 def test_get_matching_files_single_property(db_session, mock_buffer):
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo.000", process = 1))
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "hoo.000", process = 2))
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "bar.000", process = 1))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foop1c0b.000", process = 1))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "hoop1c0b.000", process = 2))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "barp1c0b.000", process = 1))
 	cache = bmc.BufferMetadataCache(db_session, mock_buffer)
 	db_session.query(bmc.BufferMetadataCache.BufferMetadata).all() # this is needed in order for the session to have the objects ready
 	metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1)
-	assert "./foo.000" in cache.get_matching_files(metadata)
-	assert "./bar.000" in cache.get_matching_files(metadata)
-	assert not "./hoo.000" in cache.get_matching_files(metadata)
+	assert "./foop1c0b.000" in cache.get_matching_files(metadata)
+	assert "./barp1c0b.000" in cache.get_matching_files(metadata)
+	assert not "./hoop1c0b.000" in cache.get_matching_files(metadata)
 	
 def test_get_matching_files_multiple_properties(db_session, mock_buffer):
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo.000", process = 1, frq_bands = 16))
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "hoo.000", process = 2, channel = 2, frq_bands = 512))
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "bar.000", process = 1, channel = 1, frq_bands = 16))
-	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo_bar.000", process = 1, channel = 2, frq_bands = 512))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foop1c0b.000", process = 1, frq_bands = 16))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "hoop1c0b.000", process = 2, channel = 2, frq_bands = 512))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "barp1c0b.000", process = 1, channel = 1, frq_bands = 16))
+	db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = "foo_barp1c0b.000", process = 1, channel = 2, frq_bands = 512))
 	cache = bmc.BufferMetadataCache(db_session, mock_buffer)
 	db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
 	metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1)
-	assert "./foo.000" in cache.get_matching_files(metadata)
-	assert not "./hoo.000" in cache.get_matching_files(metadata)
-	assert "./bar.000" in cache.get_matching_files(metadata)
-	assert "./foo_bar.000" in cache.get_matching_files(metadata)
+	assert "./foop1c0b.000" in cache.get_matching_files(metadata)
+	assert not "./hoop1c0b.000" in cache.get_matching_files(metadata)
+	assert "./barp1c0b.000" in cache.get_matching_files(metadata)
+	assert "./foo_barp1c0b.000" in cache.get_matching_files(metadata)
 	metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, channel = 2)
-	assert not "./foo.000" in cache.get_matching_files(metadata)
-	assert not "./hoo.000" in cache.get_matching_files(metadata)
-	assert not "./bar.000" in cache.get_matching_files(metadata)
-	assert "./foo_bar.000" in cache.get_matching_files(metadata)
+	assert not "./foop1c0b.000" in cache.get_matching_files(metadata)
+	assert not "./hoop1c0b.000" in cache.get_matching_files(metadata)
+	assert not "./barp1c0b.000" in cache.get_matching_files(metadata)
+	assert "./foo_barp1c0b.000" in cache.get_matching_files(metadata)
 	metadata = bmc.BufferMetadataCache.BufferMetadata(frq_bands = 16, channel = 1)
-	assert not "./foo.000" in cache.get_matching_files(metadata)
-	assert not "./hoo.000" in cache.get_matching_files(metadata)
-	assert "./bar.000" in cache.get_matching_files(metadata)
-	assert not "./foo_bar.000" in cache.get_matching_files(metadata)
+	assert not "./foop1c0b.000" in cache.get_matching_files(metadata)
+	assert not "./hoop1c0b.000" in cache.get_matching_files(metadata)
+	assert "./barp1c0b.000" in cache.get_matching_files(metadata)
+	assert not "./foo_barp1c0b.000" in cache.get_matching_files(metadata)
