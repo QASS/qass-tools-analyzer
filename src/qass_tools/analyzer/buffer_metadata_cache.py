@@ -17,13 +17,15 @@ class BufferMetadataCache:
 		self.Buffer_cls = Buffer_cls
 
 
-	def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_]*[p][0-9]*[c][a-zA-Z0-9_]{1}[b]"):
-		"""synchronize the buffer files in the given paths with the database
+	def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_]*[p][0-9]*[c][0-9]{1}[b]"):
+		"""synchronize the buffer files in the given paths with the database matching the regex pattern
 		
 		:param paths: The absolute paths to the directory
 		:type paths: str
 		:param sync_subdirectories: When True synchronize all of the subdirectories recursively, defaults to True
 		:type sync_subdirectories: bool, optional
+		:param regex_pattern: The regex pattern validating the buffer naming format
+		:type regex_pattern: string, optional
 		"""
 		pattern = re.compile(regex_pattern)
 		for path in paths:
