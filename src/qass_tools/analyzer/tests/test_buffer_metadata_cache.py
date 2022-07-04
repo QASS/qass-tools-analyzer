@@ -126,7 +126,7 @@ def test_add_files_to_cache(db_session, mock_buffer, mocker):
 	
 	bm_cache = bmc.BufferMetadataCache(db_session, mock_buffer)
 	mocker.patch.object(bm_cache._db, "commit") # ensure the database session doesn't commit
-	bm_cache.add_files_to_cache("./", ["foop1c0b.000"])
+	bm_cache.add_files_to_cache(["./foop1c0b.000"])
 	buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).first()
 	assert buffer_metadata.filename == "foop1c0b.000"
 	bm_cache._db.commit.assert_called_once()
