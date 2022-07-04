@@ -31,7 +31,7 @@ class BufferMetadataCache:
 			files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and pattern.match(file))
 			subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
 			unsynchronized_files = self.get_non_synchronized_files(path, files)
-			self.add_files_to_cache(path, unsynchronized_files)
+			self.add_files_to_cache(unsynchronized_files)
 			if sync_subdirectories:
 				self.synchronize_directory(*subdirectories, sync_subdirectories = True)
 
@@ -55,9 +55,9 @@ class BufferMetadataCache:
 		unsynchronized_files = set(files).difference(synchronized_buffers)		
 		return unsynchronized_files
 
-	def add_files_to_cache(self, filepath, files):
+	def add_files_to_cache(self, files):
 		for file in files:
-			with self.Buffer_cls(os.path.join(filepath, file)) as buffer:
+			with self.Buffer_cls(file) as buffer:
 				buffer_metadata = self.buffer_to_metadata(buffer)
 				self._db.add(buffer_metadata)
 		self._db.commit()
