@@ -4,7 +4,6 @@ from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from qass_tools.analytic import buffer_parser as bp
 
 __all__ = ["BufferMetadataCache"]
 
