@@ -86,7 +86,7 @@ def deletehandler_obj_helper():
 @pytest.fixture
 def get_oldest_helper(monkeypatch):
     def get_oldest_wrapper(self, some_list):
-        test_list = [(2010,"filepath1"),(2011,"filepath2"),(2012,"filepath3")]
+        test_list = [('Tue Jul  5 11:47:07 2022', '/home/opti/tmp_dir/Text File.txt'), ('Tue Jul  5 11:47:14 2022', '/home/opti/tmp_dir/Text File (1).txt'), ('Tue Jun 14 16:49:34 2022', '/home/opti/tmp_dir/file1.txt')]
         return test_list
     
     monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
@@ -95,12 +95,11 @@ def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_
     # Arrange
     amount_limit = 1
     amount = "3"
-
+    
     os_mock = Mock()
     
     monkeypatch.setenv("dir_amount", amount)
     monkeypatch.setattr(os, "remove", os_mock)
-    #mock_deleting = mocker.patch("deleting_process.DeleteHandler._DeleteHandler__delete_file", return_value=None)
     
     # Act
     deletehandler_obj_helper.delete_by_amount(amount_limit)
@@ -123,4 +122,4 @@ def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_old
     deletehandler_obj_helper.delete_by_disk_space(usage_limit)
     
     # Assert
-    assert os_mock.call_count == 2
+    assert os_mock.call_count == 3

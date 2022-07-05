@@ -130,7 +130,7 @@ class DeleteHandler():
         ziped_lists = zip(creation_dates, possible_files)
         # sort for oldest
         sorted_ziped_lists = sorted(ziped_lists, key=lambda x: x[0])
-    
+        print(sorted_ziped_lists)
         return sorted_ziped_lists
     
     def __delete_file(self, deleting_file: str) -> None:
@@ -153,14 +153,17 @@ class DeleteHandler():
 
 
 # syntacs for automatic appling of programm
-def main():
-    """ Function to execute codes below by executing complete script. That means if complete code-file gets started the lines in this function will be executed."""
-    # define path
-    PATH = "/home/opti/tmp_dir/"
-    # create instance
-    file_deleter = DeleteHandler(PATH, "*.txt")
-    # delete by 90% used disk space
-    file_deleter.delete_by_amount(2)
-
-if __name__ == "main":
-    main()
+#def main():
+#    """ Function to execute codes below by executing complete script. That means if complete code-file gets started the lines in this function will be executed."""
+#    # define path
+#    PATH = "/home/opti/tmp_dir/"
+#    # create instance
+#    file_deleter = DeleteHandler(PATH, "*.txt")
+#    # delete by 90% used disk space
+#    file_deleter.delete_by_amount(2)
+#
+#if __name__ == "main":
+#    main()
+PATH = "/home/opti/tmp_dir/"
+file_deleter = DeleteHandler(PATH, "*.txt")
+file_deleter.delete_by_amount(2)
