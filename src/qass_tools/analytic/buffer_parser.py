@@ -318,43 +318,35 @@ class Buffer:
         pos_end = specTo * self.__frq_bands * self.__bytes_per_sample
 
         db_start = int(pos_start / self.__db_size)
-        db_end = int(pos_end / self.__db_size)
+        db_end = math.ceil(pos_end / self.__db_size)
 
-        # The following if clauses check whether the datatype is 2 or 4 bytes long. In case of 4 bytes
-        # it checks whether bit 3 is set in p__flags because bit 3 indicates a float buffer.
-        
         if self.__bytes_per_sample == 2:
             dtype = np.uint16
         elif self.__bytes_per_sample == 4:
-            if (self.__metainfo['p__flags'] & 8) == 0:
-                dtype = np.uint32
-            else:
-                dtype = np.float32
+            dtype = np.uint32
         else:
             raise ValueError("Unknown value for bytes_per_sample")
 
         np_arrays = []
 
-        for db in range(db_start, db_end + 1):
+        for db in range(db_start, db_end):
             if db == db_start:
                 start_in_db = pos_start - db_start * self.__db_size
             else:
                 start_in_db = 0
 
-            if db == db_end:
-                end_in_db = pos_end - db_end * self.__db_size
+            if db == db_end - 1:
+                end_in_db = pos_end - (db_end-1) * self.__db_size
             else:
                 end_in_db = self.__db_size
 
-            block_start_pos_in_file = self.__header_size + \
-                db * (self.__db_size + self.__db_header_size)
+            block_start_pos_in_file = self.__header_size + db * (self.__db_size + self.__db_header_size)
 
             start_pos_in_file = block_start_pos_in_file + start_in_db + self.__db_header_size
             read_len = int((end_in_db - start_in_db) / self.__bytes_per_sample)
 
-            if start_pos_in_file + read_len >= self.file_size:
-                raise ValueError(
-                    "The given indices exceed the buffer file's size.")
+            if start_pos_in_file + read_len > self.file_size:
+                raise ValueError("The given indices exceed the buffer file's size.")
 
             # TODO: We should check the length of actual data in this datablock - especially for the last data block
             # but maybe also for intermediate data blocks - since we do not know if the measuring has been paused
@@ -364,19 +356,15 @@ class Buffer:
             if conversion:
                 if conversion == 'delog':
                     if self.fft_log_shift != 0:
-                        arr = self.delog(
-                            arr, self.fft_log_shift, self.bit_resolution)
+                        arr = self.delog(arr, self.fft_log_shift, self.bit_resolution)
                 elif conversion == 'log':
                     if self.fft_log_shift == 0:
-                        arr = self.log(arr, self.fft_log_shift,
-                                       self.bit_resolution)
+                        arr = self.log(arr, self.fft_log_shift, self.bit_resolution)
                 else:
-                    raise InvalidArgumentError(
-                        "The given conversion is unknown")
+                    raise InvalidArgumentError("The given conversion is unknown")
             np_arrays.append(arr)
 
-        # & 0x3fff
-        return np.concatenate(np_arrays).reshape(-1, self.__frq_bands)
+        return np.concatenate(np_arrays).reshape(-1, self.__frq_bands) #& 0x3fff
 
     def get_data(self, specFrom=None, specTo=None, conversion: str = None):
         """
