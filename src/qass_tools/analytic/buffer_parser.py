@@ -320,10 +320,16 @@ class Buffer:
         db_start = int(pos_start / self.__db_size)
         db_end = math.ceil(pos_end / self.__db_size)
 
+        # The following if clauses check whether the datatype is 2 or 4 bytes long. In case of 4 bytes
+        # it checks whether bit 3 is set in p__flags because bit 3 indicates a float buffer.
+        
         if self.__bytes_per_sample == 2:
             dtype = np.uint16
         elif self.__bytes_per_sample == 4:
-            dtype = np.uint32
+            if (self.__metainfo['p__flags'] & 8) == 0:
+                dtype = np.uint32
+            else:
+                dtype = np.float32
         else:
             raise ValueError("Unknown value for bytes_per_sample")
 
