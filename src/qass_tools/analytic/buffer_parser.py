@@ -181,6 +181,7 @@ class Buffer:
         self.__db_headers = {}
 
     def __enter__(self):
+        self.__last_spectrum=None
         self.file = open(self.__filepath, 'rb')
         self._parse_header()
         return self
@@ -1049,6 +1050,21 @@ class Buffer:
         return int(self.sample_count / self.__frq_bands)
 
     @property
+    def last_spec(self):
+        if self.__last_spectrum is None:
+            last_sample=0
+
+            last_db = self.db_count -1
+            mi=self.db_header(last_db)
+            if 'lastsamp' not in mi.keys():
+                raise ValueError('The datablock header does not contain a key "lastsamp"')
+            
+            last_sample=mi['lastsamp']
+            self.__last_spectrum=int(last_sample/self.frq_bands)
+
+        return self.__last_spectrum
+
+    @property
     def adc_type(self):
         """
         The type of analog/digital converter. The types are defined in class 
@@ -1081,6 +1097,32 @@ class Buffer:
         :rtype: int
         """
         return self.__metainfo["fftlogsh"]
+
+    @property
+    def max_amplitude_level(self):
+        """
+        maximum possible amplitude of the buffer, relates to the buffer's dtype
+        :rtype: int, float
+        """
+        return self.__metainfo["max_ampl"]
+
+    @property
+    def refEnergy(self):
+        """
+        refEnergy provides a normalization factor for compressions.
+        This makes sums of amplitudes of different compressions comparable to each other.
+        See _signalNormalizationFactor for a detailed description.
+
+        :rtype: float
+        """
+        return self.__norm_factor
+
+    @property
+    def ref_energy(self):
+        """
+        alias for refEnergy()
+        """
+        return self.refEnergy
 
     def spec_to_time_ns(self, spec):
         """
