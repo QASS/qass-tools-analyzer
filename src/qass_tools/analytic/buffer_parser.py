@@ -497,7 +497,7 @@ class Buffer:
                     key, val, idx = read_res
                     if key:
                         db_metainfo[key] = val
-            except Exception e:
+            except Exception as e:
                 raise ValueError('data block header content not parseble')
 
         return db_metainfo
