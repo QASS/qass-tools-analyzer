@@ -477,12 +477,24 @@ class Buffer:
     def _parse_db_header(self, content: bytearray) -> dict:
         db_metainfo = {}
 
+        if content[0] == 0:
+            print('empty header content')
+            #raise ValueError('empty header content')
+            return db_metainfo
+
         idx = 0
         while idx < self.__db_header_size:
-            key, val, idx = self._read_next_value(
-                idx, content, self.__db_keywords)
-            if key:
-                db_metainfo[key] = val
+            try:
+                read_res = self._read_next_value(idx, content, self.__db_keywords)
+                if read_res is None:  # key not found
+                    print('header parse error')
+                    idx+=4
+                else:
+                    key, val, idx = read_res
+                    if key:
+                        db_metainfo[key] = val
+            except Exception e:
+                raise ValueError('data block header content not parseble')
 
         return db_metainfo
 
