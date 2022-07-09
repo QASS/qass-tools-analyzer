@@ -181,6 +181,7 @@ class Buffer:
         self.__db_headers = {}
 
     def __enter__(self):
+        self.__last_spectrum=None
         self.file = open(self.__filepath, 'rb')
         self._parse_header()
         return self
@@ -294,6 +295,9 @@ class Buffer:
 
             if key:
                 self.__metainfo[key] = val
+
+        self._calc_spec_duration()
+        self._signalNormalizationFactor()
 
         self.file.seek(0, os.SEEK_END)
         size = self.file.tell()
@@ -477,12 +481,24 @@ class Buffer:
     def _parse_db_header(self, content: bytearray) -> dict:
         db_metainfo = {}
 
+        if content[0] == 0:
+            print('empty header content')
+            #raise ValueError('empty header content')
+            return db_metainfo
+
         idx = 0
         while idx < self.__db_header_size:
-            key, val, idx = self._read_next_value(
-                idx, content, self.__db_keywords)
-            if key:
-                db_metainfo[key] = val
+            try:
+                read_res = self._read_next_value(idx, content, self.__db_keywords)
+                if read_res is None:  # key not found
+                    print('header parse error')
+                    idx+=4
+                else:
+                    key, val, idx = read_res
+                    if key:
+                        db_metainfo[key] = val
+            except Exception e:
+                raise ValueError('data block header content not parseble')
 
         return db_metainfo
 
@@ -652,6 +668,60 @@ class Buffer:
         """
         return self.file_size
 
+    def _calc_spec_duration(self):
+        if 'frame_dur' in self.__metainfo.keys():
+            return 
+        elif self.__metainfo['datatype']!=2:#no time signal
+            if 'fftovers' in self.__metainfo.keys() and 'samplefr' in self.__metainfo.keys() and 'comratio' in self.__metainfo.keys():
+                duration=(1e9/((self.__metainfo['samplefr']*(1<<self.__metainfo['fftovers']))/1024))*self.__metainfo['comratio']
+                self.__metainfo['framedur']=duration
+
+    def _signalNormalizationFactor(self,gain=1):
+        """_signalNormalizationFactor calculates a ref_energy factor to derive a normalized energy related to time, frequency and amplitude ranges
+        of the buffer. A rectangular signal volume, which's base is the rectangle of one spectrums distance and one frequency band's width
+        e.g. (100mV * 82�s * 1525Hz) = 0.012505 V. As the voltage is not squared, the result is close to the square-root of an energy.
+        
+        Each amplitude could reach a maximum of 1 Volt, the maximum ADC input voltage.
+        Therefore we divide the amplitude with the maximum amplitude number to get it's portion in Volt.
+        Then we multiply with the time and frequency square, as we assume the amplitude is constant over the complete square (our best guessing).
+        
+        When calculating energies of buffer ranges, we simply summarize the contained amplitudes. 
+        By multiplying the resulting sum with the ref_energy factor, we achieve the above described calculation of the signals volume.
+
+        The resulting energy should be stable, even if compressing time and frequencies, using oversampling and different ADC ranges.
+
+        sum of amplitudes, 
+        comparable even if sample rate, oversampling etc. is changing
+        param gain, 
+        usually the amplitude ref is 1.0 equal 100% (eliminates the bit resolution of the buffer) 
+        could be enhanced with the amplification information of the amplifiers
+
+        :param gain: can reflect changes of the amplification chain, energy is then related where the gain starts (sensor output e.g.), defaults to 1
+        :type gain: float, optional
+        :return: a factor to multiply with the sums of amplitudes in time-frequency-buffers
+        :rtype: float
+        """
+
+        self.__norm_factor = 1.0
+        if gain == 0.0:
+            gain = 1.0
+
+        max_amp = self.max_amplitude_level * gain
+        #16 bit=65535, gain=250 => maximum Amp=1V/250=0.004V ~ 4mV
+        if max_amp:
+            if self.__frq_bands > 1:
+                self.__norm_factor = self.frq_per_band * self.spec_duration / 1e9 / max_amp
+            else:
+                # normFactor = specDuration() / 1e9 / max_amp;
+                #//@todo: calculation may be wrong, check it
+                self.__norm_factor = 1.0
+            
+        else:
+            max_amp=2<<16
+            max_amp*=gain
+            self.__norm_factor=self.frq_per_band * self.spec_duration / 1e9 / max_amp
+        
+        return self.__norm_factor
     @property
     def metainfo(self):
         """
@@ -1037,6 +1107,21 @@ class Buffer:
         return int(self.sample_count / self.__frq_bands)
 
     @property
+    def last_spec(self):
+        if self.__last_spectrum is None:
+            last_sample=0
+
+            last_db = self.db_count -1
+            mi=self.db_header(last_db)
+            if 'lastsamp' not in mi.keys():
+                raise ValueError('The datablock header does not contain a key "lastsamp"')
+            
+            last_sample=mi['lastsamp']
+            self.__last_spectrum=int(last_sample/self.frq_bands)
+
+        return self.__last_spectrum
+
+    @property
     def adc_type(self):
         """
         The type of analog/digital converter. The types are defined in class 
@@ -1069,6 +1154,32 @@ class Buffer:
         :rtype: int
         """
         return self.__metainfo["fftlogsh"]
+
+    @property
+    def max_amplitude_level(self):
+        """
+        maximum possible amplitude of the buffer, relates to the buffer's dtype
+        :rtype: int, float
+        """
+        return self.__metainfo["max_ampl"]
+
+    @property
+    def refEnergy(self):
+        """
+        refEnergy provides a normalization factor for compressions.
+        This makes sums of amplitudes of different compressions comparable to each other.
+        See _signalNormalizationFactor for a detailed description.
+
+        :rtype: float
+        """
+        return self.__norm_factor
+
+    @property
+    def ref_energy(self):
+        """
+        alias for refEnergy()
+        """
+        return self.refEnergy
 
     def spec_to_time_ns(self, spec):
         """
