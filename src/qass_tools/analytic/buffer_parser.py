@@ -296,9 +296,6 @@ class Buffer:
             if key:
                 self.__metainfo[key] = val
 
-        self._calc_spec_duration()
-        self._signalNormalizationFactor()
-
         self.file.seek(0, os.SEEK_END)
         size = self.file.tell()
         self.file_size = size
@@ -310,6 +307,9 @@ class Buffer:
         self.__frq_bands = self.__metainfo["s_p_fram"]
         self.__db_count = math.ceil(
             (self.file_size - self.__header_size) / (self.__db_size + self.__db_header_size))
+
+        self._calc_spec_duration()
+        self._signalNormalizationFactor()
 
     def _log(self, data_arr):
         return self.log(data_arr, self.fft_log_shift, self.ad_bit_resolution)
