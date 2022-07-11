@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, DATETIME, BOOLEAN, Identity
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
+from glob import glob
 
 
 __all__ = ["BufferMetadataCache"]
@@ -15,33 +16,27 @@ class BufferMetadataCache:
         self._db = session
         self.Buffer_cls = Buffer_cls
 
-
-    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_]*[p][0-9]*[c][0-9]{1}[b]"):
+    def synchronize_directory(self, *paths, recursive = True, regex_pattern = "^[a-zA-Z0-9_./]*[p][0-9]*[c][0-9]{1}[b]"):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
         
         :param paths: The absolute paths to the directory
         :type paths: str
-        :param sync_subdirectories: When True synchronize all of the subdirectories recursively, defaults to True
-        :type sync_subdirectories: bool, optional
+        :param recursive: When True synchronize all of the subdirectories recursively, defaults to True
+        :type recursive: bool, optional
         :param regex_pattern: The regex pattern validating the buffer naming format
         :type regex_pattern: string, optional
         """
         pattern = re.compile(regex_pattern)
         for path in paths:
-            files = (file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file)) and pattern.match(file))
-            subdirectories = [os.path.join(path, directory) for directory in os.listdir(path) if not os.path.isfile(os.path.join(path, directory))]
-            unsynchronized_files = self.get_non_synchronized_files(path, files)
+            files = (file for file in glob(path, recursive = recursive) if os.path.isfile(file) and pattern.match(file))
+            unsynchronized_files = self.get_non_synchronized_files(files)
             self.add_files_to_cache(unsynchronized_files)
-            if sync_subdirectories:
-                self.synchronize_directory(*subdirectories, sync_subdirectories = True)
-
 
     def synchronize_database(self, *sync_connections):
         # TODO
         pass
 
-
-    def get_non_synchronized_files(self, filepath, files):
+    def get_non_synchronized_files(self, files):
         """calculate the difference between the set of files and the set of synchronized files
 
         :param filepath: full path to the files
@@ -51,8 +46,7 @@ class BufferMetadataCache:
         :return: The set of files that are not synchronized
         """
         synchronized_buffers = set(buffer.filepath for buffer in self._db.query(self.BufferMetadata).all())
-        files = (os.path.join(filepath, file) for file in files)
-        unsynchronized_files = set(files).difference(synchronized_buffers)		
+        unsynchronized_files = set(files).difference(synchronized_buffers)
         return unsynchronized_files
 
     def add_files_to_cache(self, files):
