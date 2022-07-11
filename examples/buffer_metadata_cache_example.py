@@ -8,7 +8,7 @@ def main():
     cache = BufferMetadataCache(BufferMetadataCache.create_session(), bp.buffer)
     # syncing is only needed once. Resyncing new files is still a lot faster than opening every buffer file
     # deleted files are not yet removed from the database
-    cache.synchronize_directory("/directory/to/sync/") # replace with your path
+    cache.synchronize_directory("/directory/to/sync/**") # replace with your path
 
     # search for matching metadata
     # create a metadata object with the properties you want the results to match
