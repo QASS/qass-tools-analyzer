@@ -1,13 +1,9 @@
 import glob
-from subprocess import call
-
-from psutil import disk_usage
 from deleting_process import DeleteHandler
 from pathlib import Path
 import os
 import shutil
 import pytest
-import mock
 from unittest.mock import Mock
 
 # mocked version
