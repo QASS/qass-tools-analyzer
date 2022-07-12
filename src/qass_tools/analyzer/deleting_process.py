@@ -4,6 +4,7 @@ import os
 import glob
 from typing import List
 import shutil
+import logging
 
 try:
     from Analyzer.Core import Log_IF
@@ -67,11 +68,11 @@ class DeleteHandler():
             try:
                 for idx in range(0, amount_to_delete):
                     self.__delete_file(sorted_list[idx][1])
-                print("Deleting successfull")
+                logging.info("Deleting successfull")
             except OSError as e:
                 #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
-                print(e)
-                print("Deleting process could not be completed. Check your setted Limit and your Files.")
+                logging.error(e)
+                logging.error("Deleting process could not be completed. Check your setted Limit and your Files.")
         
     def delete_by_disk_space(self, disk_usage_limit: float) -> None:
         """Provided method to delete files by a given maximum disk space usage.
@@ -83,9 +84,9 @@ class DeleteHandler():
         # read out currently used disk usage
         disk_usage = shutil.disk_usage(self.path)
         # help to debug: disk_usage[0] = total // disk_usage[1] = used // disk_usage[2] = free
-        #print("total", disk_usage[0])
-        #print("used", disk_usage[1])
-        #print("free", disk_usage[2])
+        #logging.debug("total", disk_usage[0])
+        #logging.debug("used", disk_usage[1])
+        #logging.debug("free", disk_usage[2])
         # calc free space that is required based on user limit
         target_free_space = disk_usage[0] * (1 - disk_usage_limit)
         # calc therefore required space
@@ -106,11 +107,11 @@ class DeleteHandler():
             try:
                 for idx in range(0, n+1):
                     self.__delete_file(sorted_list[idx][1])
-                    print("Deleting successfull")
+                logging.info(f"Deleting successfull")
             except OSError as e:
                 #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
-                print(e)
-                print("Deleting process could not be completed. Check your setted Limit and your Files.")
+                logging.error(e)
+                logging.error("Deleting process could not be completed. Check your setted limit and your files.")
 
     def __get_oldest(self, possible_files: List)   -> List:
         """Private method to get a list of local files which are sorted by creation date.
@@ -133,7 +134,6 @@ class DeleteHandler():
         ziped_lists = zip(creation_dates, possible_files)
         # sort for oldest
         sorted_ziped_lists = sorted(ziped_lists, key=lambda x: x[0])
-        print(sorted_ziped_lists)
         return sorted_ziped_lists
     
     def __delete_file(self, deleting_file: str) -> None:
@@ -149,9 +149,7 @@ class DeleteHandler():
                 raise ValueError("No files to remove")
             else:
                 os.remove(deleting_file)
-                print("File removed sucessfully")
+                logging.info(f"File: {deleting_file} removed sucessfull")
         except OSError as error:
-            print(error)
-            print("File could not be removed")
-
-
+            logging.error(error)
+            logging.error("File could not be removed")
