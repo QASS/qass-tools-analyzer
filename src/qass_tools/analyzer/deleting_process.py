@@ -4,7 +4,7 @@ import os
 import glob
 from typing import List
 import shutil
-import logging
+import logging, logging.handlers
 
 try:
     from Analyzer.Core import Log_IF
@@ -23,8 +23,10 @@ class DeleteHandler():
     :type path: str
     :param pattern: Searched pattern.
     :type pattern: str
+    :param pattern: Flag if log file should be created (by default: False)
+    :type log_entires: bool
     """
-    def __init__(self, path: str, pattern: str) -> None:
+    def __init__(self, path: str, pattern: str, log_entries=False) -> None:
         """Constructor to connect a specific local directory path with a specific pattern parsed.
 
         Provided functions can be applied later for each combination. Pattern has to be according to the rules used by Unix shell (used glob module is based on that). In the following Unix Shell rules are provided:
@@ -42,8 +44,12 @@ class DeleteHandler():
         :param pattern: Searched pattern.
         :type pattern: str
         """
-        self.path = path  
+        self.path = path
         self.pattern = pattern
+        if log_entries:
+            #logfilesize_limit = amount of entires * average entry size(=200bytes)
+            logfilesize_limit = 10000 * 200
+            self.file_logger = self.create_file_logger_obj(self.pattern, logfilesize_limit)
         
     def delete_by_amount(self, max_amount: int) -> None:
         """Provided function to delete files based on file amount in location if amount overruns defined limit.
@@ -152,4 +158,38 @@ class DeleteHandler():
                 logging.info(f"File: {deleting_file} removed sucessfull")
         except OSError as error:
             logging.error(error)
-            logging.error("File could not be removed")
+            logging.error(f"File {deleting_file} could not be removed.")
+
+    def create_file_logger_obj(self, pattern_to_log:str, filesize_limit:int):
+        """Creates formatete object from python built in logging module.
+
+        Creates a RotatingFileHandler object which logs all occuring events. Logged will be tim, name of function and
+        message itself. The logfile name will be created automatically by used search pattern. If filesize limit is
+        reached a new logfile will be created. NOTE: there is no std.out
+        handler implemented here. 
+
+        :param pattern_to_log: Pattern which is used in constrcutor of DeleteHandler class
+        :type pattern_to_log: str
+        :param filesize_limit: Maximum logfile size in bytes
+        :type filesize_limit: int
+        :return: logger object
+        :rtype: logging.handlers.RotatingFileHandler
+        """
+        #create logger
+        logger_name = pattern_to_log + "_file_logger"
+        logger_obj = logging.getLogger(logger_name)
+        file_name = pattern_to_log + ".log"
+        #define logger
+        #set logging level to lowest setting
+        logger_obj.setLevel(logging.DEBUG)
+        # create rotating file handler and set level to debug
+        rfh = logging.handlers.RotatingFileHandler(file_name, maxbytes=filesize_limit)
+        rfh.setLevel(logging.DEBUG)
+        # create formatter
+        formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcname)s - %(message)s')
+        # add formatter to rfh
+        rfh.setFormatter(formatter)
+        # add ch to logger
+        logger_obj.addHandler(rfh)
+
+        return logger_obj
