@@ -56,21 +56,18 @@ class DeleteHandler():
         :type max_amount: int
         :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
-        # read out amount of files in directory
-        dir_amount = len(os.listdir(self.full_path))
+        # search for files in directory which match pattern
+        delete_list = glob.glob(self.full_path) # delete_list is saved with full path
+        file_amount = len(delete_list)
+        if file_amount <= 0:
+            if self.file_logger:
+                self.file_logger.warning("No files avaible to delete.") 
+            return
         # calc how many files have to be deletet in order to satisfy limit
-        if self.file_logger:
-            dir_amount = dir_amount - 1
-        amount_to_delete = int(dir_amount) - max_amount
+        amount_to_delete = file_amount - max_amount
+        
         # if there are any files to delete:
-
         if amount_to_delete > 0:
-            # search for files in directory which match pattern
-            delete_list = glob.glob(self.full_path) # delete_list is saved with full path
-            if len(delete_list) == 0:
-                if self.file_logger:
-                   self.file_logger.warning("No files avaible to delete.") 
-                return
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
             for idx in range(0, amount_to_delete):
