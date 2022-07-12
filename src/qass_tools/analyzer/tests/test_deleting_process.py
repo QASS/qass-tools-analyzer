@@ -94,22 +94,22 @@ def get_oldest_helper(monkeypatch):
 def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
     # Arrange
     amount_limit = 1
-    amount = "3"
+    
     
     os_mock = Mock()
-    
-    monkeypatch.setenv("dir_amount", amount)
+    len_mock = Mock(return_value=[0,1,2])
+    monkeypatch.setattr(os, "listdir", len_mock)
     monkeypatch.setattr(os, "remove", os_mock)
     
     # Act
     deletehandler_obj_helper.delete_by_amount(amount_limit)
     
     # Assert
-    assert os_mock.call_count == 1
+    assert os_mock.call_count == 2
 
 def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
     # Arrange
-    usage_limit = 0.1
+    usage_limit = 0.9
 
     os_mock = Mock()
     shutil_mock = Mock(return_value=(1000, 950, 50))
@@ -122,4 +122,4 @@ def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_old
     deletehandler_obj_helper.delete_by_disk_space(usage_limit)
     
     # Assert
-    assert os_mock.call_count == 3
+    assert os_mock.call_count == 2
