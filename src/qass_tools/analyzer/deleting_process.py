@@ -1,16 +1,12 @@
 # import modules
+from asyncio.log import logger
 import time
 import os
 import glob
 from typing import List
 import shutil
 import logging, logging.handlers
-
-try:
-    from Analyzer.Core import Log_IF
-except:
-    pass
-
+from pathlib import Path
 __all__ = ["DeleteHandler"]
 
 class DeleteHandler():
@@ -38,6 +34,7 @@ class DeleteHandler():
         | [!]	  | Matches any character not in sequence |	[!psr]* matches all files not starting with the letter p, s, or r                    |
         
         For a literal match, wrap the meta-characters in brackets. For example, '[?]' matches the character '?'    
+        NOTE: Created logfile be ignored automatically.
 
         :param path: Local directory path.
         :type path: str
@@ -46,10 +43,11 @@ class DeleteHandler():
         """
         self.path = path
         self.pattern = pattern
+        self.full_path = str(Path(self.path) / Path(self.pattern))
         if log_entries:
             #logfilesize_limit = amount of entires * average entry size(=200bytes)
             logfilesize_limit = 10000 * 200
-            self.file_logger = self.create_file_logger_obj(self.pattern, logfilesize_limit)
+            self.file_logger = self.create_file_logger_obj(self.path, self.pattern, logfilesize_limit)
         
     def delete_by_amount(self, max_amount: int) -> None:
         """Provided function to delete files based on file amount in location if amount overruns defined limit.
@@ -59,26 +57,23 @@ class DeleteHandler():
         :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # read out amount of files in directory
-        dir_amount = len(os.listdir(self.path))
+        dir_amount = len(os.listdir(self.full_path))
         # calc how many files have to be deletet in order to satisfy limit
         amount_to_delete = int(dir_amount) - max_amount
         # if there are any files to delete:
 
         if amount_to_delete > 0:
             # search for files in directory which match pattern
-            full_path = str(self.path / self.pattern)
-            delete_list = glob.glob(full_path) # delete_list is saved with full path
+            delete_list = glob.glob(self.full_path) # delete_list is saved with full path
+            if len(delete_list) == 0:
+                if self.file_logger:
+                   self.file_logger.warning("No files avaible to delete.") 
+                return
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
+            for idx in range(0, amount_to_delete):
+                self.__delete_file(sorted_list[idx][1])
             
-            try:
-                for idx in range(0, amount_to_delete):
-                    self.__delete_file(sorted_list[idx][1])
-                logging.info("Deleting successfull")
-            except OSError as e:
-                #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
-                logging.error(e)
-                logging.error("Deleting process could not be completed. Check your setted Limit and your Files.")
         
     def delete_by_disk_space(self, disk_usage_limit: float) -> None:
         """Provided method to delete files by a given maximum disk space usage.
@@ -99,8 +94,11 @@ class DeleteHandler():
         space_to_make = abs(target_free_space - disk_usage[2])
         
         if space_to_make > 0:
-            full_path = str(self.path / self.pattern)
-            delete_list = glob.glob(full_path) # delete_list is saved with full path# sort list for oldest files
+            delete_list = glob.glob(self.full_path) # delete_list is saved with full path
+            if len(delete_list) == 0:
+                if self.file_logger:
+                   self.file_logger.warning("No files avaible to delete.") 
+                return
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
             # helper
@@ -110,14 +108,8 @@ class DeleteHandler():
                 filesize = filesize + os.path.getsize(file)
                 if filesize >= space_to_make:
                     break
-            try:
-                for idx in range(0, n+1):
-                    self.__delete_file(sorted_list[idx][1])
-                logging.info(f"Deleting successfull")
-            except OSError as e:
-                #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
-                logging.error(e)
-                logging.error("Deleting process could not be completed. Check your setted limit and your files.")
+            for idx in range(0, n+1):
+                self.__delete_file(sorted_list[idx][1])
 
     def __get_oldest(self, possible_files: List)   -> List:
         """Private method to get a list of local files which are sorted by creation date.
@@ -130,6 +122,8 @@ class DeleteHandler():
         # helper
         creation_dates = []
         for file in possible_files:
+            if str(file).endswith(".log"):
+                continue
             # read out creation date (here: creation_time) of each file 
             creation_time = os.path.getctime(file)
             # convert to easy readable time
@@ -145,29 +139,30 @@ class DeleteHandler():
     def __delete_file(self, deleting_file: str) -> None:
         """Private method to delete parsed file. 
 
-        :param deleting_file: _description_
+        :param deleting_file: File(path) that should be deletet.
         :type deleting_file: str
         :raises OSError: An error is raisen if files cannot be removed (arbitrary reasons).
         :raises Valueerror: If parsed string is empty.
         """
         try:
-            if deleting_file == "":
-                raise ValueError("No files to remove")
-            else:
-                os.remove(deleting_file)
-                logging.info(f"File: {deleting_file} removed sucessfull")
+            os.remove(deleting_file)
+            if self.file_logger:
+                self.file_logger.info(f"File: {deleting_file} removed sucessfull")
         except OSError as error:
-            logging.error(error)
-            logging.error(f"File {deleting_file} could not be removed.")
+            if self.file_logger:
+                self.file_logger.error(error)
+                self.file_logger.error(f"File {deleting_file} could not be removed.")
 
-    def create_file_logger_obj(self, pattern_to_log:str, filesize_limit:int):
+    def create_file_logger_obj(self, path:str, pattern_to_log:str, filesize_limit:int):
         """Creates formatete object from python built in logging module.
 
-        Creates a RotatingFileHandler object which logs all occuring events. Logged will be tim, name of function and
-        message itself. The logfile name will be created automatically by used search pattern. If filesize limit is
-        reached a new logfile will be created. NOTE: there is no std.out
-        handler implemented here. 
+        Creates a RotatingFileHandler object which logs all occuring events. Logged will be timr, name of function and
+        message itself. The logfile name will be created automatically by used search pattern and stored in supervised
+        directory. If filesize limit is reached a new logfile will be created. NOTE: there is no stdout handler 
+        implemented here. 
 
+        :param pattern_to_log: Path of supervised directory
+        :type pattern_to_log: str
         :param pattern_to_log: Pattern which is used in constrcutor of DeleteHandler class
         :type pattern_to_log: str
         :param filesize_limit: Maximum logfile size in bytes
@@ -178,18 +173,21 @@ class DeleteHandler():
         #create logger
         logger_name = pattern_to_log + "_file_logger"
         logger_obj = logging.getLogger(logger_name)
-        file_name = pattern_to_log + ".log"
+        file_name = path + pattern_to_log + ".log"
         #define logger
         #set logging level to lowest setting
         logger_obj.setLevel(logging.DEBUG)
         # create rotating file handler and set level to debug
-        rfh = logging.handlers.RotatingFileHandler(file_name, maxbytes=filesize_limit)
+        rfh = logging.handlers.RotatingFileHandler(file_name, maxBytes=filesize_limit, backupCount=1)
         rfh.setLevel(logging.DEBUG)
         # create formatter
-        formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcName)s - %(message)s')
         # add formatter to rfh
         rfh.setFormatter(formatter)
         # add ch to logger
         logger_obj.addHandler(rfh)
 
         return logger_obj
+
+delet = DeleteHandler("/home/opti/tmp_dir/","*.txt",log_entries=True)
+delet.delete_by_amount(1)
