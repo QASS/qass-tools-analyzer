@@ -59,6 +59,8 @@ class DeleteHandler():
         # read out amount of files in directory
         dir_amount = len(os.listdir(self.full_path))
         # calc how many files have to be deletet in order to satisfy limit
+        if self.file_logger:
+            dir_amount = dir_amount - 1
         amount_to_delete = int(dir_amount) - max_amount
         # if there are any files to delete:
 
