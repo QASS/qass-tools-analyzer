@@ -155,18 +155,3 @@ class DeleteHandler():
             print("File could not be removed")
 
 
-# syntacs for automatic appling of programm
-#def main():
-#    """ Function to execute codes below by executing complete script. That means if complete code-file gets started the lines in this function will be executed."""
-#    # define path
-#    PATH = "/home/opti/tmp_dir/"
-#    # create instance
-#    file_deleter = DeleteHandler(PATH, "*.txt")
-#    # delete by 90% used disk space
-#    file_deleter.delete_by_amount(2)
-#
-#if __name__ == "main":
-#    main()
-PATH = "/home/opti/tmp_dir/"
-file_deleter = DeleteHandler(PATH, "*.txt")
-file_deleter.delete_by_amount(2)
