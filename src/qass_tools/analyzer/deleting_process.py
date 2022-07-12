@@ -43,8 +43,9 @@ class DeleteHandler():
         """
         self.path = path
         self.pattern = pattern
+        self.log_entries = log_entries
         self.full_path = str(Path(self.path) / Path(self.pattern))
-        if log_entries:
+        if self.log_entries:
             #logfilesize_limit = amount of entires * average entry size(=200bytes)
             logfilesize_limit = 10000 * 200
             self.file_logger = self.create_file_logger_obj(self.path, self.pattern, logfilesize_limit)
@@ -60,7 +61,7 @@ class DeleteHandler():
         delete_list = glob.glob(self.full_path) # delete_list is saved with full path
         file_amount = len(delete_list)
         if file_amount <= 0:
-            if self.file_logger:
+            if self.log_entries:
                 self.file_logger.warning("No files avaible to delete.") 
             return
         # calc how many files have to be deletet in order to satisfy limit
@@ -95,7 +96,7 @@ class DeleteHandler():
         if space_to_make > 0:
             delete_list = glob.glob(self.full_path) # delete_list is saved with full path
             if len(delete_list) == 0:
-                if self.file_logger:
+                if self.log_entries:
                    self.file_logger.warning("No files avaible to delete.") 
                 return
             # sort list for oldest files
@@ -145,10 +146,10 @@ class DeleteHandler():
         """
         try:
             os.remove(deleting_file)
-            if self.file_logger:
+            if self.log_entries:
                 self.file_logger.info(f"File: {deleting_file} removed sucessfull")
         except OSError as error:
-            if self.file_logger:
+            if self.log_entries:
                 self.file_logger.error(error)
                 self.file_logger.error(f"File {deleting_file} could not be removed.")
 
@@ -187,6 +188,3 @@ class DeleteHandler():
         logger_obj.addHandler(rfh)
 
         return logger_obj
-
-delet = DeleteHandler("/home/opti/tmp_dir/","*.txt",log_entries=True)
-delet.delete_by_amount(1)

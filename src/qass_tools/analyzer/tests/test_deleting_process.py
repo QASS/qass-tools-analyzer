@@ -1,3 +1,4 @@
+import glob
 from subprocess import call
 
 from psutil import disk_usage
@@ -29,11 +30,9 @@ def get_oldest_helper(monkeypatch):
 def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
     # Arrange
     amount_limit = 1
-    
-    
     os_mock = Mock()
     len_mock = Mock(return_value=[0,1,2])
-    monkeypatch.setattr(os, "listdir", len_mock)
+    monkeypatch.setattr(glob, "glob",len_mock)
     monkeypatch.setattr(os, "remove", os_mock)
     
     # Act
@@ -49,8 +48,10 @@ def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_old
     os_mock = Mock()
     shutil_mock = Mock(return_value=(1000, 950, 50))
     filesize_mock = Mock(return_value=25)
+    len_mock = Mock(return_value=[0,1,2])
     monkeypatch.setattr(shutil, "disk_usage", shutil_mock)
     monkeypatch.setattr(os, "remove", os_mock)
+    monkeypatch.setattr(glob, "glob",len_mock)
     monkeypatch.setattr(os.path, "getsize", filesize_mock)
     
     # Act
