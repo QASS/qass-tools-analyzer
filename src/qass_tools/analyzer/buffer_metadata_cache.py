@@ -6,12 +6,63 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from glob import glob
 
 
-__all__ = ["BufferMetadataCache"]
+__all__ = ["BufferMetadataCache", "BufferMetadata"]
+
+
+
+__Base = declarative_base()
+class BufferMetadata(__Base):
+    __tablename__ = "buffer_metadata"
+    properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", #"datamode", "datakind", "datatype", 
+                "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
+                "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
+                "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", #"adc_type", 
+                "bit_resolution",
+                "fft_log_shift")
+
+    id = Column(Integer, Identity(start = 1), primary_key = True)
+    projectid = Column(Integer)
+    directory_path = Column(String, nullable = False)
+    filename = Column(String, nullable = False)
+    header_size = Column(Integer)
+    process = Column(Integer)
+    channel = Column(Integer)
+    # datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
+    # datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
+    # datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
+    process_time = Column(BigInteger)
+    process_date_time = Column(String)
+    db_header_size = Column(Integer)
+    bytes_per_sample = Column(Integer)
+    db_count = Column(Integer)
+    full_blocks = Column(Integer)
+    db_size = Column(Integer)
+    db_sample_count = Column(Integer)
+    frq_bands = Column(Integer)
+    db_spec_count = Column(Integer)
+    compression_frq = Column(Integer)
+    compression_time = Column(Integer)
+    avg_time = Column(Integer)
+    avg_frq = Column(Integer)
+    spec_duration = Column(Float)
+    frq_per_band = Column(Float)
+    sample_count = Column(Integer)
+    spec_count = Column(Integer)
+    # adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
+    bit_resolution = Column(Integer)
+    fft_log_shift = Column(Integer)
+
+    @hybrid_property
+    def filepath(self):
+        return self.directory_path + self.filename
+
 
 class BufferMetadataCache:
     """This class acts as a Cache for Buffer Metadata. It uses a database session with a buffer_metadata table to map
     metadata to files on the disk. The cache can be queried a lot faster than manually opening a lot of buffer files.
     """
+    BufferMetadata = BufferMetadata
+
     def __init__(self, session, Buffer_cls = None): # 		
         self._db = session
         self.Buffer_cls = Buffer_cls
@@ -85,8 +136,8 @@ class BufferMetadataCache:
         if engine is None:
             engine = create_engine(db_url)
         session = Session(engine)
-        BufferMetadataCache.__Base.metadata.create_all(engine, 
-                            tables = [BufferMetadataCache.__Base.metadata.tables["buffer_metadata"]])
+        BufferMetadata.metadata.create_all(engine, 
+                            tables = [BufferMetadata.metadata.tables["buffer_metadata"]])
         return session
 
 
@@ -110,53 +161,6 @@ class BufferMetadataCache:
             except:
                 continue
         return buffer_metadata
-
-
-    __Base = declarative_base()
-    class BufferMetadata(__Base):
-        __tablename__ = "buffer_metadata"
-        properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", #"datamode", "datakind", "datatype", 
-                    "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
-                    "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
-                    "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", #"adc_type", 
-                    "bit_resolution",
-                    "fft_log_shift")
-
-        id = Column(Integer, Identity(start = 1), primary_key = True)
-        projectid = Column(Integer)
-        directory_path = Column(String, nullable = False)
-        filename = Column(String, nullable = False)
-        header_size = Column(Integer)
-        process = Column(Integer)
-        channel = Column(Integer)
-        # datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
-        # datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
-        # datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
-        process_time = Column(BigInteger)
-        process_date_time = Column(String)
-        db_header_size = Column(Integer)
-        bytes_per_sample = Column(Integer)
-        db_count = Column(Integer)
-        full_blocks = Column(Integer)
-        db_size = Column(Integer)
-        db_sample_count = Column(Integer)
-        frq_bands = Column(Integer)
-        db_spec_count = Column(Integer)
-        compression_frq = Column(Integer)
-        compression_time = Column(Integer)
-        avg_time = Column(Integer)
-        avg_frq = Column(Integer)
-        spec_duration = Column(Float)
-        frq_per_band = Column(Float)
-        sample_count = Column(Integer)
-        spec_count = Column(Integer)
-        # adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
-        bit_resolution = Column(Integer)
-        fft_log_shift = Column(Integer)
-
-        @hybrid_property
-        def filepath(self):
-            return self.directory_path + self.filename
 
 
 
