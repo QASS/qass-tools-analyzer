@@ -5,6 +5,9 @@ from enum import IntEnum, auto
 from struct import unpack
 import math
 
+class InvalidArgumentError(ValueError):
+    pass
+
 
 class HeaderDtype(IntEnum):
     # Enum helper class to mark data types
@@ -326,7 +329,7 @@ class Buffer:
 
         # The following if clauses check whether the datatype is 2 or 4 bytes long. In case of 4 bytes
         # it checks whether bit 3 is set in p__flags because bit 3 indicates a float buffer.
-        
+
         if self.__bytes_per_sample == 2:
             dtype = np.uint16
         elif self.__bytes_per_sample == 4:
@@ -429,7 +432,7 @@ class Buffer:
             return self._get_data(specFrom, specTo, 1, conversion).reshape(-1)
         else:
             return self._get_data(specFrom, specTo, self.__frq_bands, conversion)
-    
+
     def getArray(self, specFrom=None, specTo=None, delog = True):
         """
         Wrapper function to 'get_data'.
@@ -469,7 +472,7 @@ class Buffer:
             return self.get_data(specFrom, specTo, conversion="delog")
         else:
             return self.get_data(specFrom, specTo, conversion="log")
-    
+
     def getSpecDuration(self):
         """
         Wrapper Function for property spec_duration.
@@ -477,7 +480,7 @@ class Buffer:
         .. seealso: Property spec_duration
         """
         return self.spec_duration
-    
+
     def _parse_db_header(self, content: bytearray) -> dict:
         db_metainfo = {}
 
@@ -502,6 +505,16 @@ class Buffer:
 
         return db_metainfo
 
+    def _get_datablock_start_pos(self, db_idx):
+        return self.__header_size + db_idx * \
+            (self.__db_size + self.__db_header_size)
+    
+    def _first_sample_of_datablock(self, db_idx):
+        return int(db_idx * self.__db_size / self.__bytes_per_sample)
+    
+    def _first_spec_of_datablock(self, db_idx):
+        return int(self._first_sample_of_datablock(db_idx) / self.__frq_bands)
+    
     def db_header(self, db_idx):
         """
         The data block header contains key words and their corresponding
@@ -510,7 +523,7 @@ class Buffer:
         ensure that the key exists in the database prior to its use or
         use the get method to access its content.Otherwise this will
         cause a runtime error.
-        
+
         :param db_idx: data block index
         :type db_idx: int
 
@@ -518,7 +531,7 @@ class Buffer:
 
         :return: a dictionary with the keywords and values
         :rtype: dictionary
-        
+
         :Example:
             # The index of the first data block is 0
             db_idx = 0
@@ -533,8 +546,7 @@ class Buffer:
         if db_idx in self.__db_headers:
             return self.__db_headers[db_idx]
 
-        header_start_pos = self.__header_size + db_idx * \
-            (self.__db_size + self.__db_header_size)
+        header_start_pos = self._get_datablock_start_pos(db_idx)
 
         self.file.seek(header_start_pos, os.SEEK_SET)
         db_header_content = self.file.read(self.__db_header_size)
@@ -546,10 +558,10 @@ class Buffer:
         """
         The method returns the data block header as a dictionary of the data
         block containing the spectrum whose index is provided.
-        
+
         :param spec: The index of a spectrum.
         :type spec: int
-        
+
         :return: The data block header with keywords and values.
         :rtype: dictionary
 
@@ -593,7 +605,7 @@ class Buffer:
 
         :param db_idx: Index of the data block
         :type db_idx: int
-        :param byte: Number of io port socket [1, 2, 4] 
+        :param byte: Number of io port socket [1, 2, 4]
         :type byte: int, optional
         :param bit: Number of bit [1, 2, 3, 4, 5, 6, 7, 8]
         :type bit: int, optional
@@ -643,7 +655,7 @@ class Buffer:
 
         :param spec: Index of the spectrum
         :type spec: int
-        :param byte: Number of io port socket [1, 2, 4] 
+        :param byte: Number of io port socket [1, 2, 4]
         :type byte: int
         :param bit: Number of bit [1, 2, 3, 4, 5, 6, 7, 8]
         :type bit: int
@@ -662,7 +674,7 @@ class Buffer:
         """
         The file size of the buffer file. The value is not stored in the header
         but retrieved using the operating system.
-        
+
         :return: file size in bytes
         :rtype: int
         """
@@ -670,7 +682,7 @@ class Buffer:
 
     def _calc_spec_duration(self):
         if 'frame_dur' in self.__metainfo.keys():
-            return 
+            return
         elif self.__metainfo['datatype']!=2:#no time signal
             if 'fftovers' in self.__metainfo.keys() and 'samplefr' in self.__metainfo.keys() and 'comratio' in self.__metainfo.keys():
                 duration=(1e9/((self.__metainfo['samplefr']*(1<<self.__metainfo['fftovers']))/1024))*self.__metainfo['comratio']
@@ -680,20 +692,20 @@ class Buffer:
         """_signalNormalizationFactor calculates a ref_energy factor to derive a normalized energy related to time, frequency and amplitude ranges
         of the buffer. A rectangular signal volume, which's base is the rectangle of one spectrums distance and one frequency band's width
         e.g. (100mV * 82�s * 1525Hz) = 0.012505 V. As the voltage is not squared, the result is close to the square-root of an energy.
-        
+
         Each amplitude could reach a maximum of 1 Volt, the maximum ADC input voltage.
         Therefore we divide the amplitude with the maximum amplitude number to get it's portion in Volt.
         Then we multiply with the time and frequency square, as we assume the amplitude is constant over the complete square (our best guessing).
-        
-        When calculating energies of buffer ranges, we simply summarize the contained amplitudes. 
+
+        When calculating energies of buffer ranges, we simply summarize the contained amplitudes.
         By multiplying the resulting sum with the ref_energy factor, we achieve the above described calculation of the signals volume.
 
         The resulting energy should be stable, even if compressing time and frequencies, using oversampling and different ADC ranges.
 
-        sum of amplitudes, 
+        sum of amplitudes,
         comparable even if sample rate, oversampling etc. is changing
-        param gain, 
-        usually the amplitude ref is 1.0 equal 100% (eliminates the bit resolution of the buffer) 
+        param gain,
+        usually the amplitude ref is 1.0 equal 100% (eliminates the bit resolution of the buffer)
         could be enhanced with the amplification information of the amplifiers
 
         :param gain: can reflect changes of the amplification chain, energy is then related where the gain starts (sensor output e.g.), defaults to 1
@@ -715,21 +727,228 @@ class Buffer:
                 # normFactor = specDuration() / 1e9 / max_amp;
                 #//@todo: calculation may be wrong, check it
                 self.__norm_factor = 1.0
-            
+
         else:
             max_amp=2<<16
             max_amp*=gain
             self.__norm_factor=self.frq_per_band * self.spec_duration / 1e9 / max_amp
-        
+
         return self.__norm_factor
+
+    def block_infos(self, columns=['preamp_gain', 'mux_port', 'measure_positions', 'inputs', 'outputs'], changes_only: bool=False, fast_jump: bool = True):
+        """block_infos iterates through all memory blocks of a buffer file (typically one MB) and fetches the subdata information
+        each memory block has one set of metadata but e.g. 65 subdata entries for raw files
+        or more than 2000 entries for a 32 times compressed file,
+        where each entry contains meta information about a small time frame (15 spectrums in raw fft files)
+
+        :param columns: List of columns that should be in the result_array.
+        You can define the order of the columns here.
+        Possible column names are: ['preamp_gain', 'mux_port', 'measure_positions', 'inputs', 'outputs', 'times', 'index', 'spectrums']
+
+        :return: header_infos, an array containing (spec_index), (index), (times), preamp_gain, mux_port, measure_position, 24bit input, 16bit output, (times), (index), (spec_index)
+        :rtype: numpy array of int64, if times are included otherwise int32
+        """
+
+
+        data_columns = ['preamp_gain', 'mux_port', 'measure_positions', 'inputs', 'outputs']
+        data_columns_indices = [0, 1, 2, 3, 5]  # positions in subdat block
+        index_columns = ['times', 'index', 'spectrums']
+
+        allowed_columns = data_columns + index_columns
+
+        for col in columns:
+            if col not in allowed_columns:
+                raise InvalidArgumentError(f"Column {col} is not a valid column name. Valid columns are: {allowed_columns}")
+            if columns.count(col) > 1:
+                raise InvalidArgumentError(f"Column {col} is used multiple times. This is not allowed.")
+
+        if changes_only:
+            if not any(col in index_columns for col in columns):
+                raise InvalidArgumentError(f"If you use the changes_only option you need to declare at least one index column. Otherwise the results would have no connection.")
+
+        #interpreting the entries as int32 makes most sense
+        last_sample=0
+        #old header size was 10+32bit entries
+        ds_size=10
+        mi=self.db_header(0)
+        if 'begin_subdat' not in mi:
+            raise ValueError(f'begin_subdat keyword missing in datablock {0} -> caonnot read IO information')
+
+        subdat=np.frombuffer(mi['begin_subdat'],dtype=np.int32)
+        #if it is of extended type, we expect a reasonable value here
+        mysize=int(subdat[10:11])
+
+        if mysize==80:#the extended data length, additional sizes may occur
+            ds_size=20 #again the size in 32bit entries
+
+        entries_before = 0
+
+        if fast_jump:
+            db_start_pos = self._get_datablock_start_pos(0)
+            self.file.seek(db_start_pos, os.SEEK_SET)
+            db_header_content = self.file.read(self.__db_header_size)
+            start_mark = b'begin_subdat'
+            end_mark = b'end___subdat'
+            try:
+                subdat_offset_start = db_header_content.index(start_mark) + len(start_mark)
+                subdat_offset_end = db_header_content.index(end_mark)
+                subdat_length = subdat_offset_end - subdat_offset_start
+                subdat_readlen = int(subdat_length / subdat.itemsize)
+            except ValueError as e:
+                raise ValueError(f"The datablock header seems not to have a subdat block. Reading block info not possibe. {str(e)}")
+
+        samples_per_entry = mi['sd_rsize']/self.bytes_per_sample
+        specs_per_entry = samples_per_entry / self.frq_bands
+        entries_per_spec = 1/specs_per_entry
+
+        #columns of interest:
+        #pgain, mux_port, measure_position, 24bit input (inverted), 16bit output (inverted)
+        data_columns_src = []  # column index in the buffers meta info array
+        data_columns_dest = []  # column index in the target result_array
+
+        times_col = None
+        index_col = None
+        specs_col = None
+
+        for idx, col in enumerate(columns):
+            if col == 'times':
+                times_col = idx
+            elif col == 'index':
+                index_col = idx
+            elif col == 'spectrums':
+                specs_col = idx
+            elif col in data_columns:
+                data_columns_src.append(data_columns_indices[data_columns.index(col)])
+                data_columns_dest.append(idx)
+
+        if not data_columns_dest:
+            raise InvalidArgumentError('You have to choose at least one data column!')
+
+        # the indices of valid entries in the subdata block are calculated per datablock (checked in Analyzer4D DBgrabber::getSubDataPointer)
+        full_datablock_count = (self.spec_count // self.db_spec_count)
+        full_datablock_specs = full_datablock_count * self.db_spec_count
+        last_nonfull_datablock_specs = self.spec_count % self.db_spec_count
+        entry_count = int(full_datablock_specs * min(1, entries_per_spec)) + int(last_nonfull_datablock_specs * min(1, entries_per_spec))
+        
+        # 64 bit array if index columns are requested, otherwise 32 bit
+        arr_type = np.int64 if any((times_col, index_col, specs_col)) is not None else np.int32
+        result_arr = np.empty((entry_count, len(columns)), dtype=arr_type)  # allocating the array!
+
+        # loop through the datablocks
+        for i in range(self.db_count):
+            if fast_jump and not i in self.__db_headers:  # seeking is not faster than using cached datablock headers
+                db_start_pos = self._get_datablock_start_pos(i)
+                self.file.seek(db_start_pos + subdat_offset_start, os.SEEK_SET)
+                entries = np.fromfile(self.file, dtype=np.int32, count=subdat_readlen).reshape(-1, ds_size)
+                start_spec = self._first_spec_of_datablock(i)
+                end_spec = min(self._first_spec_of_datablock(i+1), self.spec_count)
+            else:
+                mi=self.db_header(i)
+                if 'begin_subdat' not in mi:
+                    raise ValueError(f'begin_subdat keyword missing in datablock {i} -> caonnot read IO information')
+
+                subdat=np.frombuffer(mi['begin_subdat'], dtype=np.int32)
+                entries=subdat.reshape(-1, ds_size)
+                #f_entries=np.empty((0,ds_size),dtype=np.int32)
+
+                #print("mi['sd_rsize']", mi['sd_rsize'])
+                samples_per_entry = mi['sd_rsize']/self.bytes_per_sample
+                specs_per_entry = samples_per_entry / self.frq_bands
+                entries_per_spec = 1/specs_per_entry
+
+                start_spec = int(mi['firstsam'] / self.frq_bands)
+                #the end_spec might differ from lastsamp for the last datablock: The real data might be shorter
+                end_spec = min(int(mi['lastsamp'] / self.frq_bands), self.spec_count)
+
+            db_spec_count = end_spec - start_spec
+
+            # the number of expected entries might be less than specs for low compressions, but never more than db_spec_count
+            entries_expected = int(db_spec_count * min(1, entries_per_spec))
+
+            # max(1, entries_per_spec) because for low compressions we get less than 1 entry per spec -> take every entry
+            idxs = np.arange(entries_expected) * max(1, entries_per_spec)
+            idxs = idxs.astype(int)
+
+            #filter the entries based on the calculated indexes
+            f_entries = entries[idxs]
+            
+            assert len(f_entries) == entries_expected  # this must be equal - its critical to have a mismatch here!
+
+            # writing columns_of_interest into the result_arr
+            result_arr[entries_before:entries_before + len(f_entries), data_columns_dest] = f_entries[:, data_columns_src]
+
+            if times_col is not None:
+                start_time = start_spec * self.spec_duration
+                end_time = end_spec * self.spec_duration
+                times = np.arange(entries_expected, dtype=float)
+
+                # for strong compresssions we get exactly one (and never more than one) entries for each spectrum.
+                times *= self.spec_duration / min(1, entries_per_spec)
+                times += start_time
+
+                times = times.astype(int)
+                result_arr[entries_before:entries_before+len(times), times_col] = times
+
+            if index_col is not None:
+                index = np.arange(entries_before, entries_before + len(f_value_list), dtype=int)
+                result_arr[entries_before:entries_before+len(index), index_col] = index
+
+            if specs_col is not None:
+                index = np.arange(entries_expected) * max(1, specs_per_entry)
+                index = index.astype(int)
+                index += start_spec
+                result_arr[entries_before:entries_before+len(index), specs_col] = index
+
+            entries_before += entries_expected #len(f_value_list)
+
+        assert entries_before == len(result_arr)  # If this fails we did something wrong when calculating the expected number of entries.
+
+        # Some conversions to ensure readability of the values
+        if 'preamp_gain' in columns:
+            col = columns.index('preamp_gain')
+            result_arr[:, col] = result_arr[:, col] >> 16
+
+        if 'inputs' in columns:
+            col = columns.index('inputs')
+            result_arr[:, col] = np.bitwise_and(np.bitwise_not(result_arr[:, col]),0xFFFFFF)
+
+        if 'outputs' in columns:
+            col = columns.index('outputs')
+            result_arr[:, col] = np.bitwise_and(np.bitwise_not(result_arr[:, col]),0xFFFF)
+
+        if changes_only:
+            changes_idx = np.concatenate(((True,), np.any(result_arr[1:, data_columns_dest] != result_arr[:-1, data_columns_dest], axis=1)))
+            return result_arr[changes_idx]
+        else:
+            return result_arr
+
+    def _get_block_info_column(self, column: int, *args, **kwargs):
+        """
+        _get_block_info_column is a helper function to fetch only a specific column from the block infos.
+
+        :param column: The column of block_info that should be fetched
+        :type column: int
+        :param add_times: see documentation of block_info()
+        :return: Numpy array consisting on the requested column and optional a time column.
+        :rtype: np.ndarray
+        """
+
+        res = self.block_infos(*args, **kwargs)
+        if add_times in [True, 'back']:
+            return res[:, [column, -1]]
+        elif add_times == 'front':
+            return res[:, [0, column + 1]]
+        else:
+            return res[:, [column]]
+
     @property
     def metainfo(self):
         """
         The buffer header properties as a dictionary.
-        
+
         :return: The metainfo dictionary
         :rtype: dictionary
-        
+
         :Example:
             key = 'qassdata'
             def keyword(key)
@@ -756,7 +975,7 @@ class Buffer:
     def filepath(self):
         """
         Returns the complete path to the file.
-        
+
         :return: Path to the file
         :rtype: string
         """
@@ -777,7 +996,7 @@ class Buffer:
     def process(self):
         """
         The process number.
-        
+
         :return: The process number.
         :rtype: int
         """
@@ -787,7 +1006,7 @@ class Buffer:
     def channel(self):
         """
         The channel number used.
-        
+
         :return: The channel number.
         :rtype: int
         """
@@ -797,9 +1016,9 @@ class Buffer:
     def datamode(self):
         """
         The data mode is a constant which specifies what kind of data are in
-        the buffer. The most important ones are DATAMODE_FFT and 
+        the buffer. The most important ones are DATAMODE_FFT and
         DATAMODE_SIGNAL.
-        
+
         :return: The data mode constant
         :rtype: enum class defined in :class:`.DATAMODE`
         """
@@ -811,7 +1030,7 @@ class Buffer:
         The data kind constant is a constant which provides additional
         buffer specifications. A common value often is
         KIND_UNDEF
-        
+
         :return: The data kind constant.
         :rtype: enum class defined in :class:`.DATAKIND`
         """
@@ -823,7 +1042,7 @@ class Buffer:
         The data type constant is a constant which specifies different
         compression and buffer types. The most important one being
         COMP_RAW.
-        
+
         :return: The data type constant.
         :rtype: enum class defined in :class:`.DATATYPE`
         """
@@ -834,8 +1053,8 @@ class Buffer:
         """
         Returns the Posix timestamp of creation of the file
         in seconds since Thursday, January 1st 1970. Please note that the
-        creation time and measure time might be different. 
-        
+        creation time and measure time might be different.
+
         :return: The timestamp as a number of seconds.
         :rtype: int
         """
@@ -893,7 +1112,7 @@ class Buffer:
         """
         Returns the Posix timestamp of last modification of the file
         in seconds since Thursday, January 1st 1970.
-        
+
         :return: The timestamp as a number in seconds.
         :rtype: int
         """
@@ -926,7 +1145,7 @@ class Buffer:
     def bytes_per_sample(self):
         """
         Number of bytes per sample.
-        
+
         :return: Number of bytes per sample (usually 2 bytes).
         :rtype: int
         """
@@ -936,7 +1155,7 @@ class Buffer:
     def db_count(self):
         """
         Returns the number of data blocks.
-        
+
         :return: Number of data blocks.
         :rtype int
         """
@@ -960,7 +1179,7 @@ class Buffer:
     def db_size(self):
         """
         Returns the size of a completely filled data block in bytes.
-        
+
         :return: Size of a completely filled data block.
         :rtype: int
         """
@@ -972,7 +1191,7 @@ class Buffer:
         Returns the number of samples in a completely filled data block.
         It is calculated by dividing the data block size by the number of
         bytes per sample.
-        
+
         :return: Number of samples.
         :rtype: int
         """
@@ -1007,7 +1226,7 @@ class Buffer:
     def compression_frq(self):
         """
         Property which returns the frequency compression factor.
-        
+
         :return: Frequency compression factor.
         :rtype: int
         """
@@ -1017,7 +1236,7 @@ class Buffer:
     def compression_time(self):
         """
         Property which returns the time compression factor.
-        
+
         :return: Time compression factor.
         :rtype: int
         """
@@ -1039,7 +1258,7 @@ class Buffer:
         """
         Property which returns the moving average factor along the
         frequency axis.
-        
+
         :return: Factor of the moving average.
         :rtype: int
         """
@@ -1050,7 +1269,7 @@ class Buffer:
         """
         The property returns the time for one spectrum in
         nanoseconds.
-        
+
         :return: Time in nanoseconds.
         :rtype: float
         """
@@ -1076,20 +1295,20 @@ class Buffer:
         obtain the number of samples. The number is cast to an int as the
         division usually results in a float due to an incompletely filled
         final data block.
-        
+
         :return: Number of samples
         :rtype: int
         """
         without_header = self.file_size - self.__header_size
         return int((without_header - self.__db_count * self.__db_header_size) / self.__bytes_per_sample)
-    
+
     def getRealSpecCount(self):
         """
         Wrapper function for the property spec_count.
         The number of spectra within a filled data block. It is calculated by
         dividing the number of samples in a data block by the number of
         frequency bands.
-        
+
         :return: Number of spectra in a filled data block.
         :rtype: int
         """
@@ -1098,7 +1317,7 @@ class Buffer:
     @property
     def spec_count(self):
         """
-        The number of spectra in the buffer. It is calculated by dividing 
+        The number of spectra in the buffer. It is calculated by dividing
         the number of samples by the number of frequency bands.
 
         :return: number of spectra
@@ -1115,7 +1334,7 @@ class Buffer:
             mi=self.db_header(last_db)
             if 'lastsamp' not in mi.keys():
                 raise ValueError('The datablock header does not contain a key "lastsamp"')
-            
+
             last_sample=mi['lastsamp']
             self.__last_spectrum=int(last_sample/self.frq_bands)
 
@@ -1124,7 +1343,7 @@ class Buffer:
     @property
     def adc_type(self):
         """
-        The type of analog/digital converter. The types are defined in class 
+        The type of analog/digital converter. The types are defined in class
         ADC_TYPE with the most important being ADC_16BIT and ADC_24BIT.
 
         :return: type defined in class ADC_TYPE
@@ -1138,7 +1357,7 @@ class Buffer:
         The bit resolution after the FFT. Caution: this is not the type of
         analog digital converter used. The usual value is 16. If no logarithm
         is applied to the data the value is 32.
-        
+
         :return: The bit resolution.
         :rtype: int
         """
@@ -1149,7 +1368,7 @@ class Buffer:
         """
         Base of the logarithm applied to the data. Please note that a 1 needs
         to be added to the value.
-        
+
         :return: Base of the logarithm.
         :rtype: int
         """
@@ -1185,7 +1404,7 @@ class Buffer:
         """
         The method calculates the time since measurement start for a given
         index of a spectrum.
-        
+
         :param spec: The index of a spectrum
         :type spec: int
 
@@ -1201,7 +1420,7 @@ class Buffer:
 
         :param time_ns: Time elapsed since measurement start in ns.
         :type time_ns: float
-        
+
         :return: index of the spectrum
         :rtype: int
         """
@@ -1222,7 +1441,7 @@ class Buffer:
         :type fft_log_shift: int
         :param ad_bit_resolution: The bit resolution (usually 16).
         :type ad_bit_resolution: int
-    
+
         :return: Array with de-logarithmized data.
         :rtype: numpy ndarray of floats
         """
@@ -1264,7 +1483,7 @@ class Buffer:
         :type fft_log_shift: int
         :param ad_bit_resolution: The bit resolution (usually 16).
         :type ad_bit_resolution: int
-    
+
         :return: Array with logarithmized data.
         :rtype: numpy ndarray of floats
         """
@@ -1302,10 +1521,10 @@ def filter_buffers(directory, filters):
     :type string
     :param filters: dictionary with filters
     :type dictionary
- 
+
     :return: A list of buffer objects
     :rtype: list
-        
+
     :Example:
         import buffer_parser as bp
         proc = range(1,100,1)
