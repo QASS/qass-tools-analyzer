@@ -12,10 +12,10 @@ __all__ = ["BufferMetadataCache", "BufferMetadata"]
 __Base = declarative_base()
 class BufferMetadata(__Base):
     __tablename__ = "buffer_metadata"
-    properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", #"datamode", "datakind", "datatype", 
+    properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
                 "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
-                "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", #"adc_type", 
+                "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", 
                 "bit_resolution",
                 "fft_log_shift")
 
@@ -26,9 +26,9 @@ class BufferMetadata(__Base):
     header_size = Column(Integer)
     process = Column(Integer)
     channel = Column(Integer, index = True)
-    # datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
-    # datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
-    # datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
+    datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
+    datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
+    datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
     process_time = Column(BigInteger)
     process_date_time = Column(String)
     db_header_size = Column(Integer)
@@ -47,7 +47,7 @@ class BufferMetadata(__Base):
     frq_per_band = Column(Float)
     sample_count = Column(Integer)
     spec_count = Column(Integer)
-    # adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
+    adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
@@ -56,6 +56,27 @@ class BufferMetadata(__Base):
     @hybrid_property
     def filepath(self):
         return self.directory_path + self.filename
+
+    @staticmethod
+    def buffer_to_metadata(buffer):
+        """Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
+        object putting them in the BufferMetadata object
+
+        :param buffer: Buffer object
+        :type buffer: buffer_parser.Buffer
+        """
+        if "/" in buffer.filepath:
+            filename = buffer.filepath.split("/")[-1]
+        elif "\\" in buffer.filepath:
+            filename = buffer.filepath.split("\\")[-1]
+        directory_path = buffer.filepath[:-len(filename)]
+        buffer_metadata = BufferMetadata(filename = filename, directory_path = directory_path)
+        for prop in BufferMetadata.properties:
+            try: # try to map all the buffer properties and skip on error
+                setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
+            except:
+                continue
+        return buffer_metadata
 
 
 class BufferMetadataCache:
@@ -108,7 +129,7 @@ class BufferMetadataCache:
         for file in files:
             try:
                 with self.Buffer_cls(file) as buffer:
-                    buffer_metadata = self.buffer_to_metadata(buffer)
+                    buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
                     self._db.add(buffer_metadata)
             except:
                 continue
@@ -148,26 +169,7 @@ class BufferMetadataCache:
         return session
 
 
-    @staticmethod
-    def buffer_to_metadata(buffer):
-        """Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
-        object putting them in the BufferMetadata object
-
-        :param buffer: Buffer object
-        :type buffer: buffer_parser.Buffer
-        """
-        if "/" in buffer.filepath:
-            filename = buffer.filepath.split("/")[-1]
-        elif "\\" in buffer.filepath:
-            filename = buffer.filepath.split("\\")[-1]
-        directory_path = buffer.filepath[:-len(filename)]
-        buffer_metadata = BufferMetadataCache.BufferMetadata(filename = filename, directory_path = directory_path)
-        for prop in BufferMetadataCache.BufferMetadata.properties:
-            try: # try to map all the buffer properties and skip on error
-                setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
-            except:
-                continue
-        return buffer_metadata
+    
 
 
 

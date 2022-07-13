@@ -100,7 +100,7 @@ def test_get_non_synchronized_files_more_files_duplicates(db_session):
     assert len(cache.get_non_synchronized_files(files)) == N
 
 def test_buffer_to_buffer_metadata(mock_buffer):
-    buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(mock_buffer())
+    buffer_metadata = bmc.BufferMetadata.buffer_to_metadata(mock_buffer())
     assert buffer_metadata.directory_path == "./"
     assert buffer_metadata.filename == "foop1c0b.000"
     assert buffer_metadata.process == 1
@@ -119,7 +119,7 @@ def test_buffer_to_buffer_metadata_different_filepath():
         @property
         def foo(self): return "foo"
     
-    buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(Mock_Buffer())
+    buffer_metadata = bmc.BufferMetadata.buffer_to_metadata(Mock_Buffer())
     assert buffer_metadata.directory_path == ".\\"
 
 
