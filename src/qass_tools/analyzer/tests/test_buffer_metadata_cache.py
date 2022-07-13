@@ -1,5 +1,6 @@
 import sys, datetime
 from uuid import uuid4
+from enum import Enum
 
 sys.path.append("../")
 sys.path.append("../../")
@@ -184,3 +185,21 @@ def test_get_matching_files_multiple_properties(db_session, mock_buffer):
     assert not "./hoop1c0b.000" in cache.get_matching_files(metadata)
     assert "./barp1c0b.000" in cache.get_matching_files(metadata)
     assert not "./foo_barp1c0b.000" in cache.get_matching_files(metadata)
+
+def test_buffermetadata_constructor():
+    class TestEnum(Enum):
+        TEST = 0
+    buffer_metadata = bmc.BufferMetadata(datakind = TestEnum.TEST)
+    assert buffer_metadata.datakind == TestEnum.TEST
+
+
+def test_get_matching_files_enum_properties(db_session, mock_buffer):
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "foop1c0b.000", process = 1, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "hoop1c0b.000", process = 2, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "barp1c0b.000", process = 1, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE_FRQ))
+    cache = bmc.BufferMetadataCache(db_session, mock_buffer)
+    db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
+    metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE)
+    assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == "COMP_MOV_AVERAGE")
+    # assert "./foop1c0b.000" in cache.get_matching_files(metadata)
+

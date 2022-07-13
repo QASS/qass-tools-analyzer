@@ -1,13 +1,83 @@
 import os, re
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from pathlib import Path
+from enum import auto, IntEnum
 
 
 __all__ = ["BufferMetadataCache", "BufferMetadata"]
+# TODO the enum section can be removed after the buffer_parser moved to this package
+class DATAMODE(IntEnum):
+    DATAMODE_UNDEF = -1,
+    DATAMODE_COUNTER_UNUSED = 0  # Es wird nur ein Zähler übertragen, der im DSP Modul generiert wird
+    DATAMODE_SIGNAL = auto()  # Es werden die reinen Signaldaten gemessen und übertragen
+    DATAMODE_FFT = auto()  # Die FFT wird in der Hardware durchgeführt und das Ergebnis als FFT Daten übertragen
+    DATAMODE_PLOT = auto()  # 2 dimensionale Graph Daten (war INTERLEAVED, das wird nicht mehr genutzt, taucht aber im kernelmodul als Define für DATAMODES noch auf
+    DATAMODE_OTHER = auto()  # Datenmodus, der nur in importierten oder künstlichen Buffern auftritt
+    DATAMODE_VIDEO = auto()  # Datamode is video (This means file is not a normal buffer, but simply a video file)
 
+    DATAMODE_COUNT = auto()
 
+class DATATYPE(IntEnum): # Kompressionsmethoden oder auch Buffertypen
+    COMP_INVALID = -2,
+    COMP_UNDEF = -1,
+    COMP_RAW = 0  # Die reinen unkomprimierten Rohdaten, sowie sie aus der Hardware kommen
+    COMP_DOWNSAMPLE = auto()  # Datenreduktion durch einfaches Downsampling (jedes x-te Sample gelangt in den Buffer)
+    COMP_MAXIMUM = auto()  # Die Maximalwerte von jeweils x Samples gelangen in den Buffer
+    COMP_AVERAGE = auto()  # Die Durchschnittswerte über jeweils x Samples gelangen in den Buffer
+    COMP_STD_DEVIATION = auto()  # Die Standardabweichung
+    COMP_ENVELOP = auto()  # NOT USED!! Der Buffer stellt eine Hüllkurve dar
+    COMP_MOV_AVERAGE = auto()  # Der gleitende Mittelwert über eine Blockgröße von x Samples
+    COMP_EXTERN_DATA = auto()  # Die Bufferdaten wurden aus einer externen Quelle, die nicht mit dem Optimizer aufgezeichnet wurden erstellt
+    COMP_ANALYZE_OVERVIEW = auto()  # Zur Zeit verwendet, um MinMaxObjekt Energy signature buffer zu taggen
+    COMP_MOV_AVERAGE_OPT = auto()  # Der gleitende Mittelwert über eine Blockgröße von x Samples (optimierte Berechnung)
+    COMP_COLLECTION = auto()  # Wild zusammengeworfene Datenmasse
+    COMP_IMPORT_SIG = auto()  # Importierte Signaldaten
+    COMP_SCOPE_RAW = auto()  # Vom Oszilloskop aufgezeichnet
+    COMP_MOV_AVERAGE_FRQ = auto()  # Der gleitende Mittelwert (Zeit und Frequenz) über eine Blockgröße von x Samples
+    COMP_SLOPECHANGE = auto()  # Steigungswechsel der Amplituden über die Zeit
+    COMP_OTHER = auto()
+    COMP_IO_SIGNAL = auto()  # Aufgezeichnete IO Signale
+    COMP_ENERGY = auto()  # Die Energie (in erster Linie für DM=ANALOG)
+    COMP_AUDIO_RAW = auto()  # Raw Daten, die mit dem Sound Device aufgezeichnet wurden
+    COMP_XY_PLOT = auto()  # was COMP_OBJECT before. Now it is used for Datamode PLOT. Type will be displayed as Graphname, if set
+    COMP_SECOND_FFT = auto()
+    COMP_AUDIO_COMMENT = auto()  # Raw Daten vom Audio Device, bei denen es sich um einen Audiokommentar handelt
+    COMP_CP_ENERGY_SIG = auto()  # CrackProperties Energy Signatur, kommt in erster Linie von Energieprofilen, die auf Daten der CrackDefinitionen Berechnet wurden
+    COMP_VID_MEASURE = auto()  # This is a video stream that has been recorded while measuring
+    COMP_VID_SCREEN = auto()  # This is a screen cast video stream, that has been captured while measuring or session recording
+    COMP_VID_EXT_LINK = auto()  # This is an extern linked video file
+    COMP_ENVELOPE_UPPER = auto()  # NOT_USED!! Obere Hüllfläche
+    COMP_ENVELOPE_LOWER = auto()  # NOT_USED! Untere Hüllfläche
+    COMP_PATTERN_REFOBJ = auto()  # NOT USED! A Pattern Recognition reference object
+    COMP_SIGNIFICANCE = auto()  # Nur starke Änderungen werden aufgezeichnet
+    COMP_SIGNIFICANCE_32 = auto()  # this is the signed 32 bit version of a significance buffer
+    COMP_PATTERN_MASK = auto()  # NOT_USED! A mask buffer for a pattern ref object (likely this is a float buffer)
+    COMP_GRADIENT_FRQ = auto()  # Gradient buffer in frequency direction
+    COMP_CSV_EXPORT = auto()  # Not realy a datatype but used to create CSV files from source buffer
+    COMP_COUNT = auto()  # Die Anzahl der Einträge in der Datatypesliste, kein wirklicher Datentyp
+
+class DATAKIND(IntEnum):  # Zusätzliche Spezifikation des Buffers
+    KIND_UNDEF = -1,
+    KIND_NONE = 0
+    KIND_SENSOR_TEST = auto()  # Sensor Pulse Test Daten
+    KIND_PLOT_FREE_DATABLOCK_TIMING = auto()  # Debug Plot Buffer, der die Zeiten für das "freimachen" eines Datenblocks enthält
+    KIND_PATTERN_REF_OBJ_COMPR = auto()
+    KIND_PATTERN_REF_OBJ_MASK = auto()
+    KIND_PATTERN_REF_OBJ_EXTRA = auto()
+    KIND_FREE_6 = auto()
+    KIND_FREE_7 = auto()
+    DATAKIND_CNT = auto()
+    KIND_CAN_NOT_BE_HANDLED = DATAKIND_CNT # This datakind is out ouf range. It cannot be stored in bufferId anymore (this is legacy stuff)
+
+    KIND_USER = 100  # Werte ab hier zur freien Verwendung
+
+class ADCTYPE(IntEnum):
+    ADC_NOT_USED = 0,
+    ADC_LEGACY_14BIT = 0
+    ADC_16BIT = auto()
+    ADC_24BIT = auto()
 
 __Base = declarative_base()
 class BufferMetadata(__Base):
@@ -26,9 +96,9 @@ class BufferMetadata(__Base):
     header_size = Column(Integer)
     process = Column(Integer)
     channel = Column(Integer, index = True)
-    datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
-    datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
-    datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
+    datamode = Column(Enum(DATAMODE)) # TODO this is an ENUM in buffer_parser
+    datakind = Column(Enum(DATAKIND)) # TODO this is an ENUM in buffer_parser
+    datatype = Column(Enum(DATATYPE)) # TODO this is an ENUM in buffer_parser
     process_time = Column(BigInteger)
     process_date_time = Column(String)
     db_header_size = Column(Integer)
@@ -47,11 +117,14 @@ class BufferMetadata(__Base):
     frq_per_band = Column(Float)
     sample_count = Column(Integer)
     spec_count = Column(Integer)
-    adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
+    adc_type = Column(Enum(ADCTYPE)) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
     Index("channel_compression", "channel", "compression_frq")
+
+
+
 
     @hybrid_property
     def filepath(self):
@@ -167,29 +240,3 @@ class BufferMetadataCache:
         BufferMetadata.metadata.create_all(engine, 
                             tables = [BufferMetadata.metadata.tables["buffer_metadata"]])
         return session
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
