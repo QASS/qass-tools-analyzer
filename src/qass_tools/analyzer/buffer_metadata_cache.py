@@ -1,9 +1,7 @@
 import os, re
-from datetime import datetime
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, DATETIME, BOOLEAN, Identity
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from glob import glob
 from pathlib import Path
 
 
@@ -23,11 +21,11 @@ class BufferMetadata(__Base):
 
     id = Column(Integer, Identity(start = 1), primary_key = True)
     projectid = Column(Integer)
-    directory_path = Column(String, nullable = False)
+    directory_path = Column(String, nullable = False, index = True)
     filename = Column(String, nullable = False)
     header_size = Column(Integer)
     process = Column(Integer)
-    channel = Column(Integer)
+    channel = Column(Integer, index = True)
     # datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
     # datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
     # datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
@@ -41,10 +39,10 @@ class BufferMetadata(__Base):
     db_sample_count = Column(Integer)
     frq_bands = Column(Integer)
     db_spec_count = Column(Integer)
-    compression_frq = Column(Integer)
-    compression_time = Column(Integer)
-    avg_time = Column(Integer)
-    avg_frq = Column(Integer)
+    compression_frq = Column(Integer, index = True)
+    compression_time = Column(Integer, index = True)
+    avg_time = Column(Integer, index = True)
+    avg_frq = Column(Integer, index = True)
     spec_duration = Column(Float)
     frq_per_band = Column(Float)
     sample_count = Column(Integer)
@@ -52,6 +50,8 @@ class BufferMetadata(__Base):
     # adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
+
+    Index("channel_compression", "channel", "compression_frq")
 
     @hybrid_property
     def filepath(self):
@@ -106,9 +106,12 @@ class BufferMetadataCache:
 
     def add_files_to_cache(self, files):
         for file in files:
-            with self.Buffer_cls(file) as buffer:
-                buffer_metadata = self.buffer_to_metadata(buffer)
-                self._db.add(buffer_metadata)
+            try:
+                with self.Buffer_cls(file) as buffer:
+                    buffer_metadata = self.buffer_to_metadata(buffer)
+                    self._db.add(buffer_metadata)
+            except:
+                continue
         self._db.commit()
 
     def get_matching_files(self, buffer_metadata = None, filter_function = None):
