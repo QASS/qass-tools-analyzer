@@ -138,7 +138,7 @@ def test_synchronize_directory(db_session, mock_buffer, mocker):
     mocker.patch("analyzer.buffer_metadata_cache.Path.glob", return_value = ["./foop1c0b.000"])    
     mocker.patch("os.path.isfile", return_value = True)
     mocker.patch.object(cache._db, "commit") # ensure the database session doesn't commit
-    cache.synchronize_directory("./", recursive = False)
+    cache.synchronize_directory("./", sync_subdirectories = False)
     db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
     buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).one()
     assert buffer_metadata.filename == "foop1c0b.000"
