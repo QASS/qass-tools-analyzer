@@ -127,7 +127,7 @@ class SimpleDevice(ABC):
         return self.__normal_amp
 
 
-class DeviceThread(QThread):
+class _DeviceThread(QThread):
     def __init__(self, device: SimpleDevice):
         super().__init__()
 
@@ -187,7 +187,7 @@ class DeviceHandler(VirtDeviceInterface):
         self._device_threads = {}
         
         for name, dev in self._devices.items():
-            self._device_threads[name] = DeviceThread(dev)
+            self._device_threads[name] = _DeviceThread(dev)
     
     def init(self):
         pass
