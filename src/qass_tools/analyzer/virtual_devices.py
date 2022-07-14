@@ -21,9 +21,9 @@ from abc import ABC, abstractmethod
 import traceback
 from typing import List, Dict
 
-class SimpleDevice(ABC):
+class VirtualInputDevice(ABC):
     """
-    SimpleDevice is a simplified interface for custom virtual devices.
+    VirtualInputDevice is a simplified interface for custom virtual devices in the Analyzer4D software.
     The methods marked with "abstractmethod" must be implemented.
     The other methods can be overridden if needed.
     
@@ -128,6 +128,10 @@ class SimpleDevice(ABC):
 
 
 class _DeviceThread(QThread):
+    """_DeviceThread implements a QThread.
+    The thread is startet when a measurement starts.
+    Inside this thread communication to the device takes place.
+    """
     def __init__(self, device: SimpleDevice):
         super().__init__()
 
@@ -136,7 +140,13 @@ class _DeviceThread(QThread):
         self.lock = Lock()
         self.device = device
     
-    def fetch_values(self):
+    def fetch_values(self) -> List(float):
+        """fetch_values is called by the interface from the reading thread in the Analyzer4D software.
+        It first aqcuires the lock to prevent race conditions when fetching the values.
+
+        :return: The list of currently available values.
+        :rtype: List[float]
+        """
         with self.lock:
             vals = self.values
             self.values = []
@@ -147,6 +157,13 @@ class _DeviceThread(QThread):
         self.should_stop = True
     
     def run(self):
+        """The run method is implicitly called by the QThread class.
+        It is executed in a seperate thread.
+        The thread finishes when this function terminates.
+
+        Exceptions caught during the execution will be logged as a popupError.
+        This should lead to a fail state in the Analyzer4D software, including clearing the 'ready' output line.
+        """
         try:
             self.should_stop = False
             with self.lock:
@@ -176,8 +193,8 @@ class _DeviceThread(QThread):
             Log_IF.popupError(f'Exception caught in device thread:\n{traceback.format_exc()}')
 
 
-class DeviceHandler(VirtDeviceInterface):
-    def __init__(self, devices: Dict[str, SimpleDevice], name:str='', version:str=''):
+class DeviceClass(VirtDeviceInterface):
+    def __init__(self, devices: Dict[str, VirtualInputDevice], name:str='', version:str=''):
         super().__init__()
         
         self._devices = devices
@@ -190,9 +207,20 @@ class DeviceHandler(VirtDeviceInterface):
             self._device_threads[name] = _DeviceThread(dev)
     
     def init(self):
+        """
+        This function is called by the Analyzer4D software.
+        Usually device detection takes part here.
+        We assume in this implementatoin that available devices have been passed in the constructor.  
+        """
         pass
     
-    def capabilities(self):
+    def capabilities(self) -> Dict:
+        """capabilites is called by the Analyzer4D software to get information about available devices and their configuration.
+        Especially the sample rate and the capability of configuration dialogs is queried here.
+
+        :return: A dictionary containing information about this device class and the devices themselves. 
+        :rtype: Dict
+        """
         interfaces_conf = []
         
         has_config = False
@@ -213,34 +241,79 @@ class DeviceHandler(VirtDeviceInterface):
         }
         return config
     
-    def versionString(self):
+    def versionString(self) -> str:
+        """versionString
+
+        :return: The version of this device class implementation.
+        :rtype: str
+        """
         return self._version
     
-    def name(self):
+    def name(self) -> str:
+        """name
+        
+        :return: This device class' name.
+        :rtype: str
+        """
         return self._name
     
-    def isInputAvailable(self, name):
+    def isInputAvailable(self, name: str) -> bool:
+        """isInputAvailable requests to check whether the given device is available and ready for measurements.
+
+        :param name: The device's identifier string
+        :type name: str
+        :return: True if the device is available and ready. False otherwise.
+        :rtype: bool
+        """
         if name not in self._devices:
             return False
         
         return self._devices[name].is_available()
     
-    def inputCount(self):
+    def inputCount(self) -> int:
         return len(self._devices)
     
-    def openInput(self, name):
+    def openInput(self, name: str) -> bool:
+        """openInput starts the communication and the data fetching for the given device.
+        This function starts the device's thread.
+        All communication to the device and the data collection is done inside this thread.
+
+        :param name: The device's identifier string
+        :type name: str
+        :return: True on success, False otherwise
+        :rtype: bool
+        """
         try:
             self._device_threads[name].start()
             return True
         except Exception:
             return False
     
-    def closeInput(self, name, prepareRestart = False):
+    def closeInput(self, name: str, prepareRestart = False) -> bool:
+        """closeInput requests to stop the data collection for the given device.
+        In this implementation this causes the device's thread to terminate.
+
+        :param name: The device's identifier string
+        :type name: str
+        :param prepareRestart: _description_, defaults to False
+        :type prepareRestart: bool, optional
+        :return: True on success, False otherwise
+        :rtype: bool
+        """
         try:
             self._device_threads[name].stop()
             return True
         except Exception:
             return False
     
-    def readInput(self, name, stream=0):
+    def readInput(self, name: str, stream: int=0) -> List[float]:
+        """readInput fetches and returns the currently available data from the given device's thread.
+
+        :param name: The device's identifier string
+        :type name: str
+        :param stream: _description_, defaults to 0
+        :type stream: int, optional
+        :return: List of available new values.
+        :rtype: List[float]
+        """
         return self._device_threads[name].fetch_values()

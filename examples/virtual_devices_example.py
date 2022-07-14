@@ -1,11 +1,11 @@
 from Analyzer.Devices import VirtDeviceInterface, VirtDeviceManager_IF
-from qass_tools.analyzer.virtual_devices import SimpleDevice, DeviceHandler
+from qass_tools.analyzer.virtual_devices import VirtualInputDevice, DeviceClass
 
 from typing import List
 import numpy as np
 import time
 
-class MyDevice(SimpleDevice):
+class MyDevice(VirtualInputDevice):
     def __init__(self, mean, std):
         self._mean = mean
         self._std = std
@@ -40,7 +40,7 @@ devices = {
     'dev2': dev_2
     }
 
-dev_handler = DeviceHandler(devices)
+dev_handler = DeviceClass(devices)
 
 try:
     VirtDeviceManager_IF.removeVirtualDevice('MyDev')
