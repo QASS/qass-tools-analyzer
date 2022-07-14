@@ -194,7 +194,25 @@ class _DeviceThread(QThread):
 
 
 class DeviceClass(VirtDeviceInterface):
+    """DeviceClass implements the interface VirtDeviceInterface from the Analyzer4D software.
+    The functions of this interface are called by the Analyzer4D software.
+    This class is a plugin implementation of the interface.
+
+    A DeviceClass is a class of hardware devices.
+    Usually all devices handled by this class work similar to each other and support the same features.
+    """
     def __init__(self, devices: Dict[str, VirtualInputDevice], name:str='', version:str=''):
+        """
+        The constructor expects a .
+        The devices are expected to be of the type VirtualInputDevice.
+
+        :param devices: dictionary giving the mappping from the device's identifiers to the device objects themselve
+        :type devices: Dict[str, VirtualInputDevice]
+        :param name: The name of this device class, defaults to ''
+        :type name: str, optional
+        :param version: The version string of this device class implementation, defaults to ''
+        :type version: str, optional
+        """
         super().__init__()
         
         self._devices = devices
