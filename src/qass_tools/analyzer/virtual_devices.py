@@ -1,7 +1,7 @@
 """Virtual devices
 
 This module provides a simplified interface for the virtual devices of the Analyzer4D software.
-The Analyzer4D software provices an interface that allows to add customized devices that are not handled by the measurement hardware.
+The Analyzer4D software provides an interface that allows to add customized devices that are not handled by the measurement hardware.
 But the data coming from those virtual devices will be handled in the same way like the time domain signal from the measurement hardware.
 The data is stored in a so called "Buffer" that works based on equally distanced data.
 The resulting data streams are completely compatible to other data streams in the software.
@@ -98,6 +98,8 @@ class VirtualInputDevice(ABC):
     def get_data(self) -> List[float]:
         """Fetch the data from the device and convert it to a List of floats.
         Note: Ensure that the data type is float and not np.float or anything else!
+        This method should always clear the buffer containing the data when it's called.
+        This is to prevent old data from persisting.
         
         :return: The list of new values. The list must not contain old values!
         :rtype: List[float]
@@ -117,12 +119,15 @@ class VirtualInputDevice(ABC):
         """
         return None
     
+    @property
     def requests_per_sec(self):
         return self.__request_rate
     
+    @property
     def sample_rate(self):
         return self.__sample_rate
     
+    @property
     def normal_amplitude(self):
         return self.__normal_amp
 
@@ -175,7 +180,7 @@ class _DeviceThread(QThread):
             # empty the data queue at start - we do not want to use old data
             self.device.get_data()
             
-            request_rate = self.device.requests_per_sec()
+            request_rate = self.device.requests_per_sec
             
             while not self.should_stop:
                 new_data = self.device.get_data()
@@ -193,7 +198,7 @@ class _DeviceThread(QThread):
             Log_IF.popupError(f'Exception caught in device thread:\n{traceback.format_exc()}')
 
 
-class DeviceClass(VirtDeviceInterface):
+class DeviceTypeCollection(VirtDeviceInterface):
     """DeviceClass implements the interface VirtDeviceInterface from the Analyzer4D software.
     The functions of this interface are called by the Analyzer4D software.
     This class is a plugin implementation of the interface.
@@ -206,7 +211,7 @@ class DeviceClass(VirtDeviceInterface):
         The constructor expects a .
         The devices are expected to be of the type VirtualInputDevice.
 
-        :param devices: dictionary giving the mappping from the device's identifiers to the device objects themselve
+        :param devices: dictionary giving the mappping from the device's identifiers to the device objects themselves
         :type devices: Dict[str, VirtualInputDevice]
         :param name: The name of this device class, defaults to ''
         :type name: str, optional
@@ -235,6 +240,10 @@ class DeviceClass(VirtDeviceInterface):
     def capabilities(self) -> Dict:
         """capabilites is called by the Analyzer4D software to get information about available devices and their configuration.
         Especially the sample rate and the capability of configuration dialogs is queried here.
+        The config dict consists of two main keys (inputs, configdialog)
+        The 'inputs' key contains an interface config with the keys (ifaceName : str, sampleRate: float, normalAmplitude: float)
+        The 'configdialog' is a boolean indicating whether a QDialog will be displayed
+        Missing keys in the config will
 
         :return: A dictionary containing information about this device class and the devices themselves. 
         :rtype: Dict
@@ -248,8 +257,8 @@ class DeviceClass(VirtDeviceInterface):
             
             int_conf = {
                 'ifaceName': name,
-                'sampleRate': dev.sample_rate(),
-                'normalAmplitude': dev.normal_amplitude()
+                'sampleRate': dev.sample_rate,
+                'normalAmplitude': dev.normal_amplitude
             }
             interfaces_conf.append(int_conf)
         
@@ -267,6 +276,7 @@ class DeviceClass(VirtDeviceInterface):
         """
         return self._version
     
+    @property
     def name(self) -> str:
         """name
         
