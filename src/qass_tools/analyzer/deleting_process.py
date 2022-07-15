@@ -48,7 +48,7 @@ class DeleteHandler():
         if self.log_entries:
             #logfilesize_limit = amount of entires * average entry size(=200bytes)
             logfilesize_limit = 10000 * 200
-            self.file_logger = self.create_file_logger_obj(self.path, self.pattern, logfilesize_limit)
+            self.file_logger = self._create_file_logger_obj(self.path, self.pattern, logfilesize_limit)
         
     def delete_by_amount(self, max_amount: int) -> None:
         """Provided function to delete files based on file amount in location if amount overruns defined limit.
@@ -153,7 +153,7 @@ class DeleteHandler():
                 self.file_logger.error(error)
                 self.file_logger.error(f"File {deleting_file} could not be removed.")
 
-    def create_file_logger_obj(self, path:str, pattern_to_log:str, filesize_limit:int):
+    def _create_file_logger_obj(self, path:str, pattern_to_log:str, filesize_limit:int):
         """Creates formatete object from python built in logging module.
 
         Creates a RotatingFileHandler object which logs all occuring events. Logged will be timr, name of function and
