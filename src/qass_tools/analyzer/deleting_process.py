@@ -3,7 +3,7 @@ from asyncio.log import logger
 import time
 import os
 import glob
-from typing import List
+from typing import List, Union
 import shutil
 import logging, logging.handlers
 from pathlib import Path
@@ -153,7 +153,7 @@ class DeleteHandler():
                 self.file_logger.error(error)
                 self.file_logger.error(f"File {deleting_file} could not be removed.")
 
-    def _create_file_logger_obj(self, path:str, pattern_to_log:str, filesize_limit:int):
+    def _create_file_logger_obj(self, path:Union[str, Path, os.PathLike], pattern_to_log:str, filesize_limit:int):
         """Creates formatete object from python built in logging module.
 
         Creates a RotatingFileHandler object which logs all occuring events. Logged will be timr, name of function and
@@ -173,12 +173,14 @@ class DeleteHandler():
         #create logger
         logger_name = pattern_to_log + "_file_logger"
         logger_obj = logging.getLogger(logger_name)
-        file_name = path + pattern_to_log + ".log"
+        
+        file_path = Path(path) / Path(pattern_to_log + ".log") 
+        print(file_path)
         #define logger
         #set logging level to lowest setting
         logger_obj.setLevel(logging.DEBUG)
         # create rotating file handler and set level to debug
-        rfh = logging.handlers.RotatingFileHandler(file_name, maxBytes=filesize_limit, backupCount=1)
+        rfh = logging.handlers.RotatingFileHandler(str(file_path), maxBytes=filesize_limit, backupCount=1)
         rfh.setLevel(logging.DEBUG)
         # create formatter
         formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcName)s - %(message)s')

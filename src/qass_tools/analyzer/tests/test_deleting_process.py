@@ -8,11 +8,15 @@ from unittest.mock import Mock
 
 # mocked version
 @pytest.fixture
-def deletehandler_obj_helper():
-    current_path = Path(__file__).parent.resolve()
+def deletehandler_obj_helper(tmp_path):
     pattern = "*.txt"
+    obj = DeleteHandler(tmp_path, pattern)
+    return obj
 
-    obj = DeleteHandler(current_path, pattern)
+@pytest.fixture
+def deletehandler_obj_helper_two(tmp_path):
+    pattern = "*.txt"
+    obj = DeleteHandler(tmp_path, pattern, log_entries=True)
     return obj
 
 @pytest.fixture
@@ -23,7 +27,7 @@ def get_oldest_helper(monkeypatch):
     
     monkeypatch.setattr(DeleteHandler, "_DeleteHandler__get_oldest", get_oldest_wrapper)
 
-def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
+def test_delete_by_amount(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
     # Arrange
     amount_limit = 1
     os_mock = Mock()
@@ -37,7 +41,7 @@ def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper, get_oldest_
     # Assert
     assert os_mock.call_count == 2
 
-def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
+def test_delete_by_disk_space(monkeypatch, deletehandler_obj_helper, get_oldest_helper):
     # Arrange
     usage_limit = 0.9
 
@@ -55,3 +59,39 @@ def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper, get_old
     
     # Assert
     assert os_mock.call_count == 2
+
+def test_delete_by_amount_two(monkeypatch, deletehandler_obj_helper_two, tmp_path, get_oldest_helper):
+    # Arrange
+    amount_limit = 1
+    os_mock = Mock()
+    len_mock = Mock(return_value=[0,1,2])
+    monkeypatch.setattr(glob, "glob",len_mock)
+    monkeypatch.setattr(os, "remove", os_mock)
+    expected_path = tmp_path / Path("*.txt" + ".log")
+    
+    # Act
+    deletehandler_obj_helper_two.delete_by_amount(amount_limit)
+    
+    # Assert
+    assert os_mock.call_count == 2
+    assert os.path.exists(expected_path)
+
+def test_delete_by_disk_space_two(monkeypatch, deletehandler_obj_helper_two, tmp_path, get_oldest_helper):
+    # Arrange
+    usage_limit = 0.9
+
+    os_mock = Mock()
+    shutil_mock = Mock(return_value=(1000, 950, 50))
+    filesize_mock = Mock(return_value=25)
+    len_mock = Mock(return_value=[0,1,2])
+    monkeypatch.setattr(shutil, "disk_usage", shutil_mock)
+    monkeypatch.setattr(os, "remove", os_mock)
+    monkeypatch.setattr(glob, "glob",len_mock)
+    monkeypatch.setattr(os.path, "getsize", filesize_mock)
+    expected_path = tmp_path / Path("*.txt" + ".log")
+    # Act
+    deletehandler_obj_helper_two.delete_by_disk_space(usage_limit)
+    
+    # Assert
+    assert os_mock.call_count == 2
+    assert os.path.exists(expected_path)
