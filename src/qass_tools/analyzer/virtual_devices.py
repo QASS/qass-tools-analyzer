@@ -195,7 +195,7 @@ class _DeviceThread(QThread):
             Log_IF.popupError(f'Exception caught in device thread:\n{traceback.format_exc()}')
 
 
-class DeviceClass(VirtDeviceInterface):
+class DeviceTypeCollection(VirtDeviceInterface):
     """DeviceClass implements the interface VirtDeviceInterface from the Analyzer4D software.
     The functions of this interface are called by the Analyzer4D software.
     This class is a plugin implementation of the interface.

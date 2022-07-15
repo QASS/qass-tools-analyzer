@@ -40,7 +40,7 @@ devices = {
     'dev2': dev_2
     }
 
-dev_handler = DeviceClass(devices)
+dev_handler = DeviceTypeCollection(devices)
 
 try:
     VirtDeviceManager_IF.removeVirtualDevice('MyDev')
