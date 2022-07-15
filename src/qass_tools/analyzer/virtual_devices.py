@@ -276,7 +276,6 @@ class DeviceTypeCollection(VirtDeviceInterface):
         """
         return self._version
     
-    @property
     def name(self) -> str:
         """name
         
