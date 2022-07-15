@@ -19,7 +19,7 @@ class MyDevice(VirtualInputDevice):
     
     def get_data(self) -> List[float]:
         time_elapsed = time.time() - self._start_time
-        values_needed = int(time_elapsed * self.sample_rate()) - self._values_provided
+        values_needed = int(time_elapsed * self.sample_rate) - self._values_provided
         
         self._values_provided += values_needed
         return [float(v) for v in np.random.normal(self._mean, self._std, values_needed)]

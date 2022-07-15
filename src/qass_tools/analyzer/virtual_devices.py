@@ -119,12 +119,15 @@ class VirtualInputDevice(ABC):
         """
         return None
     
+    @property
     def requests_per_sec(self):
         return self.__request_rate
     
+    @property
     def sample_rate(self):
         return self.__sample_rate
     
+    @property
     def normal_amplitude(self):
         return self.__normal_amp
 
@@ -177,7 +180,7 @@ class _DeviceThread(QThread):
             # empty the data queue at start - we do not want to use old data
             self.device.get_data()
             
-            request_rate = self.device.requests_per_sec()
+            request_rate = self.device.requests_per_sec
             
             while not self.should_stop:
                 new_data = self.device.get_data()
@@ -254,8 +257,8 @@ class DeviceTypeCollection(VirtDeviceInterface):
             
             int_conf = {
                 'ifaceName': name,
-                'sampleRate': dev.sample_rate(),
-                'normalAmplitude': dev.normal_amplitude()
+                'sampleRate': dev.sample_rate,
+                'normalAmplitude': dev.normal_amplitude
             }
             interfaces_conf.append(int_conf)
         
@@ -273,6 +276,7 @@ class DeviceTypeCollection(VirtDeviceInterface):
         """
         return self._version
     
+    @property
     def name(self) -> str:
         """name
         
