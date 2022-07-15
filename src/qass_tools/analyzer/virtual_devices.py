@@ -132,7 +132,7 @@ class _DeviceThread(QThread):
     The thread is startet when a measurement starts.
     Inside this thread communication to the device takes place.
     """
-    def __init__(self, device: SimpleDevice):
+    def __init__(self, device: VirtualInputDevice):
         super().__init__()
 
         self.should_stop = False
@@ -140,7 +140,7 @@ class _DeviceThread(QThread):
         self.lock = Lock()
         self.device = device
     
-    def fetch_values(self) -> List(float):
+    def fetch_values(self) -> List[float]:
         """fetch_values is called by the interface from the reading thread in the Analyzer4D software.
         It first aqcuires the lock to prevent race conditions when fetching the values.
 
