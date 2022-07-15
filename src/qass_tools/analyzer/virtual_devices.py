@@ -1,7 +1,7 @@
 """Virtual devices
 
 This module provides a simplified interface for the virtual devices of the Analyzer4D software.
-The Analyzer4D software provices an interface that allows to add customized devices that are not handled by the measurement hardware.
+The Analyzer4D software provides an interface that allows to add customized devices that are not handled by the measurement hardware.
 But the data coming from those virtual devices will be handled in the same way like the time domain signal from the measurement hardware.
 The data is stored in a so called "Buffer" that works based on equally distanced data.
 The resulting data streams are completely compatible to other data streams in the software.
@@ -206,7 +206,7 @@ class DeviceClass(VirtDeviceInterface):
         The constructor expects a .
         The devices are expected to be of the type VirtualInputDevice.
 
-        :param devices: dictionary giving the mappping from the device's identifiers to the device objects themselve
+        :param devices: dictionary giving the mappping from the device's identifiers to the device objects themselves
         :type devices: Dict[str, VirtualInputDevice]
         :param name: The name of this device class, defaults to ''
         :type name: str, optional
