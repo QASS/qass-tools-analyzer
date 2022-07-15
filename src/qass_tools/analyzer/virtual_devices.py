@@ -98,6 +98,8 @@ class VirtualInputDevice(ABC):
     def get_data(self) -> List[float]:
         """Fetch the data from the device and convert it to a List of floats.
         Note: Ensure that the data type is float and not np.float or anything else!
+        This method should always clear the buffer containing the data when it's called.
+        This is to prevent old data from persisting.
         
         :return: The list of new values. The list must not contain old values!
         :rtype: List[float]
@@ -235,6 +237,10 @@ class DeviceClass(VirtDeviceInterface):
     def capabilities(self) -> Dict:
         """capabilites is called by the Analyzer4D software to get information about available devices and their configuration.
         Especially the sample rate and the capability of configuration dialogs is queried here.
+        The config dict consists of two main keys (inputs, configdialog)
+        The 'inputs' key contains an interface config with the keys (ifaceName : str, sampleRate: float, normalAmplitude: float)
+        The 'configdialog' is a boolean indicating whether a QDialog will be displayed
+        Missing keys in the config will
 
         :return: A dictionary containing information about this device class and the devices themselves. 
         :rtype: Dict
