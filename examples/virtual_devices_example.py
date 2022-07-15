@@ -1,5 +1,5 @@
 from Analyzer.Devices import VirtDeviceInterface, VirtDeviceManager_IF
-from qass_tools.analyzer.virtual_devices import VirtualInputDevice, DeviceClass
+from qass_tools.analyzer.virtual_devices import VirtualInputDevice, DeviceTypeCollection
 
 from typing import List
 import numpy as np
