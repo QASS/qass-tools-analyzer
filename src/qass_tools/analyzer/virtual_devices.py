@@ -155,15 +155,12 @@ class VirtualInputDevice(ABC):
         return self._name
 
     def get_config(self):
-        print('called get config')
         return self._config
 
     def set_config(self, config):
-        print('called set config', config)
         self._config = config
 
     def apply_config(self):
-        print('called apply config')
         pass
 
 
@@ -460,7 +457,6 @@ class DeviceTypeCollection(VirtDeviceInterface):
         :return: The configuration QDialog instance.
         :rtype: QDialog
         """
-        print('called createConfigDialog')
         try:
             return self._devices[name].config_dialog()
         except Exception as e:

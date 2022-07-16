@@ -60,7 +60,6 @@ class MyDevConfigDialog(QDialog):
         for key, val in config.items():
             dev_cfg[key] = val
 
-        print('setting config')
         self._device.set_config(dev_cfg)
 
     def load_config(self):
