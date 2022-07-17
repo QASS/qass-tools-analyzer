@@ -25,7 +25,6 @@ def load_ui_file(ui_file_name: str):
 
 class MyDevConfigDialog(QDialog):
     def __init__(self, device):
-        print('init config dialog')
         super().__init__()
         self._device = device
         self.setWindowTitle(self._device.name)
