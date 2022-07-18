@@ -4,7 +4,11 @@ import os
 import glob
 from typing import List
 import shutil
-from Analyzer.Core import Log_IF
+
+try:
+    from Analyzer.Core import Log_IF
+except:
+    pass
 
 __all__ = ["DeleteHandler"]
 
@@ -43,19 +47,20 @@ class DeleteHandler():
     def delete_by_amount(self, max_amount: int) -> None:
         """Provided function to delete files based on file amount in location if amount overruns defined limit.
 
-        :param max_amount: Maximum amount (limit) of files allowed in thisn directory which are match pattern.
+        :param max_amount: Maximum amount (limit) of files allowed in this directory which are match pattern.
         :type max_amount: int
         :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # read out amount of files in directory
         dir_amount = len(os.listdir(self.path))
         # calc how many files have to be deletet in order to satisfy limit
-        amount_to_delete = dir_amount - max_amount
+        amount_to_delete = int(dir_amount) - max_amount
         # if there are any files to delete:
-        
+
         if amount_to_delete > 0:
             # search for files in directory which match pattern
-            delete_list = glob.glob(self.path + self.pattern) # delete_list is saved with full path
+            full_path = str(self.path / self.pattern)
+            delete_list = glob.glob(full_path) # delete_list is saved with full path
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
             
@@ -64,12 +69,12 @@ class DeleteHandler():
                     self.__delete_file(sorted_list[idx][1])
                 print("Deleting successfull")
             except OSError as e:
-                Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
+                #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
                 print(e)
                 print("Deleting process could not be completed. Check your setted Limit and your Files.")
-            
-    def delete_by_disk_space(self, disk_usage_limit: float) ->None:
-        """Provided method to delete by disk space.
+        
+    def delete_by_disk_space(self, disk_usage_limit: float) -> None:
+        """Provided method to delete files by a given maximum disk space usage.
 
         :param disk_usage_limit: Limit how much disk memory is allowed to use at maximum. Parsed as part of the whole.
         :type disk_usage_limit: float
@@ -78,20 +83,23 @@ class DeleteHandler():
         # read out currently used disk usage
         disk_usage = shutil.disk_usage(self.path)
         # help to debug: disk_usage[0] = total // disk_usage[1] = used // disk_usage[2] = free
+        #print("total", disk_usage[0])
+        #print("used", disk_usage[1])
+        #print("free", disk_usage[2])
         # calc free space that is required based on user limit
         target_free_space = disk_usage[0] * (1 - disk_usage_limit)
         # calc therefore required space
-        space_to_make =  target_free_space - disk_usage[2]
+        space_to_make = abs(target_free_space - disk_usage[2])
         
         if space_to_make > 0:
-            # search for files in directory which match pattern
-            delete_list = glob.glob(self.path + self.pattern) # delete_list is saved with full path
+            full_path = str(self.path / self.pattern)
+            delete_list = glob.glob(full_path) # delete_list is saved with full path# sort list for oldest files
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
             # helper
             filesize = 0
-            n = -1
-            for n, (date, file)in enumerate(sorted_list):
+            #n = -1
+            for n, (date, file) in enumerate(sorted_list):
                 filesize = filesize + os.path.getsize(file)
                 if filesize >= space_to_make:
                     break
@@ -100,7 +108,7 @@ class DeleteHandler():
                     self.__delete_file(sorted_list[idx][1])
                     print("Deleting successfull")
             except OSError as e:
-                Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
+                #Log_IF().error(f"Deleting process could not be completed. Check your setted Limit and your Files.")
                 print(e)
                 print("Deleting process could not be completed. Check your setted Limit and your Files.")
 
@@ -125,7 +133,7 @@ class DeleteHandler():
         ziped_lists = zip(creation_dates, possible_files)
         # sort for oldest
         sorted_ziped_lists = sorted(ziped_lists, key=lambda x: x[0])
-    
+        print(sorted_ziped_lists)
         return sorted_ziped_lists
     
     def __delete_file(self, deleting_file: str) -> None:
@@ -147,15 +155,3 @@ class DeleteHandler():
             print("File could not be removed")
 
 
-# syntacs for automatic appling of programm
-def main():
-    """ Function to execute codes below by executing complete script. That means if complete code-file gets started the lines in this function will be executed."""
-    # define path
-    PATH = "./"
-    # create instance
-    file_deleter = DeleteHandler(PATH, "*.npy")
-    # delete by 90% used disk space
-    file_deleter.delete_by_disk_space(.90)
-
-if __name__ == "main":
-    main()
