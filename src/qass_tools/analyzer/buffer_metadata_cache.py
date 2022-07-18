@@ -1,4 +1,4 @@
-import os, re
+import os, re, warnings
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -121,6 +121,8 @@ class BufferMetadata(__Base):
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
+    opening_error = Column(String, nullable = True)
+
     Index("channel_compression", "channel", "compression_frq")
 
 
@@ -204,8 +206,10 @@ class BufferMetadataCache:
                 with self.Buffer_cls(file) as buffer:
                     buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
                     self._db.add(buffer_metadata)
-            except:
-                continue
+            except Exception as e:
+                directory_path, filename = self.split_filepath(file)
+                self._db.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e)))
+                warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
         self._db.commit()
 
     def get_matching_files(self, buffer_metadata = None, filter_function = None):
@@ -240,3 +244,15 @@ class BufferMetadataCache:
         BufferMetadata.metadata.create_all(engine, 
                             tables = [BufferMetadata.metadata.tables["buffer_metadata"]])
         return session
+
+
+
+    @staticmethod
+    def split_filepath(filepath):
+        if "/" in filepath:
+            filename = filepath.split("/")[-1]
+        elif "\\" in filepath:
+            filename = filepath.split("\\")[-1]
+        directory_path = filepath[:-len(filename)]
+        return directory_path, filename
+

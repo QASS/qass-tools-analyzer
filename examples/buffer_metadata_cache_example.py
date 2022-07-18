@@ -1,5 +1,5 @@
-from qass_tools.analyzer import BufferMetadataCache
-from qass_tools.analytic import buffer_parser as bp
+from qass_tools.analyzer import BufferMetadataCache, BufferMetadata
+from qass_tools.analyzer import buffer_parser as bp
 
 
 
@@ -12,7 +12,7 @@ def main():
 
     # search for matching metadata
     # create a metadata object with the properties you want the results to match
-    buffer_metadata = BufferMetadataCache.BufferMetadata(frq_bands = 512, channel = 1, compression_time = 4)
+    buffer_metadata = BufferMetadata(frq_bands = 512, channel = 1, compression_time = 4)
     # query the cache using the metadata object
     matching_files = cache.get_matching_files(buffer_metadata = buffer_metadata) # returns a list of complete filepaths as strings
 
