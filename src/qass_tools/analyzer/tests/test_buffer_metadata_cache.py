@@ -132,6 +132,18 @@ def test_add_files_to_cache(db_session, mock_buffer, mocker):
     assert buffer_metadata.filename == "foop1c0b.000"
     bm_cache._db.commit.assert_called_once()
 
+def test_add_files_to_cache_warning(db_session, mocker):
+    class Buffer:
+        def __init__(self, *args): 
+            raise ValueError("Test Error")
+    bm_cache = bmc.BufferMetadataCache(db_session, Buffer)
+    mocker.patch.object(bm_cache._db, "commit") # ensure the database session doesn't commit
+    with pytest.warns(UserWarning):
+        bm_cache.add_files_to_cache(["./foop1c0b.000"])
+    buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).first()
+    assert buffer_metadata.filename == "foop1c0b.000"
+    bm_cache._db.commit.assert_called_once()
+
 def test_synchronize_directory(db_session, mock_buffer, mocker):
 
     cache = bmc.BufferMetadataCache(db_session, mock_buffer) # it's important that the filename property of mock_bfufer returns "foo.000"
