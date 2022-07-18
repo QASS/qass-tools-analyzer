@@ -1,14 +1,30 @@
 import os, re, warnings
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from pathlib import Path
-from enum import auto, IntEnum
+from enum import Enum
 
 from .buffer_parser import Buffer
 
 
 __all__ = ["BufferMetadataCache", "BufferMetadata"]
+
+class BufferEnum(TypeDecorator):
+    impl = String
+    def __init__(self, enumtype, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._enumtype = enumtype
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        return value.name
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return self._enumtype[str(value)]
 
 
 __Base = declarative_base()
@@ -28,9 +44,9 @@ class BufferMetadata(__Base):
     header_size = Column(Integer)
     process = Column(Integer)
     channel = Column(Integer, index = True)
-    datamode = Column(Enum(Buffer.DATAMODE)) # TODO this is an ENUM in buffer_parser
-    datakind = Column(Enum(Buffer.DATAKIND)) # TODO this is an ENUM in buffer_parser
-    datatype = Column(Enum(Buffer.DATATYPE)) # TODO this is an ENUM in buffer_parser
+    datamode = Column(BufferEnum(Buffer.DATAMODE)) # TODO this is an ENUM in buffer_parser
+    datakind = Column(BufferEnum(Buffer.DATAKIND)) # TODO this is an ENUM in buffer_parser
+    datatype = Column(BufferEnum(Buffer.DATATYPE)) # TODO this is an ENUM in buffer_parser
     process_time = Column(BigInteger)
     process_date_time = Column(String)
     db_header_size = Column(Integer)
@@ -49,15 +65,13 @@ class BufferMetadata(__Base):
     frq_per_band = Column(Float)
     sample_count = Column(Integer)
     spec_count = Column(Integer)
-    adc_type = Column(Enum(Buffer.ADCTYPE)) # TODO this is an ENUM in buffer_parser
+    adc_type = Column(BufferEnum(Buffer.ADCTYPE)) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
     opening_error = Column(String, nullable = True)
 
     Index("channel_compression", "channel", "compression_frq")
-
-
 
 
     @hybrid_property
@@ -153,20 +167,28 @@ class BufferMetadataCache:
         :rtype: list[str]
         """
         if (buffer_metadata is not None):
-            q = "SELECT * FROM buffer_metadata WHERE "
-            for prop in self.BufferMetadata.properties:
-                prop_value = getattr(buffer_metadata, prop)
-                if prop_value is not None:
-                    q += f"{prop} = {prop_value} AND "
-            q = q[:-4]# prune the last AND
+            q = self.get_buffer_metadata_query(buffer_metadata)
         elif filter_function is not None:
             q = "SELECT * FROM buffer_metadata"
         else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
+
         buffers = [self.BufferMetadata(**{prop: value for prop, value in zip(self.BufferMetadata.properties, buffer_result)}) for buffer_result in self._db.execute(q)]
+
         if filter_function is not None:
-            buffers = [buffer for buffer in buffers if filter_function(buffer)]
+            buffers = [buffer for buffer in buffers]# if filter_function(buffer)]
         return [buffer.filepath for buffer in buffers]
 
+
+    def get_buffer_metadata_query(self, buffer_metadata):
+        q = "SELECT * FROM buffer_metadata WHERE "
+        for prop in self.BufferMetadata.properties:
+            prop_value = getattr(buffer_metadata, prop)
+            if prop_value is not None:
+                if isinstance(prop_value, Enum):
+                    prop_value = f"'{prop_value.name}'"
+                q += f"{prop} = {prop_value} AND "
+        q = q[:-4]# prune the last AND
+        return q
 
     @staticmethod
     def create_session(engine = None, db_url = "sqlite:///buffer_metadata_db"):
@@ -187,4 +209,3 @@ class BufferMetadataCache:
             filename = filepath.split("\\")[-1]
         directory_path = filepath[:-len(filename)]
         return directory_path, filename
-
