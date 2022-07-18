@@ -116,6 +116,7 @@ class BufferMetadataCache:
                 directory_path, filename = self.split_filepath(file)
                 self._db.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = True))
                 warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
+        self._db.commit()
 
     def get_matching_files(self, buffer_metadata = None, filter_function = None):
         """Query the Cache for all files matching the properties that are set in the BufferMetadata object
