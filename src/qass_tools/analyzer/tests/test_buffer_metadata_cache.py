@@ -2,6 +2,7 @@ import sys, datetime
 from uuid import uuid4
 from enum import Enum
 
+
 sys.path.append("../")
 sys.path.append("../../")
 from importlib import reload
@@ -215,3 +216,8 @@ def test_get_matching_files_enum_properties(db_session, mock_buffer):
     assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == "COMP_MOV_AVERAGE")
     # assert "./foop1c0b.000" in cache.get_matching_files(metadata)
 
+@pytest.mark.parametrize("filepath,directory_path,filename", [("./foo/bar/hoo", "./foo/bar/", "hoo"), ("\\hello\\file\\filename", "\\hello\\file\\", "filename")])
+def test_split_filepath(filepath, directory_path, filename):
+    path, f_name = bmc.BufferMetadataCache.split_filepath(filepath)
+    assert path == directory_path
+    assert f_name == filename
