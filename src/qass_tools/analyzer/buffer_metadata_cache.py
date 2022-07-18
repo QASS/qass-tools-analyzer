@@ -51,7 +51,7 @@ class BufferMetadata(__Base):
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
-    opening_error = Column(Boolean)
+    opening_error = Column(String, nullable = True)
 
     Index("channel_compression", "channel", "compression_frq")
 
@@ -112,9 +112,9 @@ class BufferMetadataCache:
                 with self.Buffer_cls(file) as buffer:
                     buffer_metadata = self.buffer_to_metadata(buffer)
                     self._db.add(buffer_metadata)
-            except:
+            except Exception as e:
                 directory_path, filename = self.split_filepath(file)
-                self._db.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = True))
+                self._db.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e)))
                 warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
         self._db.commit()
 
