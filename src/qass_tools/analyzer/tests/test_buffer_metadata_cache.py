@@ -7,6 +7,7 @@ sys.path.append("../")
 sys.path.append("../../")
 from importlib import reload
 from analyzer import buffer_metadata_cache as bmc
+from analyzer.buffer_parser import Buffer
 from sqlalchemy import create_engine, MetaData, create_mock_engine, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 import pytest
@@ -207,12 +208,12 @@ def test_buffermetadata_constructor():
 
 
 def test_get_matching_files_enum_properties(db_session, mock_buffer):
-    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "foop1c0b.000", process = 1, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE))
-    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "hoop1c0b.000", process = 2, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE))
-    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "barp1c0b.000", process = 1, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE_FRQ))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "foop1c0b.000", process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "hoop1c0b.000", process = 2, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "barp1c0b.000", process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE_FRQ))
     cache = bmc.BufferMetadataCache(db_session, mock_buffer)
     db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
-    metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, datatype = bmc.DATATYPE.COMP_MOV_AVERAGE)
+    metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE)
     assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == "COMP_MOV_AVERAGE")
     # assert "./foop1c0b.000" in cache.get_matching_files(metadata)
 
