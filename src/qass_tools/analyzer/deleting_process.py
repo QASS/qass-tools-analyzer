@@ -185,7 +185,7 @@ class DeleteHandler():
         # create sys.stderr handler
         ch_stderr = logging.StreamHandler(sys.stderr)
         # create formatter
-        formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcName)s - %(message)s')
+        formatter = logging.Formatter('[%(asctime)s]:  %(levelname)s - %(message)s')
         # add formatter to rfh and ch_stderr
         rfh.setFormatter(formatter)
         ch_stderr.setFormatter(formatter)
@@ -194,3 +194,6 @@ class DeleteHandler():
         logger_obj.addHandler(ch_stderr)
 
         return logger_obj
+
+deleter = DeleteHandler("/home/opti/tmp_dir/", "*.txt",log_entries=True)
+deleter.delete_by_amount(1)
