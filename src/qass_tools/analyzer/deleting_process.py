@@ -55,7 +55,7 @@ class DeleteHandler():
 
         :param max_amount: Maximum amount (limit) of files allowed in this directory which are match pattern.
         :type max_amount: int
-        :raises OSError: Exception is raised if deleting process cannot be compelted. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
+        :raises OSError: Exception is raised if deleting process cannot be completed. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # search for files in directory which match pattern
         delete_list = glob.glob(self.full_path) # delete_list is saved with full path
