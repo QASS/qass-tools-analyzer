@@ -85,9 +85,6 @@ class DeleteHandler():
         # read out currently used disk usage
         disk_usage = shutil.disk_usage(self.path)
         # help to debug: disk_usage[0] = total // disk_usage[1] = used // disk_usage[2] = free
-        #logging.debug("total", disk_usage[0])
-        #logging.debug("used", disk_usage[1])
-        #logging.debug("free", disk_usage[2])
         # calc free space that is required based on user limit
         target_free_space = disk_usage[0] * (1 - disk_usage_limit)
         # calc therefore required space
