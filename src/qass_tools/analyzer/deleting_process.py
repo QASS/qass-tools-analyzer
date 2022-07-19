@@ -156,8 +156,10 @@ class DeleteHandler():
 
         Creates a RotatingFileHandler object which logs all occuring events. Logged will be time, name of function and
         message itself. The logfile name will be created automatically by used search pattern and stored in supervised
-        directory. If filesize limit is reached a new logfile will be created. NOTE: there is no stdout handler 
-        implemented here. 
+        directory. If filesize limit is reached a new logfile will be created. Additionally, logging will be sended to 
+        sys.stderr. 
+        
+        .. note: there is no stdout handler implemented here. 
 
         :param pattern_to_log: Path of supervised directory
         :type pattern_to_log: str
