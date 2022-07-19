@@ -153,7 +153,7 @@ class DeleteHandler():
     def _create_file_logger_obj(self, path:Union[str, Path, os.PathLike], pattern_to_log:str, filesize_limit:int):
         """Creates formatete object from python built in logging module.
 
-        Creates a RotatingFileHandler object which logs all occuring events. Logged will be timr, name of function and
+        Creates a RotatingFileHandler object which logs all occuring events. Logged will be time, name of function and
         message itself. The logfile name will be created automatically by used search pattern and stored in supervised
         directory. If filesize limit is reached a new logfile will be created. NOTE: there is no stdout handler 
         implemented here. 
