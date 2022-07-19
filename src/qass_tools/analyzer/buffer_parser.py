@@ -1,9 +1,11 @@
+from logging import warning
 import os
 from typing import Any
 import numpy as np
 from enum import IntEnum, auto
 from struct import unpack
 import math
+import warnings
 
 class InvalidArgumentError(ValueError):
     pass
@@ -273,7 +275,7 @@ class Buffer:
                 return res
         # keyword not found
         current_key = content[idx: idx+8].decode()
-        print(
+        warnings.warn(
             f'Error: Key word "{current_key}" not supported by buffer_parser')
 
     def _parse_header(self):
@@ -485,7 +487,7 @@ class Buffer:
         db_metainfo = {}
 
         if content[0] == 0:
-            print('empty header content')
+            warnings.warn('empty header content')
             #raise ValueError('empty header content')
             return db_metainfo
 
@@ -494,7 +496,7 @@ class Buffer:
             try:
                 read_res = self._read_next_value(idx, content, self.__db_keywords)
                 if read_res is None:  # key not found
-                    print('header parse error')
+                    warnings.warn('header parse error')
                     idx+=4
                 else:
                     key, val, idx = read_res
@@ -1577,7 +1579,7 @@ def filter_buffers(directory, filters):
 
                 buffers.append(buff)
         except Exception:
-            print("filter_buffers could not parse:", file.name)
+            warnings.warn(f"filter_buffers could not parse: {file.name}")
             pass
 
     return buffers
