@@ -94,7 +94,7 @@ class DeleteHandler():
             delete_list = glob.glob(self.full_path) # delete_list is saved with full path
             if len(delete_list) == 0:
                 if self.log_entries:
-                   self.file_logger.warning("No files avaible to delete.") 
+                   self.file_logger.warning("The current deleting directory has no matching files to delete. Check your pattern or check if the directory is correct.") 
                 return
             # sort list for oldest files
             sorted_list = self.__get_oldest(delete_list)
