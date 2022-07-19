@@ -62,7 +62,7 @@ class DeleteHandler():
         file_amount = len(delete_list)
         if file_amount <= 0:
             if self.log_entries:
-                self.file_logger.warning("No files avaible to delete.") 
+                self.file_logger.warning("The current deleting directory has no matching files to delete. Check your pattern or check if the directory is correct.") 
             return
         # calc how many files have to be deletet in order to satisfy limit
         amount_to_delete = file_amount - max_amount
