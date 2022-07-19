@@ -90,7 +90,6 @@ class DeleteHandler():
         target_free_space = disk_usage[0] * (1 - disk_usage_limit)
         # calc therefore required space
         space_to_make = abs(target_free_space - disk_usage[2])
-        
         if space_to_make > 0:
             delete_list = glob.glob(self.full_path) # delete_list is saved with full path
             if len(delete_list) == 0:
@@ -175,7 +174,6 @@ class DeleteHandler():
         logger_obj = logging.getLogger(logger_name)
         
         file_path = Path(path) / Path(pattern_to_log + ".log") 
-        print(file_path)
         #define logger
         #set logging level to lowest setting
         logger_obj.setLevel(logging.DEBUG)
