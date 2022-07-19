@@ -8,7 +8,6 @@ from typing import List, Union
 import shutil
 import logging, logging.handlers
 from pathlib import Path
-__all__ = ["DeleteHandler"]
 
 class DeleteHandler():
     """DeleteHandler Class with different functionalities to delete local files on disk. 
@@ -56,7 +55,6 @@ class DeleteHandler():
 
         :param max_amount: Maximum amount (limit) of files allowed in this directory which are match pattern.
         :type max_amount: int
-        :raises OSError: Exception is raised if deleting process cannot be completed. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # search for files in directory which match pattern
         delete_list = glob.glob(self.full_path) # delete_list is saved with full path
@@ -139,7 +137,6 @@ class DeleteHandler():
         :param deleting_file: File(path) that should be deletet.
         :type deleting_file: str
         :raises OSError: An error is raisen if files cannot be removed (arbitrary reasons).
-        :raises Valueerror: If parsed string is empty.
         """
         try:
             os.remove(deleting_file)
@@ -155,10 +152,10 @@ class DeleteHandler():
 
         Creates a RotatingFileHandler object which logs all occuring events. Logged will be time, name of function and
         message itself. The logfile name will be created automatically by used search pattern and stored in supervised
-        directory. If filesize limit is reached a new logfile will be created. Additionally, logging will be sended to 
-        sys.stderr. 
+        directory. If filesize limit is reached a new logfile will be created. 
+        Additionally, all occuring error loggings will be send to sys.stderr. 
         
-        .. note: there is no stdout handler implemented here. 
+        .. note: In Analyzer environment all message going to sys-stderr will be stored in internal log.
 
         :param pattern_to_log: Path of supervised directory
         :type pattern_to_log: str
@@ -182,6 +179,7 @@ class DeleteHandler():
         rfh.setLevel(logging.DEBUG)
         # create sys.stderr handler
         ch_stderr = logging.StreamHandler(sys.stderr)
+        ch_stderr.setLevel(logging.ERROR)
         # create formatter
         formatter = logging.Formatter('[%(asctime)s]:  %(levelname)s - %(message)s')
         # add formatter to rfh and ch_stderr
@@ -192,6 +190,3 @@ class DeleteHandler():
         logger_obj.addHandler(ch_stderr)
 
         return logger_obj
-
-deleter = DeleteHandler("/home/opti/tmp_dir/", "*.txt",log_entries=True)
-deleter.delete_by_amount(1)
