@@ -683,10 +683,14 @@ class Buffer:
     def _calc_spec_duration(self):
         if 'frame_dur' in self.__metainfo.keys():
             return
-        elif self.__metainfo['datatype']!=2:#no time signal
+
+        if self.datamode == DATAMODE_FFT:
             if 'fftovers' in self.__metainfo.keys() and 'samplefr' in self.__metainfo.keys() and 'comratio' in self.__metainfo.keys():
                 duration=(1e9/((self.__metainfo['samplefr']*(1<<self.__metainfo['fftovers']))/1024))*self.__metainfo['comratio']
                 self.__metainfo['framedur']=duration
+        elif self.datamode == DATAMODE_SIGNAL:
+            if 'samplefr' in self.__metainfo.keys():
+                self.__metainfo['framedur']=int(1e9 / self.__metainfo['samplefr'])
 
     def _signalNormalizationFactor(self,gain=1):
         """_signalNormalizationFactor calculates a ref_energy factor to derive a normalized energy related to time, frequency and amplitude ranges
