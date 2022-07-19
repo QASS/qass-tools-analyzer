@@ -1,6 +1,7 @@
 # import modules
 from asyncio.log import logger
 import time
+import sys
 import os
 import glob
 from typing import List, Union
@@ -179,11 +180,15 @@ class DeleteHandler():
         # create rotating file handler and set level to debug
         rfh = logging.handlers.RotatingFileHandler(str(file_path), maxBytes=filesize_limit, backupCount=1)
         rfh.setLevel(logging.DEBUG)
+        # create sys.stderr handler
+        ch_stderr = logging.StreamHandler(sys.stderr)
         # create formatter
         formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcName)s - %(message)s')
-        # add formatter to rfh
+        # add formatter to rfh and ch_stderr
         rfh.setFormatter(formatter)
+        ch_stderr.setFormatter(formatter)
         # add ch to logger
         logger_obj.addHandler(rfh)
+        logger_obj.addHandler(ch_stderr)
 
         return logger_obj
