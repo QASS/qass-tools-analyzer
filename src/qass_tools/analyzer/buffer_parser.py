@@ -683,16 +683,24 @@ class Buffer:
         return self.file_size
 
     def _calc_spec_duration(self):
-        if 'frame_dur' in self.__metainfo.keys():
+        if 'framedur' in self.__metainfo.keys():
             return
 
-        if self.datamode == DATAMODE_FFT:
-            if 'fftovers' in self.__metainfo.keys() and 'samplefr' in self.__metainfo.keys() and 'comratio' in self.__metainfo.keys():
-                duration=(1e9/((self.__metainfo['samplefr']*(1<<self.__metainfo['fftovers']))/1024))*self.__metainfo['comratio']
-                self.__metainfo['framedur']=duration
-        elif self.datamode == DATAMODE_SIGNAL:
-            if 'samplefr' in self.__metainfo.keys():
-                self.__metainfo['framedur']=int(1e9 / self.__metainfo['samplefr'])
+        if self.datamode == self.DATAMODE.DATAMODE_FFT:
+            needed_keys = ['fftovers', 'samplefr', 'comratio']
+            if any(key not in self.__metainfo for key in needed_keys):
+                raise ValueError('Some keys are missing to calculate the spec_duration')
+
+            duration=(1e9/((self.__metainfo['samplefr']*(1<<self.__metainfo['fftovers']))/1024))*self.__metainfo['comratio']
+            self.__metainfo['framedur']=duration
+        elif self.datamode == self.DATAMODE.DATAMODE_SIGNAL:
+            needed_keys = ['samplefr', 'comratio']
+            if any(key not in self.__metainfo for key in needed_keys):
+                raise ValueError('Some keys are missing to calculate the spec_duration')
+
+            sample_frq = self.__metainfo['samplefr']
+            compression = self.__metainfo['comratio']
+            self.__metainfo['framedur']=int(1e9 / sample_frq * compression)
 
     def _signalNormalizationFactor(self,gain=1):
         """_signalNormalizationFactor calculates a ref_energy factor to derive a normalized energy related to time, frequency and amplitude ranges
