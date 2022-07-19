@@ -1,13 +1,13 @@
 # import modules
 from asyncio.log import logger
 import time
+import sys
 import os
 import glob
 from typing import List, Union
 import shutil
 import logging, logging.handlers
 from pathlib import Path
-__all__ = ["DeleteHandler"]
 
 class DeleteHandler():
     """DeleteHandler Class with different functionalities to delete local files on disk. 
@@ -55,7 +55,6 @@ class DeleteHandler():
 
         :param max_amount: Maximum amount (limit) of files allowed in this directory which are match pattern.
         :type max_amount: int
-        :raises OSError: Exception is raised if deleting process cannot be completed. Either because there are not enough files that match pattern to satisfy limit or because any other wild error appears. 
         """
         # search for files in directory which match pattern
         delete_list = glob.glob(self.full_path) # delete_list is saved with full path
@@ -89,7 +88,6 @@ class DeleteHandler():
         target_free_space = disk_usage[0] * (1 - disk_usage_limit)
         # calc therefore required space
         space_to_make = abs(target_free_space - disk_usage[2])
-        
         if space_to_make > 0:
             delete_list = glob.glob(self.full_path) # delete_list is saved with full path
             if len(delete_list) == 0:
@@ -139,7 +137,6 @@ class DeleteHandler():
         :param deleting_file: File(path) that should be deletet.
         :type deleting_file: str
         :raises OSError: An error is raisen if files cannot be removed (arbitrary reasons).
-        :raises Valueerror: If parsed string is empty.
         """
         try:
             os.remove(deleting_file)
@@ -155,8 +152,10 @@ class DeleteHandler():
 
         Creates a RotatingFileHandler object which logs all occuring events. Logged will be time, name of function and
         message itself. The logfile name will be created automatically by used search pattern and stored in supervised
-        directory. If filesize limit is reached a new logfile will be created. NOTE: there is no stdout handler 
-        implemented here. 
+        directory. If filesize limit is reached a new logfile will be created. 
+        Additionally, all occuring error loggings will be send to sys.stderr. 
+        
+        .. note: In Analyzer environment all message going to sys-stderr will be stored in internal log.
 
         :param pattern_to_log: Path of supervised directory
         :type pattern_to_log: str
@@ -172,18 +171,22 @@ class DeleteHandler():
         logger_obj = logging.getLogger(logger_name)
         
         file_path = Path(path) / Path(pattern_to_log + ".log") 
-        print(file_path)
         #define logger
         #set logging level to lowest setting
         logger_obj.setLevel(logging.DEBUG)
         # create rotating file handler and set level to debug
         rfh = logging.handlers.RotatingFileHandler(str(file_path), maxBytes=filesize_limit, backupCount=1)
         rfh.setLevel(logging.DEBUG)
+        # create sys.stderr handler
+        ch_stderr = logging.StreamHandler(sys.stderr)
+        ch_stderr.setLevel(logging.ERROR)
         # create formatter
-        formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(funcName)s - %(message)s')
-        # add formatter to rfh
+        formatter = logging.Formatter('[%(asctime)s]:  %(levelname)s - %(message)s')
+        # add formatter to rfh and ch_stderr
         rfh.setFormatter(formatter)
+        ch_stderr.setFormatter(formatter)
         # add ch to logger
         logger_obj.addHandler(rfh)
+        logger_obj.addHandler(ch_stderr)
 
         return logger_obj
