@@ -937,25 +937,6 @@ class Buffer:
         else:
             return result_arr
 
-    def _get_block_info_column(self, column: int, *args, **kwargs):
-        """
-        _get_block_info_column is a helper function to fetch only a specific column from the block infos.
-
-        :param column: The column of block_info that should be fetched
-        :type column: int
-        :param add_times: see documentation of block_info()
-        :return: Numpy array consisting on the requested column and optional a time column.
-        :rtype: np.ndarray
-        """
-
-        res = self.block_infos(*args, **kwargs)
-        if add_times in [True, 'back']:
-            return res[:, [column, -1]]
-        elif add_times == 'front':
-            return res[:, [0, column + 1]]
-        else:
-            return res[:, [column]]
-
     @property
     def metainfo(self):
         """
