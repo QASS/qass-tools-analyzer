@@ -737,7 +737,7 @@ class Buffer:
 
         return self.__norm_factor
 
-    def block_infos(self, columns=['preamp_gain', 'mux_port', 'measure_positions', 'inputs', 'outputs'], changes_only: bool=False, fast_jump: bool = True):
+    def block_infos(self, columns: List[str]=['preamp_gain', 'mux_port', 'measure_positions', 'inputs', 'outputs'], changes_only: bool=False, fast_jump: bool = True):
         """block_infos iterates through all memory blocks of a buffer file (typically one MB) and fetches the subdata information
         each memory block has one set of metadata but e.g. 65 subdata entries for raw files
         or more than 2000 entries for a 32 times compressed file,
@@ -746,6 +746,19 @@ class Buffer:
         :param columns: List of columns that should be in the result_array.
         You can define the order of the columns here.
         Possible column names are: ['preamp_gain', 'mux_port', 'measure_positions', 'inputs', 'outputs', 'times', 'index', 'spectrums']
+        :type columns: List[str]
+        
+        :param changes_only: Flag to enable a summarized output. If True the output does not contain all entries but only entries where the data columns changed.
+        In the current implementation the memory consumption does not change here -> in both cases the array is first completely built.
+        Defaults to False.
+        :type changes_only: bool
+        
+        :param fast_jump: If True the function uses seeking in the file instead of parsing every single datablock header.
+        The offsets are investigated for the first datablock header and simply applied for all other datablock headers.
+        Seeking is usually faster than parsing the datablock headers if they are not already in the cache.
+        If the datablock headers are already cached this flag has no effect.
+        Defaults to true.
+        :type fast_jump: bool
 
         :return: header_infos, an array containing (spec_index), (index), (times), preamp_gain, mux_port, measure_position, 24bit input, 16bit output, (times), (index), (spec_index)
         :rtype: numpy array of int64, if times are included otherwise int32
