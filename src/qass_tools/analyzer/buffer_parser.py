@@ -689,14 +689,14 @@ class Buffer:
         if self.datamode == self.DATAMODE.DATAMODE_FFT:
             needed_keys = ['fftovers', 'samplefr', 'comratio']
             if any(key not in self.__metainfo for key in needed_keys):
-                raise ValueError(f'Keys are missing to calculate the spec_duration. Missing keys: [key for key in needed_keys if key not in self.__metainfo]')
+                raise ValueError(f'Keys are missing to calculate the spec_duration. Missing keys: {[key for key in needed_keys if key not in self.__metainfo]}')
 
             duration=(1e9/((self.__metainfo['samplefr']*(1<<self.__metainfo['fftovers']))/1024))*self.__metainfo['comratio']
             self.__metainfo['framedur']=duration
         elif self.datamode == self.DATAMODE.DATAMODE_SIGNAL:
             needed_keys = ['samplefr', 'comratio']
             if any(key not in self.__metainfo for key in needed_keys):
-                raise ValueError('Some keys are missing to calculate the spec_duration')
+                raise ValueError(f'Keys are missing to calculate the spec_duration. Missing keys: {[key for key in needed_keys if key not in self.__metainfo]}')
 
             sample_frq = self.__metainfo['samplefr']
             compression = self.__metainfo['comratio']
