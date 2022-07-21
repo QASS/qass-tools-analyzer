@@ -214,7 +214,7 @@ def test_get_matching_files_enum_properties(db_session, mock_buffer):
     cache = bmc.BufferMetadataCache(db_session, mock_buffer)
     db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
     metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE)
-    assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == Buffer.DATAKIND.COMP_MOV_AVERAGE)
+    assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == Buffer.DATATYPE.COMP_MOV_AVERAGE)
     assert "./foop1c0b.000" in cache.get_matching_files(metadata)
 
 @pytest.mark.parametrize("filepath,directory_path,filename", [("./foo/bar/hoo", "./foo/bar/", "hoo"), ("\\hello\\file\\filename", "\\hello\\file\\", "filename")])

@@ -1,5 +1,5 @@
 import os, re, warnings
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from pathlib import Path
@@ -169,15 +169,14 @@ class BufferMetadataCache:
         if (buffer_metadata is not None):
             q = self.get_buffer_metadata_query(buffer_metadata)
         elif filter_function is not None:
-            q = "SELECT * FROM buffer_metadata"
+            q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata"))
         else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
 
-        buffers = [self.BufferMetadata(**{prop: value for prop, value in zip(self.BufferMetadata.properties, buffer_result)}) for buffer_result in self._db.execute(q)]
+        buffers = self._db.execute(q).scalars()
 
         if filter_function is not None:
-            buffers = [buffer for buffer in buffers]# if filter_function(buffer)]
+            buffers = [buffer for buffer in buffers if filter_function(buffer)]
         return [buffer.filepath for buffer in buffers]
-
 
     def get_buffer_metadata_query(self, buffer_metadata):
         q = "SELECT * FROM buffer_metadata WHERE "
@@ -188,7 +187,7 @@ class BufferMetadataCache:
                     prop_value = f"'{prop_value.name}'"
                 q += f"{prop} = {prop_value} AND "
         q = q[:-4]# prune the last AND
-        return q
+        return select(BufferMetadata).from_statement(text(q))
 
     @staticmethod
     def create_session(engine = None, db_url = "sqlite:///buffer_metadata_db"):
