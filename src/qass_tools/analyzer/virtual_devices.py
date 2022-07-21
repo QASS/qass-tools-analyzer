@@ -206,8 +206,7 @@ class _DeviceThread(QThread):
             with self.lock:
                 self.values = []
 
-            if not self.device.dont_close:
-                self.device.open_connection()
+            self.device.open_connection()
 
             # empty the data queue at start - we do not want to use old data
             self.device.get_data()
