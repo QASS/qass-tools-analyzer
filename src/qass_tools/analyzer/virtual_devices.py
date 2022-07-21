@@ -90,6 +90,9 @@ class VirtualInputDevice(ABC):
         """open_connection() will be called before a measurement.
         The communication to the device should be setup in this function.
         It is assumed that its save to call get_data after this function returned without error.
+        This function is called at each begin of a measurement.
+        It is called even when the flag "dont_stop" is True.
+        Thus you can reestablish a damaged connection if needed.
 
         raise an exception if needed. It will be handled by the wrapping class DeviceHandler.
         """
