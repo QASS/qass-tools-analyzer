@@ -75,28 +75,29 @@ def test_session_creation():
 def test_get_non_synchronized_files(db_session, buffer_objects):
     db_session.add_all(buffer_objects)
     cache = bmc.BufferMetadataCache(db_session)
-    assert "./hellop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
-    assert not "./foop1c0b.000" in cache.get_non_synchronized_files("./", ["foop1c0b.000", "hellop1c0b.000"])
-    assert len(cache.get_non_synchronized_files("./", ["foop1c0b.000", "barp1c0b.000"])) == 0
+    assert "./hellop1c0b.000" in cache.get_non_synchronized_files(["./foop1c0b.000", "./hellop1c0b.000"])
+    assert not "./foop1c0b.000" in cache.get_non_synchronized_files(["./foop1c0b.000", "./hellop1c0b.000"])
+    assert len(cache.get_non_synchronized_files(["./foop1c0b.000", "./barp1c0b.000"])) == 0
 
 def test_get_non_synchronized_files_more_files(db_session):
     N = 1000
-    files = [str(uuid4()) for _ in range(N)]
     path = "/home/"
+    files = [path + str(uuid4()) for _ in range(N)]
     cache = bmc.BufferMetadataCache(db_session)
-    assert len(cache.get_non_synchronized_files(path, files)) == N
+    assert len(cache.get_non_synchronized_files(files)) == N
 
 def test_get_non_synchronized_files_more_files_duplicates(db_session):
     N = 1000
     DUPLICATES = 100
-    files = [str(uuid4()) for _ in range(N)]
     path = "/home/"
+    files = [str(uuid4()) for _ in range(N)]
     for _ in range(100):
         filename = str(uuid4())
+        file = path + filename
         db_session.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = path, filename = filename))
-        files.append(filename)
+        files.append(file)
     cache = bmc.BufferMetadataCache(db_session)
-    assert len(cache.get_non_synchronized_files(path, files)) == N
+    assert len(cache.get_non_synchronized_files(files)) == N
 
 def test_buffer_to_buffer_metadata(mock_buffer):
     buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(mock_buffer())
@@ -131,16 +132,35 @@ def test_add_files_to_cache(db_session, mock_buffer, mocker):
     assert buffer_metadata.filename == "foop1c0b.000"
     bm_cache._db.commit.assert_called_once()
 
+def test_add_files_to_cache_warning(db_session, mocker):
+    class Buffer:
+        def __init__(self, *args): 
+            raise ValueError("Test Error")
+    bm_cache = bmc.BufferMetadataCache(db_session, Buffer)
+    mocker.patch.object(bm_cache._db, "commit") # ensure the database session doesn't commit
+    with pytest.warns(UserWarning):
+        bm_cache.add_files_to_cache(["./foop1c0b.000"])
+    buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).first()
+    assert buffer_metadata.filename == "foop1c0b.000"
+    bm_cache._db.commit.assert_called_once()
+
 def test_synchronize_directory(db_session, mock_buffer, mocker):
 
     cache = bmc.BufferMetadataCache(db_session, mock_buffer) # it's important that the filename property of mock_bfufer returns "foo.000"
-    mocker.patch("os.listdir", return_value = ["foop1c0b.000"])
+    mocker.patch("analyzer.buffer_metadata_cache.Path.glob", return_value = ["./foop1c0b.000"])    
     mocker.patch("os.path.isfile", return_value = True)
-    mocker.patch("os.path.join", return_value = "./foop1c0b.000")
     mocker.patch.object(cache._db, "commit") # ensure the database session doesn't commit
     cache.synchronize_directory("./", sync_subdirectories = False)
+    db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
     buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).one()
     assert buffer_metadata.filename == "foop1c0b.000"
+
+    # mocker.patch("analyzer.buffer_metadata_cache.Path.rglob", return_value = ["./barp1c0b.000"])
+    # cache.synchronize_directory("./", recursive = True)
+    # # db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
+    # buffer_metadata = db_session.query(bmc.BufferMetadataCache.BufferMetadata).first()
+    # print("METADATA", buffer_metadata.filename)
+    # assert buffer_metadata.filename == "barp1c0b.000"
 
 
 def test_get_matching_files_single_property(db_session, mock_buffer):
