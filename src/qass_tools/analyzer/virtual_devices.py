@@ -161,6 +161,10 @@ class VirtualInputDevice(ABC):
         return self._config
 
     def set_config(self, config):
+        required_keys = ("request_rate", "sample_rate", "normal_amp", "dont_close")
+        for key in required_keys:
+            if key not in config.keys():
+                raise KeyError(f"Config key missing: {key}")
         self._config = config
 
     def apply_config(self):
