@@ -205,6 +205,11 @@ class _DeviceThread(QThread):
         This should lead to a fail state in the Analyzer4D software, including clearing the 'ready' output line.
         """
         try:
+            if request_rate:
+                elapsed = QElapsedTimer()
+                elapsed.start()
+                read_counter = 0
+            
             self.should_stop = False
             with self.lock:
                 self.values = []
@@ -222,7 +227,10 @@ class _DeviceThread(QThread):
                     self.values.extend(new_data)
 
                 if request_rate:
-                    QThread.usleep(1/request_rate * 1e6)
+                    read_counter += 1
+                    elapsed_should = 1/request_rate * 1e9 * read_counter
+                    elapsed_is = elapsed.nsecsElapsed()
+                    QThread.usleep(int((elapsed_should - elapsed_is) / 1e3))
                 else:
                     self.yieldCurrentThread()
 
