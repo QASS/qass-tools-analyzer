@@ -42,11 +42,11 @@ class MyDevConfigDialog(QDialog):
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
 
-        self.accepted.connect(self.store_cofig)
+        self.accepted.connect(self.store_config)
 
         self.load_config()
 
-    def store_cofig(self):
+    def store_config(self):
         config = {
             'sample_rate': self.ui.touchspinbox_sample_rate.value(),
             'request_rate': self.ui.touchspinbox_request_rate.value(),
