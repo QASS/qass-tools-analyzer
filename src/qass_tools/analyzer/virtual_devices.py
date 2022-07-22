@@ -150,10 +150,6 @@ class VirtualInputDevice(ABC):
         return self._config['dont_close']
 
     @property
-    def dont_close(self):
-        return self._config['dont_close']
-
-    @property
     def name(self):
         return self._name
 
