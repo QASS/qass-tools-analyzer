@@ -1,10 +1,13 @@
 import sys, datetime
 from uuid import uuid4
+from enum import Enum
+
 
 sys.path.append("../")
 sys.path.append("../../")
 from importlib import reload
 from analyzer import buffer_metadata_cache as bmc
+from analyzer.buffer_parser import Buffer
 from sqlalchemy import create_engine, MetaData, create_mock_engine, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 import pytest
@@ -100,7 +103,7 @@ def test_get_non_synchronized_files_more_files_duplicates(db_session):
     assert len(cache.get_non_synchronized_files(files)) == N
 
 def test_buffer_to_buffer_metadata(mock_buffer):
-    buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(mock_buffer())
+    buffer_metadata = bmc.BufferMetadata.buffer_to_metadata(mock_buffer())
     assert buffer_metadata.directory_path == "./"
     assert buffer_metadata.filename == "foop1c0b.000"
     assert buffer_metadata.process == 1
@@ -119,7 +122,7 @@ def test_buffer_to_buffer_metadata_different_filepath():
         @property
         def foo(self): return "foo"
     
-    buffer_metadata = bmc.BufferMetadataCache.buffer_to_metadata(Mock_Buffer())
+    buffer_metadata = bmc.BufferMetadata.buffer_to_metadata(Mock_Buffer())
     assert buffer_metadata.directory_path == ".\\"
 
 
@@ -196,3 +199,26 @@ def test_get_matching_files_multiple_properties(db_session, mock_buffer):
     assert not "./hoop1c0b.000" in cache.get_matching_files(metadata)
     assert "./barp1c0b.000" in cache.get_matching_files(metadata)
     assert not "./foo_barp1c0b.000" in cache.get_matching_files(metadata)
+
+def test_buffermetadata_constructor():
+    class TestEnum(Enum):
+        TEST = 0
+    buffer_metadata = bmc.BufferMetadata(datakind = TestEnum.TEST)
+    assert buffer_metadata.datakind == TestEnum.TEST
+
+
+def test_get_matching_files_enum_properties(db_session, mock_buffer):
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "foop1c0b.000", process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "hoop1c0b.000", process = 2, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE))
+    db_session.add(bmc.BufferMetadata(directory_path = "./", filename = "barp1c0b.000", process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE_FRQ))
+    cache = bmc.BufferMetadataCache(db_session, mock_buffer)
+    db_session.query(bmc.BufferMetadataCache.BufferMetadata).all()
+    metadata = bmc.BufferMetadataCache.BufferMetadata(process = 1, datatype = Buffer.DATATYPE.COMP_MOV_AVERAGE)
+    assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == Buffer.DATATYPE.COMP_MOV_AVERAGE)
+    assert "./foop1c0b.000" in cache.get_matching_files(metadata)
+
+@pytest.mark.parametrize("filepath,directory_path,filename", [("./foo/bar/hoo", "./foo/bar/", "hoo"), ("\\hello\\file\\filename", "\\hello\\file\\", "filename")])
+def test_split_filepath(filepath, directory_path, filename):
+    path, f_name = bmc.BufferMetadataCache.split_filepath(filepath)
+    assert path == directory_path
+    assert f_name == filename

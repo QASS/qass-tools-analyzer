@@ -1,21 +1,39 @@
 import os, re, warnings
-from sqlalchemy import Boolean, Float, create_engine, Column, Integer, String, BigInteger, Identity, Index
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from pathlib import Path
+from enum import Enum
+
+from .buffer_parser import Buffer
 
 
 __all__ = ["BufferMetadataCache", "BufferMetadata"]
 
+class BufferEnum(TypeDecorator):
+    impl = String
+    def __init__(self, enumtype, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._enumtype = enumtype
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        return value.name
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return self._enumtype[str(value)]
 
 
 __Base = declarative_base()
 class BufferMetadata(__Base):
     __tablename__ = "buffer_metadata"
-    properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", #"datamode", "datakind", "datatype", 
+    properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
                 "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
-                "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", #"adc_type", 
+                "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", 
                 "bit_resolution",
                 "fft_log_shift")
 
@@ -26,9 +44,9 @@ class BufferMetadata(__Base):
     header_size = Column(Integer)
     process = Column(Integer)
     channel = Column(Integer, index = True)
-    # datamode = Column(Integer) # TODO this is an ENUM in buffer_parser
-    # datakind = Column(Integer) # TODO this is an ENUM in buffer_parser
-    # datatype = Column(Integer) # TODO this is an ENUM in buffer_parser
+    datamode = Column(BufferEnum(Buffer.DATAMODE)) # TODO this is an ENUM in buffer_parser
+    datakind = Column(BufferEnum(Buffer.DATAKIND)) # TODO this is an ENUM in buffer_parser
+    datatype = Column(BufferEnum(Buffer.DATATYPE)) # TODO this is an ENUM in buffer_parser
     process_time = Column(BigInteger)
     process_date_time = Column(String)
     db_header_size = Column(Integer)
@@ -47,7 +65,7 @@ class BufferMetadata(__Base):
     frq_per_band = Column(Float)
     sample_count = Column(Integer)
     spec_count = Column(Integer)
-    # adc_type = Column(Integer) # TODO this is an ENUM in buffer_parser
+    adc_type = Column(BufferEnum(Buffer.ADCTYPE)) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
@@ -55,9 +73,31 @@ class BufferMetadata(__Base):
 
     Index("channel_compression", "channel", "compression_frq")
 
+
     @hybrid_property
     def filepath(self):
         return self.directory_path + self.filename
+
+    @staticmethod
+    def buffer_to_metadata(buffer):
+        """Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
+        object putting them in the BufferMetadata object
+
+        :param buffer: Buffer object
+        :type buffer: buffer_parser.Buffer
+        """
+        if "/" in buffer.filepath:
+            filename = buffer.filepath.split("/")[-1]
+        elif "\\" in buffer.filepath:
+            filename = buffer.filepath.split("\\")[-1]
+        directory_path = buffer.filepath[:-len(filename)]
+        buffer_metadata = BufferMetadata(filename = filename, directory_path = directory_path)
+        for prop in BufferMetadata.properties:
+            try: # try to map all the buffer properties and skip on error
+                setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
+            except:
+                continue
+        return buffer_metadata
 
 
 class BufferMetadataCache:
@@ -110,7 +150,7 @@ class BufferMetadataCache:
         for file in files:
             try:
                 with self.Buffer_cls(file) as buffer:
-                    buffer_metadata = self.buffer_to_metadata(buffer)
+                    buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
                     self._db.add(buffer_metadata)
             except Exception as e:
                 directory_path, filename = self.split_filepath(file)
@@ -127,20 +167,27 @@ class BufferMetadataCache:
         :rtype: list[str]
         """
         if (buffer_metadata is not None):
-            q = "SELECT * FROM buffer_metadata WHERE "
-            for prop in self.BufferMetadata.properties:
-                prop_value = getattr(buffer_metadata, prop)
-                if prop_value is not None:
-                    q += f"{prop} = {prop_value} AND "
-            q = q[:-4]# prune the last AND
+            q = self.get_buffer_metadata_query(buffer_metadata)
         elif filter_function is not None:
-            q = "SELECT * FROM buffer_metadata"
+            q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata"))
         else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
-        buffers = [self.BufferMetadata(**{prop: value for prop, value in zip(self.BufferMetadata.properties, buffer_result)}) for buffer_result in self._db.execute(q)]
+
+        buffers = self._db.execute(q).scalars()
+
         if filter_function is not None:
             buffers = [buffer for buffer in buffers if filter_function(buffer)]
         return [buffer.filepath for buffer in buffers]
 
+    def get_buffer_metadata_query(self, buffer_metadata):
+        q = "SELECT * FROM buffer_metadata WHERE "
+        for prop in self.BufferMetadata.properties:
+            prop_value = getattr(buffer_metadata, prop)
+            if prop_value is not None:
+                if isinstance(prop_value, Enum):
+                    prop_value = f"'{prop_value.name}'"
+                q += f"{prop} = {prop_value} AND "
+        q = q[:-4]# prune the last AND
+        return select(BufferMetadata).from_statement(text(q))
 
     @staticmethod
     def create_session(engine = None, db_url = "sqlite:///buffer_metadata_db"):
@@ -152,27 +199,6 @@ class BufferMetadataCache:
         return session
 
 
-    @staticmethod
-    def buffer_to_metadata(buffer):
-        """Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
-        object putting them in the BufferMetadata object
-
-        :param buffer: Buffer object
-        :type buffer: buffer_parser.Buffer
-        """
-        if "/" in buffer.filepath:
-            filename = buffer.filepath.split("/")[-1]
-        elif "\\" in buffer.filepath:
-            filename = buffer.filepath.split("\\")[-1]
-        directory_path = buffer.filepath[:-len(filename)]
-        buffer_metadata = BufferMetadataCache.BufferMetadata(filename = filename, directory_path = directory_path)
-        for prop in BufferMetadataCache.BufferMetadata.properties:
-            try: # try to map all the buffer properties and skip on error
-                setattr(buffer_metadata, prop, getattr(buffer, prop)) # get the @property method and execute it
-            except:
-                continue
-        return buffer_metadata
-
 
     @staticmethod
     def split_filepath(filepath):
@@ -182,23 +208,3 @@ class BufferMetadataCache:
             filename = filepath.split("\\")[-1]
         directory_path = filepath[:-len(filename)]
         return directory_path, filename
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
