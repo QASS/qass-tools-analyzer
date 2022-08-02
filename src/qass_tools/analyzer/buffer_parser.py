@@ -1585,3 +1585,73 @@ def filter_buffers(directory, filters):
             pass
 
     return buffers
+
+from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy import Column, Integer, String, create_engine
+import os, sys, traceback
+
+
+class BufferErrorLogger:
+    _Base = declarative_base()
+
+    class BufferError(_Base):
+        __tablename__ = "buffer_error"
+
+        buffer_filepath = Column(String, primary_key = True)
+        error_type = Column(String, nullable = False)
+        error_msg = Column(String, nullable = False)
+        stacktrace = Column(String, nullable = False)
+        filepath = Column(String, nullable = False)
+        function_name = Column(String, nullable = False)
+        line_number = Column(Integer, nullable = False)
+        line_content = Column(String, nullable = False)
+
+
+    def __init__(self, session, logger, trace_depth = 1):
+        self._logger = logger
+        self._session = session
+        self._trace_depth = trace_depth
+
+    def log_errors(self, Buffer_cls, buffer_filepath, func, *args, **kwargs):
+        """Function calling another function with the instantiated buffer object
+
+        :param Buffer_cls: Buffer class
+        :type Buffer_cls: Buffer
+        :param buffer_path: The path to the buffer file to be opened
+        :type buffer_path: path-like object or string
+        :param func: function taking in a Buffer object as the first parameter
+        :type func: function
+        """
+        try:
+            with Buffer_cls(buffer_filepath) as b:
+                return func(b, *args, **kwargs)
+        except Exception as e:
+            type_, value, traceback = sys.exc_info()
+            stack_summary = traceback.extract_tb(traceback, self._trace_depth)
+            filepath, line_number, function_name, line_content = stack_summary[-1]
+            buffer_error = BufferError(
+                buffer_filepath = buffer_filepath,
+                error_type = str(type_),
+                error_msg = str(e),
+                stacktrace = self.stacksummary_to_string(stack_summary),
+                filepath = filepath,
+                line_number = line_number,
+                function_name = function_name,
+                line_content = line_content
+            )
+            self._logger.error(e)
+            self._session.add(buffer_error)
+            self._session.commit()
+
+    @staticmethod
+    def stacksummary_to_string(stacktrace_frame):
+        return "\n".join(str(s) for s in stacktrace_frame)
+
+    @staticmethod
+    def create_session(engine = None, db_url = "sqlite:///buffer_error_db"):
+        if engine is None:
+            engine = create_engine(db_url)
+        session = Session(engine)
+        BufferError.metadata.create_all(engine, 
+                            tables = [BufferError.metadata.tables["buffer_error"]])
+        return session
