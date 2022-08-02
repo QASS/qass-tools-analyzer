@@ -205,6 +205,8 @@ class _DeviceThread(QThread):
         This should lead to a fail state in the Analyzer4D software, including clearing the 'ready' output line.
         """
         try:
+            request_rate = self.device.requests_per_sec
+
             if request_rate:
                 elapsed = QElapsedTimer()
                 elapsed.start()
@@ -219,7 +221,6 @@ class _DeviceThread(QThread):
             # empty the data queue at start - we do not want to use old data
             self.device.get_data()
 
-            request_rate = self.device.requests_per_sec
 
             while not self.should_stop:
                 new_data = self.device.get_data()
