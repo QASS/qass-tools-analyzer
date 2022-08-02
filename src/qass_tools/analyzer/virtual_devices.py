@@ -231,7 +231,9 @@ class _DeviceThread(QThread):
                     read_counter += 1
                     elapsed_should = 1/request_rate * 1e9 * read_counter
                     elapsed_is = elapsed.nsecsElapsed()
-                    QThread.usleep(int((elapsed_should - elapsed_is) / 1e3))
+                    wait_time = int((elapsed_should - elapsed_is) / 1e3)
+                    if wait_time > 0:
+                        QThread.usleep(wait_time)
                 else:
                     self.yieldCurrentThread()
 
@@ -422,7 +424,14 @@ class DeviceTypeCollection(VirtDeviceInterface):
         :rtype: bool
         """
         try:
-            json_str = bytes(data).decode()
+            # There is a very nasty bug in older PySide2 / Python versions - The following crashes!
+            # We have to do the conversion differently.
+            #json_str = bytes(data).decode()
+
+            json_str = ''
+            for c in data:
+                json_str += c.decode()
+            
             if json_str:
                 config_dict = json.loads(json_str)
                 self._devices[name].set_config(config_dict)
