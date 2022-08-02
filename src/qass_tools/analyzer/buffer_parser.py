@@ -1649,7 +1649,7 @@ class BufferErrorLogger:
                 self._session.commit()
             except Exception as e:
                 self._session.rollback()
-                self._logger.critical("Error while saving BufferError: " + e)
+                self._logger.critical("Error while saving BufferError: %s", e)
 
     @staticmethod
     def stacksummary_to_string(stacktrace_frame):
