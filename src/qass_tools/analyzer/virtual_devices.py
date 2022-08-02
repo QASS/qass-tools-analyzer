@@ -14,7 +14,7 @@ from Analyzer.Devices import VirtDeviceInterface
 from Analyzer.Core import Log_IF
 
 # to not block the Analyzer4D software when reading data each virtual device works in its own thread.
-from PySide2.QtCore import QThread, QByteArray, Slot
+from PySide2.QtCore import QThread, QByteArray, Slot, QElapsedTimer
 from PySide2.QtWidgets import QDialog
 from threading import Lock
 
