@@ -1626,8 +1626,8 @@ class BufferErrorLogger:
             with Buffer_cls(buffer_filepath) as b:
                 return func(b, *args, **kwargs)
         except Exception as e:
-            type_, value, traceback = sys.exc_info()
-            stack_summary = traceback.extract_tb(traceback, self._trace_depth)
+            type_, value, tb = sys.exc_info()
+            stack_summary = traceback.extract_tb(tb, self._trace_depth)
             filepath, line_number, function_name, line_content = stack_summary[-1]
             buffer_error = BufferError(
                 buffer_filepath = buffer_filepath,
