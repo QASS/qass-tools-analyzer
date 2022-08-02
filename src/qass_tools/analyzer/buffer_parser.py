@@ -1607,13 +1607,13 @@ class BufferErrorLogger:
         line_content = Column(String, nullable = False)
 
 
-    def __init__(self, session, logger = None, trace_depth = 1):
+    def __init__(self, session, logger = None, trace_depth_limit = None):
         if logger is None:
             logging.basicConfig(filename = "buffer_error.log")
             logger = logging
         self._logger = logger
         self._session = session
-        self._trace_depth = trace_depth
+        self._trace_depth_limit = trace_depth_limit
 
     def log_errors(self, Buffer_cls, buffer_filepath, func, *args, **kwargs):
         """Function calling another function with the instantiated buffer object
@@ -1630,7 +1630,7 @@ class BufferErrorLogger:
                 return func(b, *args, **kwargs)
         except Exception as e:
             type_, value, tb = sys.exc_info()
-            stack_summary = traceback.extract_tb(tb)
+            stack_summary = traceback.extract_tb(tb, self._trace_depth_limit)
             filepath, line_number, function_name, line_content = stack_summary[-1]
             buffer_error = self.BufferError(
                 buffer_filepath = buffer_filepath,
