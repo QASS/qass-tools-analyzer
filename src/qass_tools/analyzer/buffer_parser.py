@@ -1588,7 +1588,7 @@ def filter_buffers(directory, filters):
 
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy import Column, Integer, String, create_engine
-import os, sys, traceback
+import os, sys, traceback, logging
 
 
 class BufferErrorLogger:
@@ -1607,7 +1607,10 @@ class BufferErrorLogger:
         line_content = Column(String, nullable = False)
 
 
-    def __init__(self, session, logger, trace_depth = 1):
+    def __init__(self, session, logger = None, trace_depth = 1):
+        if logger is None:
+            logging.basicConfig(filename = "buffer_error.log")
+            logger = logging
         self._logger = logger
         self._session = session
         self._trace_depth = trace_depth
