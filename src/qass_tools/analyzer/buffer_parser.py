@@ -1616,7 +1616,8 @@ class BufferErrorLogger:
         self._trace_depth_limit = trace_depth_limit
 
     def log_errors(self, Buffer_cls, buffer_filepath, func, *args, **kwargs):
-        """Function calling another function with the instantiated buffer object
+        """Function calling another function with the instantiated buffer object.
+        *args and **kwargs are forwarded to func
 
         :param Buffer_cls: Buffer class
         :type Buffer_cls: Buffer
