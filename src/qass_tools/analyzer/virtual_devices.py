@@ -231,7 +231,9 @@ class _DeviceThread(QThread):
                     read_counter += 1
                     elapsed_should = 1/request_rate * 1e9 * read_counter
                     elapsed_is = elapsed.nsecsElapsed()
-                    QThread.usleep(int((elapsed_should - elapsed_is) / 1e3))
+                    wait_time = int((elapsed_should - elapsed_is) / 1e3)
+                    if wait_time > 0:
+                        QThread.usleep(wait_time)
                 else:
                     self.yieldCurrentThread()
 
