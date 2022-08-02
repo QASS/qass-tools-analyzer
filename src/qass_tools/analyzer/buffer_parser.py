@@ -1630,9 +1630,9 @@ class BufferErrorLogger:
                 return func(b, *args, **kwargs)
         except Exception as e:
             type_, value, tb = sys.exc_info()
-            stack_summary = traceback.extract_tb(tb, self._trace_depth)
+            stack_summary = traceback.extract_tb(tb)
             filepath, line_number, function_name, line_content = stack_summary[-1]
-            buffer_error = BufferError(
+            buffer_error = self.BufferError(
                 buffer_filepath = buffer_filepath,
                 error_type = str(type_),
                 error_msg = str(e),
@@ -1643,11 +1643,22 @@ class BufferErrorLogger:
                 line_content = line_content
             )
             self._logger.error(e)
-            self._session.add(buffer_error)
-            self._session.commit()
+            try:
+                self._session.add(buffer_error)
+                self._session.commit()
+            except Exception as e:
+                self._session.rollback()
+                self._logger.critical("Error while saving BufferError: " + e)
 
     @staticmethod
     def stacksummary_to_string(stacktrace_frame):
+        """Joins a stacktrace object into a new line separated string
+
+        :param stacktrace_frame: FrameSummary object of tracebakc.extract_tb()
+        :type stacktrace_frame: FrameSummary
+        :return: Stack levels separated by \n
+        :rtype: str
+        """
         return "\n".join(str(s) for s in stacktrace_frame)
 
     @staticmethod
@@ -1655,6 +1666,6 @@ class BufferErrorLogger:
         if engine is None:
             engine = create_engine(db_url)
         session = Session(engine)
-        BufferError.metadata.create_all(engine, 
-                            tables = [BufferError.metadata.tables["buffer_error"]])
+        BufferErrorLogger.BufferError.metadata.create_all(engine, 
+                            tables = [BufferErrorLogger.BufferError.metadata.tables["buffer_error"]])
         return session
