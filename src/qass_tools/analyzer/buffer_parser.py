@@ -1644,11 +1644,7 @@ class BufferErrorLogger:
                 line_content = line_content
             )
             self._logger.error(e)
-            try:
-                self.save_error(buffer_error)
-            except Exception as e:
-                self._session.rollback()
-                self._logger.critical("Error while saving BufferError: %s", e)
+            self.save_error(buffer_error)
 
     def save_error(self, buffer_error):
         """Check if an error already exists for the given buffer file and update the existing one
@@ -1669,7 +1665,11 @@ class BufferErrorLogger:
             self._session.add(error)
         else:
             self._session.add(buffer_error)
-        self._session.commit()
+        try:
+            self._session.commit()
+        except Exception as e:
+            self._session.rollback()
+            self._logger.critical("Error while saving BufferError: %s", e)
 
     @staticmethod
     def stacksummary_to_string(stacktrace_frame):
