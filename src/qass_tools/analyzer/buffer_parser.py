@@ -1645,11 +1645,31 @@ class BufferErrorLogger:
             )
             self._logger.error(e)
             try:
-                self._session.add(buffer_error)
-                self._session.commit()
+                self.save_error(buffer_error)
             except Exception as e:
                 self._session.rollback()
                 self._logger.critical("Error while saving BufferError: %s", e)
+
+    def save_error(self, buffer_error):
+        """Check if an error already exists for the given buffer file and update the existing one
+
+        :param buffer_error: A BufferError object that is to be saved
+        :type buffer_error: BufferError
+        """
+        error = self.BufferError.query().get(buffer_error.buffer_filepath)
+        if error is not None:
+            error.error_type = buffer_error.error_type
+            error.error_msg = buffer_error.error_msg
+            error.stacktrace = buffer_error.stacktrace
+            error.filepath = buffer_error.filepath
+            error.function_name = buffer_error.function_name
+            error.function_name = buffer_error.function_name
+            error.line_number = buffer_error.line_number
+            error.line_content = buffer_error.line_content
+            self._session.add(error)
+        else:
+            self._session.add(buffer_error)
+        self._session.commit()
 
     @staticmethod
     def stacksummary_to_string(stacktrace_frame):
