@@ -1652,7 +1652,7 @@ class BufferErrorLogger:
         :param buffer_error: A BufferError object that is to be saved
         :type buffer_error: BufferError
         """
-        error = self.BufferError.query().get(buffer_error.buffer_filepath)
+        error = self._session.query(self.BufferError).get(buffer_error.buffer_filepath)
         if error is not None:
             error.error_type = buffer_error.error_type
             error.error_msg = buffer_error.error_msg
