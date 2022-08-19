@@ -1659,7 +1659,6 @@ class BufferErrorLogger:
             error.stacktrace = buffer_error.stacktrace
             error.filepath = buffer_error.filepath
             error.function_name = buffer_error.function_name
-            error.function_name = buffer_error.function_name
             error.line_number = buffer_error.line_number
             error.line_content = buffer_error.line_content
             self._session.add(error)
