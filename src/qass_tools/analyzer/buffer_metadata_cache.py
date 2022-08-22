@@ -129,7 +129,7 @@ class BufferMetadataCache:
         self._db = session
         self.Buffer_cls = Buffer_cls
 
-    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_./]*[p][0-9]*[c][0-9a-zA-Z]{1}[b]"):
+    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b]"):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
         
         :param paths: The absolute paths to the directory
