@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from pathlib import Path
 from enum import Enum
+from tqdm.auto import tqdm
 
 from .buffer_parser import Buffer
 
@@ -129,7 +130,7 @@ class BufferMetadataCache:
         self._db = session
         self.Buffer_cls = Buffer_cls
 
-    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_./]*[p][0-9]*[c][0-9a-zA-Z]{1}[b]"):
+    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^[a-zA-Z0-9_./]*[p][0-9]*[c][0-9a-zA-Z]{1}[b]", verbose = 1):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
         
         :param paths: The absolute paths to the directory
@@ -138,6 +139,8 @@ class BufferMetadataCache:
         :type recursive: bool, optional
         :param regex_pattern: The regex pattern validating the buffer naming format
         :type regex_pattern: string, optional
+        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
+        :type verbose: int, optional
         """
         pattern = re.compile(regex_pattern)
         for path in paths:
@@ -146,7 +149,7 @@ class BufferMetadataCache:
             else:
                 files = (str(file) for file in Path(path).glob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
             unsynchronized_files = self.get_non_synchronized_files(files)
-            self.add_files_to_cache(unsynchronized_files)
+            self.add_files_to_cache(unsynchronized_files, verbose = verbose)
 
     def synchronize_database(self, *sync_connections):
         # TODO
@@ -156,7 +159,7 @@ class BufferMetadataCache:
         """calculate the difference between the set of files and the set of synchronized files
 
         :param filepath: full path to the files
-        :type filepath: str
+        :type filepath: list, tuple of str
         :param files: filenames
         :type files: str
         :return: The set of files that are not synchronized
@@ -165,7 +168,15 @@ class BufferMetadataCache:
         unsynchronized_files = set(files).difference(synchronized_buffers)
         return unsynchronized_files
 
-    def add_files_to_cache(self, files):
+    def add_files_to_cache(self, files, verbose = 0):
+        """Add buffer files to the cache by providing the complete filepaths
+
+        :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
+        :type files: list, tuple of str
+        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
+        :type verbose: int, optional
+        """
+        files = tqdm(files) if verbose > 0 else files
         for file in files:
             try:
                 with self.Buffer_cls(file) as buffer:
