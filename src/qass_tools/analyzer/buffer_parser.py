@@ -25,7 +25,6 @@ from enum import IntEnum, auto
 from struct import unpack
 import math
 import warnings
-from deprecated import deprecated
 
 class InvalidArgumentError(ValueError):
     pass
@@ -614,7 +613,6 @@ class Buffer:
         """
         return self.db_header(db_idx)[key]
 
-    @deprecated(version="1.1.0")
     def io_ports(self, db_idx: int, byte: int = None, bit: int = None):
         """
         Deprecated method!
@@ -665,7 +663,6 @@ class Buffer:
 
         return io_word >> (bit - 1) & 1 == 1
 
-    @deprecated(version="1.1.0")
     def io_ports_spec(self, spec: int, byte: int, bit: int):
         """
         Deprecated method!
