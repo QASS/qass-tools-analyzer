@@ -4,5 +4,6 @@ requires = [
     "wheel",
     "numpy>=1.19.5",
     "tqdm>=4.64.0"
+    "Deprecated>=1.2.13"
 ]
 build-backend = "setuptools.build_meta"
