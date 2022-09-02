@@ -221,7 +221,17 @@ class BufferMetadataCache:
         return select(BufferMetadata).from_statement(text(q))
 
     @staticmethod
-    def create_session(engine = None, db_url = "sqlite:///buffer_metadata_db"):
+    def create_session(engine = None, db_url = "sqlite:///:memory:"):
+        """Create a session and initialize the schema for the BufferMetadataCache. If an engine is provided
+        the schema will be expanded by the buffer_metadata table.
+        
+        :param engine: An instance of a sqlalchemy engine. Typically sqlalchemy.create_engine()
+        :type engine:
+        :param db_url: The string used to create the engine. This can be a psycopg2, mysql or sqlite3 string. The default will create the database in main memory.
+        :type db_url: str
+        :return: A sqlalchemy session instance
+        :rtype: sqlalchemy.orm.Session
+        """
         if engine is None:
             engine = create_engine(db_url)
         session = Session(engine)
