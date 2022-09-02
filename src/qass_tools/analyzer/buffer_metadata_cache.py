@@ -226,6 +226,19 @@ class BufferMetadataCache:
             buffers.sort(key = sort_key)
         return [buffer.filepath for buffer in buffers]
 
+    def get_matching_buffers(self, buffer_metadata = None, filter_function = None, sort_key = None):
+        """Calls get_matching_files and converts the result to Buffer objects
+
+        :return: List of Buffer objects
+        :rtype: list
+        """
+        files = self.get_matching_files(buffer_metadata = buffer_metadata, filter_function = filter_function, sort_key = sort_key)
+        buffers = []
+        for file in files:
+            with self.Buffer_cls(file) as buffer:
+                buffers.append(buffer)
+        return buffers
+
     def get_buffer_metadata_query(self, buffer_metadata):
         q = "SELECT * FROM buffer_metadata WHERE "
         for prop in self.BufferMetadata.properties:
