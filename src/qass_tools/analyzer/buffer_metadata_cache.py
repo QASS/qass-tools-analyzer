@@ -177,7 +177,7 @@ class BufferMetadataCache:
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         """
-        files = tqdm(files) if verbose > 0 else files
+        files = tqdm(files, desc = "Adding Buffers") if verbose > 0 and len(files) > 0 else files
         for file in files:
             try:
                 with self.Buffer_cls(file) as buffer:
