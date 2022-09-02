@@ -1595,7 +1595,7 @@ def filter_buffers(directory, filters):
                     continue
                 if 'avg_time' in filters and filters['avg_time'] != buff.avg_time:
                     continue
-                if 'avg_frq' in filters and filters['avg_frq'] != buff.frq_time:
+                if 'avg_frq' in filters and filters['avg_frq'] != buff.avg_frq:
                     continue
 
                 buffers.append(buff)
