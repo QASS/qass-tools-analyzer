@@ -27,13 +27,27 @@ def main():
     cache = BufferMetadataCache(BufferMetadataCache.create_session(), bp.buffer)
     # syncing is only needed once. Resyncing new files is still a lot faster than opening every buffer file
     # deleted files are not yet removed from the database
-    cache.synchronize_directory("/directory/to/sync/**") # replace with your path
+    cache.synchronize_directory("/directory/to/sync/") # replace with your path
 
     # search for matching metadata
     # create a metadata object with the properties you want the results to match
     buffer_metadata = BufferMetadata(frq_bands = 512, channel = 1, compression_time = 4, datatype = bp.Buffer.DATATYPE.COMP_AVERAGE)
     # query the cache using the metadata object
     matching_files = cache.get_matching_files(buffer_metadata = buffer_metadata) # returns a list of complete filepaths as strings
+
+    # Returns all buffer filepaths with channel = 1, A frequency compression of 4, 
+    # processes above 100 sorted by the process number
+    files = cache.get_matching_files(
+                    buffer_metadata = BufferMetadata(channel = 1, compression_frq = 4),
+                    filter_function = lambda bm: bm.process > 100,
+                    sort_key = lambda bm: bm.process)
+
+    # Returns all buffer objects with channel = 1, A frequency compression of 4, 
+    # processes above 100 sorted by the process number
+    buffers = cache.get_matching_buffers(
+                    buffer_metadata = BufferMetadata(channel = 1, compression_frq = 4),
+                    filter_function = lambda bm: bm.process > 100,
+                    sort_key = lambda bm: bm.process)
 
     # providing a filter function
     # the following is equivalent to the above query that uses the BufferMetadata object
