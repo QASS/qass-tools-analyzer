@@ -936,7 +936,7 @@ class Buffer:
                 result_arr[entries_before:entries_before+len(times), times_col] = times
 
             if index_col is not None:
-                index = np.arange(entries_before, entries_before + len(f_value_list), dtype=int)
+                index = np.arange(entries_before, entries_before + entries_expected, dtype=int)
                 result_arr[entries_before:entries_before+len(index), index_col] = index
 
             if specs_col is not None:
