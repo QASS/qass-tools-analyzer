@@ -133,7 +133,7 @@ class StreamSlice:
     @property
     def times(self) -> np.ndarray:
         """Returns numpy array with spectimes in ns"""
-        return np.arange(self.start_spec(), self.end_spec(), dtype=int) * self.__spec_duration
+        return spec_times()
 
     def smooth_frq(self, window_size_bands: int):
         new = self.__copy()
