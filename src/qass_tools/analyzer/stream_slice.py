@@ -130,6 +130,11 @@ class StreamSlice:
     def data(self):
         return self.__arr
     
+    @property
+    def times(self) -> np.ndarray:
+        """Returns numpy array with spectimes in ns"""
+        return np.arange(self.start_spec(), self.end_spec(), dtype=int) * self.__spec_duration
+
     def smooth_frq(self, window_size_bands: int):
         new = self.__copy()
         new.__arr = signaltools.smooth(new.data, window_size_bands, axis=1)
