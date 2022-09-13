@@ -28,7 +28,7 @@ class StreamSlice:
     The class is immutable. All functions that apply changes to the slice return a new object.
     This does not cost much performance since the data array is usually not deep copied.
     """
-    
+
     def __init__(self,
                  stream: Buffer_Py_IF,
                  from_time_ns: int = None,
@@ -89,50 +89,67 @@ class StreamSlice:
         new.__stream = self.__stream
         new.__arr = self.__arr
         return new
-    
+
     @property
     def start_spec(self) -> int:
+        """Returns the absolute spectrum number of the first spectrum in the slice"""
+
         return self.__start_time // self.__spec_duration
-    
+
     @property
     def end_spec(self) -> int:
+        """Returns the absolute spectrum number of the last spectrum in the slice"""
         return self.start_spec + len(self.__arr)
-    
+
     @property
     def start_time(self):
+        """
+        Returns the point in time in [ns] of the first spectrum in the slice.
+        The time is relative to the measurement start.
+        """
         return self.__start_time
-    
+
     @property
     def end_time(self):
+        """
+        Returns the point in time in [ns] of the last spectrum in the slice.
+        The time is relative to the measurement start.
+        """
         return self.__start_time + len(self.__arr) * self.__spec_duration
-    
+
     @property
-    def spec_count(self):
+    def spec_count(self) -> int:
+        """Returns the number of spectra in the slice."""
         return self.__arr.shape[0]
-    
+
     @property
     def frq_per_band(self):
+        """Returns the freqeuncy bandwidth of each datapoint in the slice in [Hz]."""
         return self.__frq_per_band
-    
+
     @property
-    def frq_band_count(self):
+    def frq_band_count(self) -> int:
+        """Returns the number frequency bands in the slice"""
         return self.__arr.shape[1]
-    
+
     @property
-    def start_frequency(self):
+    def start_frequency(self) -> int:
+        """Returns the lowest frequency in a spectrum of the slice in [Hz]."""
         return self.__start_frq
-    
+
     @property
     def end_frequency(self):
+        """Returns the lowest frequency in a spectrum of the slice in [Hz]."""
         return self.__start_frq + self.frq_band_count * self.__frq_per_band
-    
+
     @property
-    def data(self):
+    def data(self) -> np.ndarray:
+        """Returns the data of the slice as an numpy array"""
         return self.__arr
-    
+
     @property
     def times(self) -> np.ndarray:
-        """Returns numpy array with spectimes in ns"""
+        """Returns a numpy array with the times of the slice spectra in [ns]"""
         return spec_times()
 
     def smooth_frq(self, window_size_bands: int):
@@ -140,25 +157,25 @@ class StreamSlice:
         new.__arr = signaltools.smooth(new.data, window_size_bands, axis=1)
         new.__start_frq += window_size_bands / 2 * self.__frq_per_band
         return new
-    
+
     def smooth_time(self, window_size_specs: int):
         new = self.__copy()
         new.__arr = signaltools.smooth(new.data, window_size_specs, axis=0)
         new.__start_time += window_size_specs / 2 * self.__spec_duration
         return new
-    
+
     def compress_frq(self, compression: int):
         new = self.__copy()
         new.__arr = signaltools.compress(new.data, compression, axis=1)
         new.__frq_per_band *= compression
         return new
-    
+
     def compress_time(self, compression: int):
         new = self.__copy()
         new.__arr = signaltools.compress(new.data, compression, axis=0)
         new.__spec_duration *= compression
         return new
-    
+
     def smooth_compress(self, smooth_time: int=None, compress_time: int=None, smooth_frq: int=None, compress_frq: int=None):
         new = self.__copy()
         if smooth_time is not None:
@@ -178,17 +195,55 @@ class StreamSlice:
             new.__frq_per_band *= compress_frq
         
         return new
-    
-    def spec_times(self, specs: np.ndarray = None) -> int:
+
+    def spec_times(self, specs: np.ndarray = None) -> np.ndarray:
+        """
+        Returns the times of all spectra in the slice if no specs array is given.
+        Otherwise the points in time of the given spectra are retuned.
+        All times are relative to the measurement start.
+        
+        :param specs: A numpy array with the spectrum numbers to get the points in time for., defaults to None
+        :type specs: np.ndarray, optional
+
+        :return: A numpy array with the points in time in [ns].
+        :rtype: np.ndarray
+        """
         if specs is None:
             return np.arange(self.spec_count) * self.__spec_duration + self.__start_time
         else:
             return specs * self.__spec_duration + self.__start_time
-    
+ 
     def spec_time(self, spec: int) -> int:
+        """
+        Returns the point in time relative to the measurement start
+        of a given spectrum.
+
+        :param spec: Spectrum to get the point in time to.
+        type: int
+
+        :return: Point in time of the given spectrum in [ns].
+        :rtype: int
+        """
         return spec * self.__spec_duration + self.__start_time
     
-    def crop_specs(self, start_spec, end_spec):
+    def crop_specs(self, start_spec: int, end_spec: int):
+        """
+        Method to crop the slice in the time range.
+        The cropping is based on the given spectrum numbers.
+        Returns a new instance of Streamslice with the cropped data.
+
+        :param start_spec: spectrum number the new slice starts with.
+        :type start_spec: int
+
+        :param end_spec: spectrum number the new slice ends with.
+        :type end_spec: int
+
+        :raises ValueError: if the start_spec or end_spec is not in range of the slice.
+            Or the start_spec is greater then the end_spec.
+
+        :return: A StreamSlice object with the cropped data.
+        :rtype: StreamSlice
+        """
         new = self.__copy()
         if not (0 <= start_spec <= len(new.__arr)):
             raise ValueError(f"start_spec is out of range: {start_spec} ({len(new.__arr)})")
