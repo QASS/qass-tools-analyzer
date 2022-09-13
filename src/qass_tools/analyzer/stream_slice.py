@@ -80,8 +80,8 @@ class StreamSlice:
         if from_band or to_band:
             self.__crop_frequency_bands(from_band, to_band)
 
-    def __copy(self):
-        new = StreamSlice.__new__(StreamSlice)
+    def __copy__(self):
+        new = self.__class__.__new__(self.__class__)
         new.__start_time = self.__start_time
         new.__start_frq = self.__start_frq
         new.__spec_duration = self.__spec_duration
