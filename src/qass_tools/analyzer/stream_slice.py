@@ -256,15 +256,41 @@ class StreamSlice:
         new.__start_time += start_spec * new.__spec_duration
         return new
     
-    def crop_times(self, start_time: int, end_time: int):
-        return self.crop_specs(
-            int(start_time // self.__spec_duration),
-            int(end_time // self.__spec_duration)
-        )
-    
-    def crop_times_abs(self, start_time: int, end_time: int):
-        return self.crop_times(start_time - self.__start_time, end_time - self.__start_time)
-    
+    def crop_times(self, start_time: int, end_time: int, relative: bool = True):
+        """
+        Method to crop the slice in time range.
+        The cropping is based on given points in time. Unit is [ns].
+        Returns a new instance of StreamSlice with the cropped data.
+        If relative is set to False the point in time is in relation
+        to the start of the measurement. Otherwise in relation to the
+        start of the slice.
+
+        :param start_time: A point in time the new slice should begin from in [ns].
+        :type start_time: int
+
+        :param end_time: A point in time the new slice should end with in [ns].
+        :type end_time: int
+
+        :param relative: A bool flag to mark the given points in time as related to
+            the begin of the slice.
+        :type relative: bool, optional
+
+        :return: A StreamSlice object with the cropped data.
+        :rtype: StreamSlice
+        """
+        if not relative:
+            start_time -= self.__start_time
+            end_time -= self.__start_time
+
+        try:
+            return self.crop_specs(
+                int(start_time // self.__spec_duration),
+                int(end_time // self.__spec_duration)
+                )
+        
+        except ValueError as error:
+            raise ValueError(f"The start time {start_time} or end time {end_time} is not valid.") from error
+   
     def shift_by_spec(self, shift_specs: int):
         return self.shift_by_time(shift_specs * self.__spec_duration)
     
