@@ -19,7 +19,6 @@
 #
 from Analyzer.Core import Buffer_Py_IF
 import numpy as np
-from qass_tools.analytic import signaltools
 
 
 class StreamSlice:
@@ -152,46 +151,71 @@ class StreamSlice:
         """Returns a numpy array with the times of the slice spectra in [ns]"""
         return spec_times()
 
+    def _smooth_frq(self, window_size_bands):
+        out_shape = list(self.__arr.shape)
+        out_shape[1] += 1
+        curve_cumsum = np.empty(out_shape)
+
+        np.cumsum(self.__arr, axis=1, out=curve_cumsum[:, 1:])
+        zeros_shape = list(self.__arr.shape)
+        zeros_shape[1] = 1
+        curve_cumsum[:, 0:1] = np.zeros(zeros_shape)
+
+        return (curve_cumsum[:, window_size:] - curve_cumsum[:, :-window_size]) / window_size
+
     def smooth_frq(self, window_size_bands: int):
         new = self.__copy__()
-        new.__arr = signaltools.smooth(new.data, window_size_bands, axis=1)
+        new.__arr = new._smooth_frq(window_size_bands)
+        
         new.__start_frq += window_size_bands / 2 * self.__frq_per_band
         return new
 
+    def _smooth_time(self, window_size_specs):
+        out_shape = list(self.__arr.shape)
+        out_shape[0] += 1
+        curve_cumsum = np.empty(out_shape)
+        
+        np.cumsum(self.__arr, axis=0, out=curve_cumsum[1:])
+        zeros_shape = list(self.__arr.shape)
+        zeros_shape[0] = 1
+        curve_cumsum[0] = np.zeros(zeros_shape)
+        
+        return (curve_cumsum[window_size:] - curve_cumsum[:-window_size]) / window_size
+
     def smooth_time(self, window_size_specs: int):
         new = self.__copy__()
-        new.__arr = signaltools.smooth(new.data, window_size_specs, axis=0)
+        new.__arr = new._smooth_time(window_size_specs)
         new.__start_time += window_size_specs / 2 * self.__spec_duration
         return new
 
     def compress_frq(self, compression: int):
         new = self.__copy__()
-        new.__arr = signaltools.compress(new.data, compression, axis=1)
+        new.__arr = new.__arr[:, ::compression]
         new.__frq_per_band *= compression
         return new
 
     def compress_time(self, compression: int):
         new = self.__copy__()
-        new.__arr = signaltools.compress(new.data, compression, axis=0)
+        new.__arr = new.__arr[::compression]
         new.__spec_duration *= compression
         return new
 
     def smooth_compress(self, smooth_time: int=None, compress_time: int=None, smooth_frq: int=None, compress_frq: int=None):
         new = self.__copy__()
         if smooth_time is not None:
-            new.__arr = signaltools.smooth(new.data, smooth_time, axis=0)
+            new.__arr = new._smooth_time(smooth_time)
             new.__start_time += smooth_time / 2 * self.__spec_duration
             
         if compress_time is not None:
-            new.__arr = signaltools.compress(new.data, compress_time, axis=0)
+            new.__arr = new.__arr[::compress_time]
             new.__spec_duration *= compress_time
         
         if smooth_frq is not None:
-            new.__arr = signaltools.smooth(new.data, smooth_frq, axis=1)
+            new.__arr = new._smooth_frq(smooth_frq)
             new.__start_frq += smooth_frq / 2 * self.__frq_per_band
         
         if compress_frq is not None:
-            new.__arr = signaltools.compress(new.data, compress_frq, axis=1)
+            new.__arr = new.__arr[:, ::compress_frq]
             new.__frq_per_band *= compress_frq
         
         return new
