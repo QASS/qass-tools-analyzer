@@ -153,31 +153,31 @@ class StreamSlice:
         return spec_times()
 
     def smooth_frq(self, window_size_bands: int):
-        new = self.__copy()
+        new = self.__copy__()
         new.__arr = signaltools.smooth(new.data, window_size_bands, axis=1)
         new.__start_frq += window_size_bands / 2 * self.__frq_per_band
         return new
 
     def smooth_time(self, window_size_specs: int):
-        new = self.__copy()
+        new = self.__copy__()
         new.__arr = signaltools.smooth(new.data, window_size_specs, axis=0)
         new.__start_time += window_size_specs / 2 * self.__spec_duration
         return new
 
     def compress_frq(self, compression: int):
-        new = self.__copy()
+        new = self.__copy__()
         new.__arr = signaltools.compress(new.data, compression, axis=1)
         new.__frq_per_band *= compression
         return new
 
     def compress_time(self, compression: int):
-        new = self.__copy()
+        new = self.__copy__()
         new.__arr = signaltools.compress(new.data, compression, axis=0)
         new.__spec_duration *= compression
         return new
 
     def smooth_compress(self, smooth_time: int=None, compress_time: int=None, smooth_frq: int=None, compress_frq: int=None):
-        new = self.__copy()
+        new = self.__copy__()
         if smooth_time is not None:
             new.__arr = signaltools.smooth(new.data, smooth_time, axis=0)
             new.__start_time += smooth_time / 2 * self.__spec_duration
@@ -244,7 +244,7 @@ class StreamSlice:
         :return: A StreamSlice object with the cropped data.
         :rtype: StreamSlice
         """
-        new = self.__copy()
+        new = self.__copy__()
         if not (0 <= start_spec <= len(new.__arr)):
             raise ValueError(f"start_spec is out of range: {start_spec} ({len(new.__arr)})")
         if not (0 <= end_spec <= len(new.__arr)):
@@ -269,7 +269,7 @@ class StreamSlice:
         return self.shift_by_time(shift_specs * self.__spec_duration)
     
     def shift_by_time(self, shift_time: float):
-        new = self.__copy()
+        new = self.__copy__()
         new.__start_time += shift_time
         return new
 
@@ -286,7 +286,7 @@ class StreamSlice:
         self.__arr = self.__arr[:, from_band:to_band]
     
     def crop_frequency_bands(self, from_band: int = None, to_band: int = None):
-        new = self.__copy()
+        new = self.__copy__()
         new.__crop_frequency_bands(from_band, to_band)
         return new
     
