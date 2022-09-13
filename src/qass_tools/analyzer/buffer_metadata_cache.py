@@ -177,7 +177,7 @@ class BufferMetadataCache:
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         """
-        files = tqdm(files) if verbose > 0 else files
+        files = tqdm(files, desc = "Adding Buffers") if verbose > 0 and len(files) > 0 else files
         for file in files:
             try:
                 with self.Buffer_cls(file) as buffer:
@@ -189,11 +189,26 @@ class BufferMetadataCache:
                 warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
         self._db.commit()
 
-    def get_matching_files(self, buffer_metadata = None, filter_function = None):
+    def get_matching_files(self, buffer_metadata = None, filter_function = None, sort_key = None):
         """Query the Cache for all files matching the properties that are set in the BufferMetadata object
 
-        :param buffer_metadata: A metadata object acting as the filter
+
+        .. code-block::
+                BufferMetadataCache.get_matching_files(
+                    buffer_metadata = BufferMetadata(channel = 1, compression_frq = 4),
+                    filter_function = lambda bm: bm.process > 100,
+                    sort_key = lambda bm: bm.process)
+                # Returns all buffer filepaths with channel = 1, A frequency compression of 4, 
+                # processes above 100 sorted by the process number
+
+        :param buffer_metadata: A metadata object acting as the filter. Only buffers matching the attributes of the provided
+            BufferMetadata object are selected. This operation is done on the database
         :type buffer_metadata: BufferMetadata
+        :param filter_function: A function taking a BufferMetadata object as a parameter returning a boolean.
+            This means a conjunction of BufferMetadata attributes.
+        :type filter_function: function
+        :param sort_key: A function taking a BufferMetadata object as a parameter returning an attribute the objects can be sorted with
+        :type sort_key: function
         :return: A list with the paths to the buffer files that match the buffer_metadata
         :rtype: list[str]
         """
@@ -207,7 +222,22 @@ class BufferMetadataCache:
 
         if filter_function is not None:
             buffers = [buffer for buffer in buffers if filter_function(buffer)]
+        if sort_key is not None:
+            buffers.sort(key = sort_key)
         return [buffer.filepath for buffer in buffers]
+
+    def get_matching_buffers(self, buffer_metadata = None, filter_function = None, sort_key = None):
+        """Calls get_matching_files and converts the result to Buffer objects
+
+        :return: List of Buffer objects
+        :rtype: list
+        """
+        files = self.get_matching_files(buffer_metadata = buffer_metadata, filter_function = filter_function, sort_key = sort_key)
+        buffers = []
+        for file in files:
+            with self.Buffer_cls(file) as buffer:
+                buffers.append(buffer)
+        return buffers
 
     def get_buffer_metadata_query(self, buffer_metadata):
         q = "SELECT * FROM buffer_metadata WHERE "
@@ -221,7 +251,17 @@ class BufferMetadataCache:
         return select(BufferMetadata).from_statement(text(q))
 
     @staticmethod
-    def create_session(engine = None, db_url = "sqlite:///buffer_metadata_db"):
+    def create_session(engine = None, db_url = "sqlite:///:memory:"):
+        """Create a session and initialize the schema for the BufferMetadataCache. If an engine is provided
+        the schema will be expanded by the buffer_metadata table.
+        
+        :param engine: An instance of a sqlalchemy engine. Typically sqlalchemy.create_engine()
+        :type engine:
+        :param db_url: The string used to create the engine. This can be a psycopg2, mysql or sqlite3 string. The default will create the database in main memory.
+        :type db_url: str
+        :return: A sqlalchemy session instance
+        :rtype: sqlalchemy.orm.Session
+        """
         if engine is None:
             engine = create_engine(db_url)
         session = Session(engine)
