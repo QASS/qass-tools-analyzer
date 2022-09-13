@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from Analyzer.Core import Buffer_Py_IF, RunTimeInfo_IF
+from Analyzer.Core import Buffer_Py_IF
+from Analyzer.OpNet import RunTimeInfo_IF
 from typing import Tuple, List
 
 
