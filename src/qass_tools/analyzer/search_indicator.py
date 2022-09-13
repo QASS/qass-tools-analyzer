@@ -73,5 +73,8 @@ class SearchIndicator:
         self._si.setFEndHz(stream.getHighFrequency() if not self._end_fband else self._end_fband * stream.getFrqPerBand())
 
     def tick(self):
+        """
+        The function tick has to bee called in every iteration of the operator network during the phase process_run().
+        """
         self._si.setTrackingTime(self._rti.getCurrentTime())
         self._out_connector.setOutputValue(self._si)
