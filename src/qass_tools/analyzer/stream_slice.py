@@ -250,7 +250,7 @@ class StreamSlice:
         """
         return spec * self.__spec_duration + self.__start_time
     
-    def crop_specs(self, start_spec: int, end_spec: int):
+    def crop_specs(self, start_spec: int, end_spec: int, relative: bool = True):
         """
         Method to crop the slice in the time range.
         The cropping is based on the given spectrum numbers.
@@ -268,17 +268,21 @@ class StreamSlice:
         :return: A StreamSlice object with the cropped data.
         :rtype: StreamSlice
         """
-        new = self.__copy__()
-        if not (0 <= start_spec <= len(new.__arr)):
-            raise ValueError(f"start_spec is out of range: {start_spec} ({len(new.__arr)})")
-        if not (0 <= end_spec <= len(new.__arr)):
-            raise ValueError(f"end_spec is out of range: {end_spec} ({len(new.__arr)})")
+        if not relative:
+            start_spec -= self.start_spec
+            end_spec -= self.start_spec
+
+        if not (0 <= start_spec <= len(self.__arr)):
+            raise ValueError(f"start_spec is out of range: {start_spec} ({len(self.__arr)})")
+        if not (0 <= end_spec <= len(self.__arr)):
+            raise ValueError(f"end_spec is out of range: {end_spec} ({len(self.__arr)})")
         if start_spec > end_spec:
             raise ValueError("start_spec is greater than end_spec")
-        
+
+        new = self.__copy()
         new.__arr = new.__arr[start_spec:end_spec]
         new.__start_time += start_spec * new.__spec_duration
-        return new
+        return new   
     
     def crop_times(self, start_time: int, end_time: int, relative: bool = True):
         """
