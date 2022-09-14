@@ -396,6 +396,7 @@ class StreamSlice:
         return new
     
     def crop_frequency(self, from_frq: int = None, to_frq: int = None):
+        """
         Method to crop the slice in the frequency range.
         The cropping is based on the given frequencies. The Unit is [Hz].
         The whole frequency range is inclusive.
