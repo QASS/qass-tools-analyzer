@@ -363,12 +363,18 @@ class StreamSlice:
         return new
 
     def __crop_frequency_bands(self, from_band: int = None, to_band: int = None):
+        if not from_band:
+            from_band = 0
+        if not to_band:
+            to_band = self.__arr.shape[1]
+
         if not (0 <= from_band <= self.__arr.shape[1]):
             raise ValueError(f"from_band out of range: {from_band}")
         if not (0 < to_band <= self.__arr.shape[1]):
             raise ValueError(f"to_band out of range: {to_band}")
         
         if from_band > to_band:
+
             raise ValueError("from_band is greater than to_band")
         
         self.__start_frq += from_band * self.__frq_per_band
