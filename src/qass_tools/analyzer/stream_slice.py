@@ -151,7 +151,7 @@ class StreamSlice:
         """Returns a numpy array with the times of the slice spectra in [ns]"""
         return spec_times()
 
-    def _smooth_frq(self, window_size_bands):
+    def __smooth_frq(self, window_size_bands):
         out_shape = list(self.__arr.shape)
         out_shape[1] += 1
         curve_cumsum = np.empty(out_shape)
@@ -165,12 +165,12 @@ class StreamSlice:
 
     def smooth_frq(self, window_size_bands: int):
         new = self.__copy__()
-        new.__arr = new._smooth_frq(window_size_bands)
+        new.__arr = new.__smooth_frq(window_size_bands)
         
         new.__start_frq += window_size_bands / 2 * self.__frq_per_band
         return new
 
-    def _smooth_time(self, window_size_specs):
+    def __smooth_time(self, window_size_specs):
         out_shape = list(self.__arr.shape)
         out_shape[0] += 1
         curve_cumsum = np.empty(out_shape)
@@ -184,7 +184,7 @@ class StreamSlice:
 
     def smooth_time(self, window_size_specs: int):
         new = self.__copy__()
-        new.__arr = new._smooth_time(window_size_specs)
+        new.__arr = new.__smooth_time(window_size_specs)
         new.__start_time += window_size_specs / 2 * self.__spec_duration
         return new
 
@@ -203,7 +203,7 @@ class StreamSlice:
     def smooth_compress(self, smooth_time: int=None, compress_time: int=None, smooth_frq: int=None, compress_frq: int=None):
         new = self.__copy__()
         if smooth_time is not None:
-            new.__arr = new._smooth_time(smooth_time)
+            new.__arr = new.__smooth_time(smooth_time)
             new.__start_time += smooth_time / 2 * self.__spec_duration
             
         if compress_time is not None:
@@ -211,7 +211,7 @@ class StreamSlice:
             new.__spec_duration *= compress_time
         
         if smooth_frq is not None:
-            new.__arr = new._smooth_frq(smooth_frq)
+            new.__arr = new.__smooth_frq(smooth_frq)
             new.__start_frq += smooth_frq / 2 * self.__frq_per_band
         
         if compress_frq is not None:
