@@ -49,7 +49,7 @@ class InputObserver:
         :param callback: The callback function is called.
         Its signature must be: ((byte, bit, state, delay), start_time, end_time).
         The times are provided in nanoseconds.
-
+        
         :param update_time_ns: declares how often the IO input state is checked for changes.
         :type: int
         """
@@ -63,6 +63,7 @@ class InputObserver:
         self._spec_duration = None
         self._frq_band_count = None
         self._update_time_ms = update_time_ms
+        self._stream_update_specs = None
 
     def process_init(self, stream: Buffer_Py_IF) -> None:
         """
@@ -81,26 +82,26 @@ class InputObserver:
             io_specs_updates_raw = 15  # For hardware reasons the Optimizer4D records io changes every 15 raw specs.
             self._stream_update_specs = max(1, io_specs_updates_raw / stream.getCompressionTime())
         else:
-            self._stream_update = self._update_time_ms * 1e6 / self._spec_duration()
+            self._stream_update_specs = self._update_time_ms * 1e6 / self._spec_duration()
 
     def tick(self, ignore_getIO_exception: bool = False) -> None:
         """
         This function must be called in the phase eval_process_run() of the operator network.
         It is called for every single spectrum and checks the current input state.
-
+        
         :param ignore_getIO_exception:
         If True exceptions raised by missing IO information in the last specs of a buffer are ignored.
         Otherwise they will be reraised.
-
+        
         :type ignore_getIO_exception: bool
         """
         spec_duration = self._spec_duration
         curr_spec = int(self._rti.getCurrentTime() // spec_duration)
-
-        specs = np.arange(self._last_spec, curr_spec, self._stream_update)
-        if not len(specs):
+        
+        specs = np.arange(self._last_spec, curr_spec, self._stream_update_specs)
+        if len(specs):
             self._last_spec = float(specs[-1])
-        specs = specs.astype(int)
+        specs = specs.astype(int)#[int(s) for s in specs]
         for spec in specs:
             stream_pos = spec * self._frq_band_count
             for idx, (byte, bit, state, delay) in enumerate(self._inputs):
