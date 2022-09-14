@@ -279,7 +279,7 @@ class StreamSlice:
         if start_spec > end_spec:
             raise ValueError("start_spec is greater than end_spec")
 
-        new = self.__copy()
+        new = self.__copy__()
         new.__arr = new.__arr[start_spec:end_spec]
         new.__start_time += start_spec * new.__spec_duration
         return new   
