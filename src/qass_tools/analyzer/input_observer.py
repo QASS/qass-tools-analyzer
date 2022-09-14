@@ -36,17 +36,21 @@ class InputObserver:
     process_end() is called to finish all currently detected periods. The callback is then called even if the delay did not expire.
     """
 
-    def __init__(self, rti: RunTimeInfo_IF, inputs: List[Tuple[int, int, bool, int]], callback):
+    def __init__(self, rti: RunTimeInfo_IF, inputs: List[Tuple[int, int, bool, int]], callback, update_time_ms: int = None):
         """
         :param rti: Operator network's runtime info object. This object contains information about the current analysis.
         :type rti: RunTimeInfo_IF
 
         :param inputs: list of input oberserver configurations.
         Each tuple in the list must habe the following form: (byte, bit, state [True/False], delay [in nanoseconds])
+        :type inputs: List[Tuple[int, int, bool, int]]
 
         :param callback: The callback function is called.
         Its signature must be: ((byte, bit, state, delay), start_time, end_time).
         The times are provided in nanoseconds.
+
+        :param update_time_ns: declares how often the IO input state is checked for changes.
+        :type: int
         """
         self._rti = rti
         self._inputs = inputs
@@ -57,6 +61,7 @@ class InputObserver:
         self._callback = callback
         self._spec_duration = None
         self._frq_band_count = None
+        self._update_time_ms = update_time_ms
 
     def process_init(self, stream: Buffer_Py_IF) -> None:
         """
@@ -71,21 +76,31 @@ class InputObserver:
         self._finished_ranges = []
         self._spec_duration = stream.getSpecDuration()
         self._frq_band_count = stream.getFrqBandCount()
+        if self._update_time_ms is None:
+            io_specs_updates_raw = 15  # For hardware reasons the Optimizer4D records io changes every 15 raw specs.
+            self._stream_update_specs = max(1, io_specs_updates_raw / stream.getCompressionTime()))
+        else:
+            self._stream_update = self._update_time_ms * 1e6 / self._spec_duration()
 
     def tick(self, ignore_getIO_exception: bool = False) -> None:
         """
         This function must be called in the phase eval_process_run() of the operator network.
         It is called for every single spectrum and checks the current input state.
-        
+
         :param ignore_getIO_exception:
         If True exceptions raised by missing IO information in the last specs of a buffer are ignored.
         Otherwise they will be reraised.
-        
+
         :type ignore_getIO_exception: bool
         """
         spec_duration = self._spec_duration
         curr_spec = int(self._rti.getCurrentTime() // spec_duration)
-        for spec in range(self._last_spec, curr_spec):
+
+        specs = np.arange(self._last_spec, curr_spec, self._stream_update)
+        if not len(specs):
+            self._last_spec = float(specs[-1])
+        specs = specs.astype(int)
+        for spec in specs:
             stream_pos = spec * self._frq_band_count
             for idx, (byte, bit, state, delay) in enumerate(self._inputs):
                 try:
@@ -112,8 +127,6 @@ class InputObserver:
 
             for cfg, start, end in exec_ranges:
                 self._callback(cfg, start, end)
-
-        self._last_spec = curr_spec
 
     def process_end(self) -> None:
         """
