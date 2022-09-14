@@ -396,30 +396,6 @@ class StreamSlice:
         return new
     
     def crop_frequency(self, from_frq: int = None, to_frq: int = None):
-        """
-        Method to crop the slice in the frequency range.
-        The cropping is based on the given frequencies. The Unit is [Hz].
-        Returns a new instance of Streamslice with the cropped data.
-
-        :param from_frq: frequency in [Hz] the new slice should begin with.
-        :type from_frq: int
-
-        :param to_frq: frequency in [Hz] the new slice should end with.
-        :type to_frq: int
-
-        :return: A StreamSlice object with the cropped data.
-        :rtype: StreamSlice
-        """
-
-        if from_frq is None:
-            from_band = None
-        else:
-            from_band = int((from_frq - self.__start_frq) // self.__frq_per_band)
-            
-        if to_frq is None:
-            to_band = None
-        else:
-        """
         Method to crop the slice in the frequency range.
         The cropping is based on the given frequencies. The Unit is [Hz].
         The whole frequency range is inclusive.
