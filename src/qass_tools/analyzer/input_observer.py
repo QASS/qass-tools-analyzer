@@ -20,6 +20,7 @@
 from Analyzer.Core import Buffer_Py_IF
 from Analyzer.OpNet import RunTimeInfo_IF
 from typing import Tuple, List
+import numpy as np
 
 
 class InputObserver:
@@ -78,7 +79,7 @@ class InputObserver:
         self._frq_band_count = stream.getFrqBandCount()
         if self._update_time_ms is None:
             io_specs_updates_raw = 15  # For hardware reasons the Optimizer4D records io changes every 15 raw specs.
-            self._stream_update_specs = max(1, io_specs_updates_raw / stream.getCompressionTime()))
+            self._stream_update_specs = max(1, io_specs_updates_raw / stream.getCompressionTime())
         else:
             self._stream_update = self._update_time_ms * 1e6 / self._spec_duration()
 
