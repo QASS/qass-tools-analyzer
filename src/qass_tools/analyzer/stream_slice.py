@@ -223,8 +223,11 @@ class StreamSlice:
     def spec_times(self, specs: np.ndarray = None) -> np.ndarray:
         """
         Returns the times of all spectra in the slice if no specs array is given.
-        Otherwise the points in time of the given spectra are retuned.
+        Otherwise the points in time of the given spectra are returned.
         All times are relative to the measurement start.
+        .. note: The times are calculated with the current slices metadata.
+            This will also work for spectra which are not part of the slice
+            but this might return times which can't be mapped to specs of the original stream.
         
         :param specs: A numpy array with the spectrum numbers to get the points in time for., defaults to None
         :type specs: np.ndarray, optional
@@ -320,9 +323,41 @@ class StreamSlice:
             raise ValueError(f"The start time {start_time} or end time {end_time} is not valid.") from error
    
     def shift_by_spec(self, shift_specs: int):
+        """
+        Method to change the time base of a slice.
+        This could be necessary for syncing purposes.
+        Returns a new instance of StreamSlice with the time base shiftet
+        by the number of given shift specs.
+        A positive number shifts the time base foreward.
+        A negative number shifts the time base backward.
+        .. note:
+            This doesn't modify the underlying data
+
+        :param shift_specs: A number of spectrums to shift the time base
+        :type shift_specs: int
+
+        :return: A StreamSlice object with shifted time base
+        :rtype: StreamSlice
+        """
         return self.shift_by_time(shift_specs * self.__spec_duration)
     
     def shift_by_time(self, shift_time: float):
+        """
+        Method to change the time base of a slice.
+        This could be necessary for syncing purposes.
+        Returns a new instance of StreamSlice with the time base shiftet
+        by the number of given given time. The Unit is [ns].
+        A positive time shifts the time base forward.
+        A negative time shifts the time base backward.
+        .. note:
+            This doesn't modify the underlying data
+
+        :param shift_time: A time in [ns] to shift the time base.
+        :type shift_specs: float
+
+        :return: A StreamSlice object with shifted time base
+        :rtype: StreamSlice
+        """
         new = self.__copy__()
         new.__start_time += shift_time
         return new
@@ -340,18 +375,48 @@ class StreamSlice:
         self.__arr = self.__arr[:, from_band:to_band]
     
     def crop_frequency_bands(self, from_band: int = None, to_band: int = None):
+        """
+        Method to crop the slice in the frequency range.
+        The cropping is based on the given frequency band numbers.
+        Returns a new instance of Streamslice with the cropped data.
+
+        :param from_band: frequency band number the new slice begins with.
+        :type from_band: int
+
+        :param to_band: frequency band number the new slice ends with.
+        :type to_band: int
+
+        :return: A StreamSlice object with the cropped data.
+        :rtype: StreamSlice
+        """
+
         new = self.__copy__()
         new.__crop_frequency_bands(from_band, to_band)
         return new
     
     def crop_frequency(self, from_frq: int = None, to_frq: int = None):
+        """
+        Method to crop the slice in the frequency range.
+        The cropping is based on the given frequencies. The Unit is [Hz].
+        Returns a new instance of Streamslice with the cropped data.
+
+        :param from_frq: frequency in [Hz] the new slice should begin with.
+        :type from_frq: int
+
+        :param to_frq: frequency in [Hz] the new slice should end with.
+        :type to_frq: int
+
+        :return: A StreamSlice object with the cropped data.
+        :rtype: StreamSlice
+        """
+
         if from_frq is None:
             from_band = None
         else:
             from_band = int((from_frq - self.__start_frq) // self.__frq_per_band)
             
         if to_frq is None:
-            to_frq = None
+            to_band = None
         else:
             to_band = int((to_frq - self.__start_frq) // self.__frq_per_band)
         
