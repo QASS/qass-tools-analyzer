@@ -1,0 +1,188 @@
+{
+  "extracted_operators": [
+    {
+      "childOperators": [
+        {
+          "enabled": true,
+          "id": 3698,
+          "inputs": [
+            {
+              "contype": 1,
+              "id": 3699,
+              "name": "enable",
+              "shortText": "enable",
+              "type": "BOOL"
+            },
+            {
+              "contype": 4,
+              "id": 3700,
+              "name": "stream_in",
+              "shortText": "strea.",
+              "type": "Buffer"
+            }
+          ],
+          "outputs": [
+            {
+              "connections": [
+                {
+                  "buff_size": 1,
+                  "conn2": 3705,
+                  "pipeline": false,
+                  "points": []
+                }
+              ],
+              "contype": 6,
+              "id": 3701,
+              "name": "si_out",
+              "shortText": "si_out",
+              "type": "Search Indicator"
+            }
+          ],
+          "posX": -47,
+          "posY": 10,
+          "propagateParamWidget": true,
+          "specializationparams": {
+            "autoCommitBeforeRun": true,
+            "clockSlot_command": "forever",
+            "connIns": [
+              {
+                "first": "stream_in",
+                "second": "CT_BUFFER_P"
+              }
+            ],
+            "connOuts": [
+              {
+                "first": "si_out",
+                "second": "CT_OGL_SEARCH_FRAME"
+              }
+            ],
+            "documentation": "",
+            "openScriptAtStart": true,
+            "python_code": "aW1wb3J0IHNlYXJjaF9pbmRpY2F0b3IKCnNpID0gc2VhcmNoX2luZGljYXRvci5TZWFyY2hJbmRpY2F0b3IocnRpLCBzaV9vdXQsIGxhYmVsPSdNeVRlc3QnKQoKCmRlZiBldmFsX3Byb2Nlc3NfaW5pdCgpOgogICAgc3RyZWFtID0gc3RyZWFtX2luLnJlYWRJbnB1dFZhbHVlKCkKICAgIHNpLnByb2Nlc3Nfc3RhcnQoc3RyZWFtKQoKCmRlZiBldmFsX3Byb2Nlc3NfcnVuKCk6CiAgICBzaS50aWNrKCkK",
+            "resetGlobalScopeProcInit": false,
+            "runAsThread": true,
+            "scriptName": "",
+            "syncFile": false,
+            "syncFilePath": ""
+          },
+          "type": "libfaop_python.so"
+        },
+        {
+          "enabled": true,
+          "id": 3702,
+          "inputs": [],
+          "outputs": [
+            {
+              "connections": [
+                {
+                  "buff_size": 1,
+                  "conn2": 3700,
+                  "pipeline": false,
+                  "points": []
+                }
+              ],
+              "contype": 4,
+              "id": 3703,
+              "name": "stream buf",
+              "shortText": "Stream",
+              "type": "Buffer"
+            }
+          ],
+          "posX": -172,
+          "posY": 17,
+          "propagateParamWidget": true,
+          "specializationparams": {
+            "allowBufferLoading": false,
+            "compressionString": "chan:0;break:1;BCP:{ch:0;dm:2;dt:0;df:2;spf:512;adcbr:16;adct:2;rate:8000000;sfrq:4000000}",
+            "ignoreForStepWidth": false,
+            "isMonitor": false
+          },
+          "type": "PR_OP_StreamBuf"
+        },
+        {
+          "enabled": true,
+          "id": 3704,
+          "inputs": [
+            {
+              "contype": 6,
+              "id": 3705,
+              "name": "current search state",
+              "shortText": "curre.",
+              "type": "Search Indicator"
+            }
+          ],
+          "outputs": [],
+          "posX": 98,
+          "posY": 20,
+          "propagateParamWidget": true,
+          "specializationparams": {
+            "checked": false
+          },
+          "type": "OGL_VisualizeSearch"
+        }
+      ],
+      "enabled": true,
+      "id": 3696,
+      "inputs": [
+        {
+          "connections": [],
+          "contype": 2,
+          "id": 3697,
+          "name": "Clock",
+          "shortText": "Clock",
+          "type": "CLOCK"
+        }
+      ],
+      "name": "",
+      "outputs": [],
+      "posX": -1208.1279615073609,
+      "posY": 87,
+      "propagateParamWidget": true,
+      "type": "CustomOperator"
+    },
+    {
+      "enabled": true,
+      "id": 3708,
+      "inputs": [],
+      "outputs": [
+        {
+          "connections": [
+            {
+              "buff_size": 1,
+              "conn2": 3697,
+              "pipeline": false,
+              "points": []
+            }
+          ],
+          "contype": 2,
+          "id": 3709,
+          "name": "CLOCK",
+          "shortText": "Clock",
+          "type": "CLOCK"
+        }
+      ],
+      "posX": -1348,
+      "posY": 87,
+      "propagateParamWidget": true,
+      "specializationparams": {
+        "clockDivisor": 1,
+        "clockPeriod": 40000,
+        "configFlags": 0,
+        "fixedClockPeriod": false,
+        "fixedSimNr": false,
+        "invokeDefault": true,
+        "invokeMeasure": false,
+        "invokeMonitor": false,
+        "monitorAlwaysPinned": false,
+        "monitorIsPinned": false,
+        "monitorPinnable": true,
+        "showMonitor": false,
+        "simNr": -1,
+        "text": "search_indicator",
+        "timerange": false,
+        "trackingTime_onlyStreamOps": false
+      },
+      "type": "ClockSlotOperator"
+    }
+  ]
+}
