@@ -379,11 +379,12 @@ class StreamSlice:
         Method to crop the slice in the frequency range.
         The cropping is based on the given frequency band numbers.
         Returns a new instance of Streamslice with the cropped data.
+        ..note: The lower bound is inclusive and the upper bound is exclusive.
 
-        :param from_band: frequency band number the new slice begins with.
+        :param from_band: lower bound for the frequency bands of the new slice.
         :type from_band: int
 
-        :param to_band: frequency band number the new slice ends with.
+        :param to_band: upper bound for the frequency bands of the new slice.
         :type to_band: int
 
         :return: A StreamSlice object with the cropped data.
