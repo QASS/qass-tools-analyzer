@@ -161,7 +161,7 @@ class StreamSlice:
         zeros_shape[1] = 1
         curve_cumsum[:, 0:1] = np.zeros(zeros_shape)
 
-        return (curve_cumsum[:, window_size:] - curve_cumsum[:, :-window_size]) / window_size
+        return (curve_cumsum[:, window_size_bands:] - curve_cumsum[:, :-window_size_bands]) / window_size_bands
 
     def smooth_frq(self, window_size_bands: int):
         new = self.__copy__()
@@ -180,7 +180,7 @@ class StreamSlice:
         zeros_shape[0] = 1
         curve_cumsum[0] = np.zeros(zeros_shape)
         
-        return (curve_cumsum[window_size:] - curve_cumsum[:-window_size]) / window_size
+        return (curve_cumsum[window_size_specs:] - curve_cumsum[:-window_size_specs]) / window_size_specs
 
     def smooth_time(self, window_size_specs: int):
         new = self.__copy__()
