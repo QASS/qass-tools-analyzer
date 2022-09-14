@@ -55,6 +55,8 @@ class InputObserver:
         self._finished_ranges = None
         self._last_spec = None
         self._callback = callback
+        self._spec_duration = None
+        self._frq_band_count = None
 
     def process_init(self, stream: Buffer_Py_IF) -> None:
         """
@@ -67,16 +69,24 @@ class InputObserver:
         self._current_input_times = [None for _ in self._inputs]
         self._last_spec = 0
         self._finished_ranges = []
+        self._spec_duration = stream.getSpecDuration()
+        self._frq_band_count = stream.getFrqBandCount()
 
     def tick(self, ignore_getIO_exception: bool = False) -> None:
         """
         This function must be called in the phase eval_process_run() of the operator network.
         It is called for every single spectrum and checks the current input state.
+        
+        :param ignore_getIO_exception:
+        If True exceptions raised by missing IO information in the last specs of a buffer are ignored.
+        Otherwise they will be reraised.
+        
+        :type ignore_getIO_exception: bool
         """
-        spec_duration = self._stream.getSpecDuration()
+        spec_duration = self._spec_duration
         curr_spec = int(self._rti.getCurrentTime() // spec_duration)
         for spec in range(self._last_spec, curr_spec):
-            stream_pos = spec * self._stream.getFrqBandCount()
+            stream_pos = spec * self._frq_band_count
             for idx, (byte, bit, state, delay) in enumerate(self._inputs):
                 try:
                     curr_state = self._stream.getIO_inputs(stream_pos, byte, bit)
