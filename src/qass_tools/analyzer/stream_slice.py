@@ -147,6 +147,13 @@ class StreamSlice:
         return self.__arr
 
     @property
+    def time_per_spec(self) -> int:
+        return self.__spec_duration
+    
+    spec_duration = time_per_spec
+    ns_per_spec = time_per_spec
+
+    @property
     def times(self) -> np.ndarray:
         """Returns a numpy array with the times of the slice spectra in [ns]"""
         return spec_times()
