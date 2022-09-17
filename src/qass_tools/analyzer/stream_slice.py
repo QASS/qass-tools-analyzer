@@ -153,7 +153,7 @@ class StreamSlice:
     @property
     def times(self) -> np.ndarray:
         """Returns a numpy array with the times of the slice spectra in [ns]"""
-        return spec_times()
+        return self.spec_times()
 
     @property
     def ref_normal(self) -> float:
