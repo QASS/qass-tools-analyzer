@@ -19,6 +19,7 @@
 #
 from Analyzer.Core import Buffer_Py_IF
 import numpy as np
+import math
 
 
 class StreamSlice:
@@ -371,9 +372,9 @@ class StreamSlice:
         return new
 
     def __crop_frequency_bands(self, from_band: int = None, to_band: int = None):
-        if not from_band:
+        if from_band is None:
             from_band = 0
-        if not to_band:
+        if to_band is None:
             to_band = self.__arr.shape[1]
 
         if not (0 <= from_band <= self.__arr.shape[1]):
@@ -434,6 +435,6 @@ class StreamSlice:
         if to_frq is None:
             to_band = None
         else:
-            to_band = np.ceil((to_frq - self.__start_frq) // self.__frq_per_band)
+            to_band = math.ceil((to_frq - self.__start_frq) // self.__frq_per_band)
         
         return self.crop_frequency_bands(from_band, to_band)
