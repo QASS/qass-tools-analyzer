@@ -150,6 +150,7 @@ class StreamSlice:
     def time_per_spec(self) -> int:
         return self.__spec_duration
     
+    # Aliases for time_per_spec:
     spec_duration = time_per_spec
     ns_per_spec = time_per_spec
 
