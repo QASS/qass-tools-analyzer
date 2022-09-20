@@ -80,12 +80,15 @@ class StreamSlice:
         if from_band or to_band:
             self.__crop_frequency_bands(from_band, to_band)
 
+        self.__ref_normal = stream.getRefNormal(stream.getPreampGain())
+
     def __copy__(self):
         new = self.__class__.__new__(self.__class__)
         new.__start_time = self.__start_time
         new.__start_frq = self.__start_frq
         new.__spec_duration = self.__spec_duration
         new.__frq_per_band = self.__frq_per_band
+        new.__ref_normal = self.__ref_normal
         new.__stream = self.__stream
         new.__arr = self.__arr
         return new
@@ -160,6 +163,10 @@ class StreamSlice:
         """Returns a numpy array with the times of the slice spectra in [ns]"""
         return self.spec_times()
 
+    @property
+    def ref_normal(self) -> float:
+        return self.__ref_normal
+
     def __smooth_frq(self, window_size_bands):
         out_shape = list(self.__arr.shape)
         out_shape[1] += 1
@@ -201,12 +208,14 @@ class StreamSlice:
         new = self.__copy__()
         new.__arr = new.__arr[:, ::compression]
         new.__frq_per_band *= compression
+        new.__ref_normal *= compression
         return new
 
     def compress_time(self, compression: int):
         new = self.__copy__()
         new.__arr = new.__arr[::compression]
         new.__spec_duration *= compression
+        new.__ref_normal *= compression
         return new
 
     def smooth_compress(self, smooth_time: int=None, compress_time: int=None, smooth_frq: int=None, compress_frq: int=None):
@@ -218,6 +227,7 @@ class StreamSlice:
         if compress_time is not None:
             new.__arr = new.__arr[::compress_time]
             new.__spec_duration *= compress_time
+            new.__ref_normal *= compress_time
         
         if smooth_frq is not None:
             new.__arr = new.__smooth_frq(smooth_frq)
@@ -226,6 +236,7 @@ class StreamSlice:
         if compress_frq is not None:
             new.__arr = new.__arr[:, ::compress_frq]
             new.__frq_per_band *= compress_frq
+            new.__ref_normal *= compress_frq
         
         return new
 
