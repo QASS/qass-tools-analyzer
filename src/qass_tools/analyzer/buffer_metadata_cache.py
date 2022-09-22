@@ -218,7 +218,7 @@ class BufferMetadataCache:
             q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata"))
         else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
 
-        buffers = self._db.execute(q).scalars()
+        buffers = list(self._db.execute(q).scalars())
 
         if filter_function is not None:
             buffers = [buffer for buffer in buffers if filter_function(buffer)]
