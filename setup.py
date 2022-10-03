@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-#from .deleting_process import *
-#from .mainthread_hook import *
-#from .buffer_metadata_cache import *
+from setuptools import setup
+
+
+if __name__ == "__main__":
+    setup()
