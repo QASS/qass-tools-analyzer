@@ -44,7 +44,7 @@ import json
 
 from sys import version_info
 if version_info.major != 3:
-    raise RuntimeError('Expeced Python3')
+    raise RuntimeError('Expected Python3')
 if version_info.minor <= 6:
     from collections import Sequence
 else:
