@@ -24,7 +24,7 @@ from qass_tools.analyzer import buffer_parser as bp
 
 def main():
     # create an instance of the cache
-    cache = BufferMetadataCache(BufferMetadataCache.create_session(), bp.buffer)
+    cache = BufferMetadataCache(BufferMetadataCache.create_session(), bp.Buffer)
     # syncing is only needed once. Resyncing new files is still a lot faster than opening every buffer file
     # deleted files are not yet removed from the database
     cache.synchronize_directory("/directory/to/sync/") # replace with your path
