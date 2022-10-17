@@ -3,7 +3,7 @@
 # Website: https://qass.net
 # Contact: QASS GmbH <info@qass.net>
 #
-# This file is part of Qass tools 
+# This file is part of Qass tools
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -39,8 +39,17 @@ from threading import Lock
 
 from abc import ABC, abstractmethod
 import traceback
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import json
+
+from sys import version_info
+if version_info.major != 3:
+    raise RuntimeError('Expected Python3')
+if version_info.minor <= 6:
+    from collections import Sequence
+else:
+    from collections.abc import Sequence
+
 
 class VirtualInputDevice(ABC):
     """
@@ -58,9 +67,9 @@ class VirtualInputDevice(ABC):
                  normal_amp: float,
                  request_rate: float=100,
                  dont_close: bool=False):
-        """instantiate a SimpleDevice.
+        """instantiate a VirtualInputDevice.
         This class is an abstract base class.
-        You must to derive from this class and implement the abstract funtions to create a custom device.
+        You must derive from this class and implement the abstract funtions to create a custom device.
 
         :param name: This is the name of the device that will also be displayed in the GUI.
         The name is used as an identifier and thus it must be unique inside one DeviceTypeCollection.
@@ -131,7 +140,7 @@ class VirtualInputDevice(ABC):
     def get_data(self) -> List[float]:
         """Fetch the data from the device and convert it to a List of floats.
         Note: Ensure that the data type is float and not np.float or anything else!
-        This method should always clear the buffer containing the data when it's called.
+        This method should always clear the device's buffer containing the data when it's called.
         This is to prevent old data from persisting.
 
         :return: The list of new values. The list must not contain old values!
@@ -172,6 +181,14 @@ class VirtualInputDevice(ABC):
     def name(self):
         return self._name
 
+    @property
+    def stream_count(self):
+        return 1 if 'stream_configs' not in self._config else len(self._config['stream_configs'])
+
+    @property
+    def stream_configs(self):
+        return None if 'stream_configs' not in self._config else self._config['stream_configs']
+
     def get_config(self):
         return self._config
 
@@ -184,6 +201,68 @@ class VirtualInputDevice(ABC):
 
     def apply_config(self):
         pass
+
+
+class MultiStreamVirtualInputDevice(VirtualInputDevice):
+    def __init__(self,
+                 name: str,
+                 stream_configs: Tuple[Dict[str, int]],
+                 request_rate: float=100,
+                 dont_close: bool=False):
+        """instantiate a MultiStreamVirtualInputDevice.
+        This class is an abstract base class and inherits from VirtualInputDevice.
+        You must derive from this class and implement the abstract funtions to create a custom device.
+
+        :param name: This is the name of the device that will also be displayed in the GUI.
+        The name is used as an identifier and thus it must be unique inside one DeviceTypeCollection.
+        :type name: str
+
+        :param stream_configs: This is a list of configs for each stream.
+        The list's length defines the number of streams provided by this device.
+        The config must include at least the following keywords:
+        "stream_name": A string to identify the stream (displayed)
+        "sample_rate": float: The streams sample rate in Hz
+        "normal_amp": The maximum expected value (used for display scaling)
+        :type stream_configs: Tuple[Dict[str, int]]
+
+        :param request_rate: How often the get_data() should be called?, defaults to 100 - meaning 100 calls of get_data() in a second.
+        If zero or None the device communication thread will not sleep but only yieldCurrentThread.
+        This might cause issues since the python interpreter is heavily used by this interface.
+        :type request_rate: float, optional
+
+        :param dont_close: If True the function open_connection() will be called as early as possible and close_connection() will be called as late as possible.
+        The device connection will not be closed between different processes.
+        If False the method open_connection() will be called at the beginning of each measurement and close_connection() will be called at the end of each measurement.
+        Defaults to False.
+        :type dont_close: bool, optional
+        """
+
+        # The sample rate must not be 0 even if it is not used!
+        super().__init__(name, 1, 0, request_rate, dont_close)
+
+        required_keys = ("stream_name", "sample_rate", "normal_amp")
+        filter_req = lambda x: x not in required_keys
+
+        for sc in stream_configs:
+            filtered_keys = list(filter(filter_req, sc))
+            if filtered_keys:
+                raise ValueError(f'At least one entry of stream_configs does not contain required keys {",".join(filtered_keys)}')
+
+        self._config['stream_configs'] = stream_configs
+
+    @abstractmethod
+    def get_data(self) -> Tuple[List[float]]:
+        """Fetch the data for all streams and convert them to a Tuple of List of floats.
+        The tuple is expected to have stream_count elements.
+        Note: Ensure that the data type is float and not np.float or anything else!
+        This method should always clear the device's buffer containing the data when it's called.
+        This is to prevent old data from persisting.
+
+        :return: The lists of new values for all streams, packed into one tuple.
+        The list must not contain old values!
+        :rtype: Tuple[List[float]]
+        """
+        ...
 
 
 class _DeviceThread(QThread):
@@ -199,7 +278,7 @@ class _DeviceThread(QThread):
         self.lock = Lock()
         self.device = device
 
-    def fetch_values(self) -> List[float]:
+    def fetch_values(self, stream: int) -> List[float]:
         """fetch_values is called by the interface from the reading thread in the Analyzer4D software.
         It first aqcuires the lock to prevent race conditions when fetching the values.
 
@@ -207,8 +286,8 @@ class _DeviceThread(QThread):
         :rtype: List[float]
         """
         with self.lock:
-            vals = self.values
-            self.values = []
+            vals = self.values[stream].copy()
+            self.values[stream].clear()
 
         return vals
 
@@ -230,21 +309,34 @@ class _DeviceThread(QThread):
                 elapsed = QElapsedTimer()
                 elapsed.start()
                 read_counter = 0
-            
+
             self.should_stop = False
             with self.lock:
-                self.values = []
+                self.values = tuple(list() for _ in range(self.device.stream_count))
 
             self.device.open_connection()
 
             # empty the data queue at start - we do not want to use old data
-            self.device.get_data()
+            if self.device.dont_close:
+                self.device.get_data()
 
 
             while not self.should_stop:
                 new_data = self.device.get_data()
-                with self.lock:
-                    self.values.extend(new_data)
+                if not isinstance(new_data, Sequence):
+                    raise ValueError(f'Device {self.device.name} get_data must return a Sequence but returned {type(new_data)}')
+
+                if new_data:
+                    first_elem = new_data[0]
+                    if not isinstance(first_elem, Sequence):
+                        if self.device.stream_count != 1:
+                            raise ValueError(f'Device {self.device.name} get_data must return a Sequence of Sequences since it has multiple streams.')
+                        with self.lock:
+                            self.values[0].extend(new_data)
+                    else:
+                        with self.lock:
+                            for idx, d in enumerate(new_data):
+                                self.values[idx].extend(d)
 
                 if request_rate:
                     read_counter += 1
@@ -326,8 +418,16 @@ class DeviceTypeCollection(VirtDeviceInterface):
             int_conf = {
                 'ifaceName': name,
                 'sampleRate': dev.sample_rate,
-                'normalAmplitude': dev.normal_amplitude
+                'normalAmplitude': dev.normal_amplitude,
+                'streamcount': dev.stream_count
             }
+
+            if dev.stream_configs:
+                for idx, sc in enumerate(dev.stream_configs):
+                    int_conf[f'streamname{idx}'] = sc["stream_name"]
+                    int_conf[f'streamrate{idx}'] = sc["sample_rate"]
+                    int_conf[f'streamampl{idx}'] = sc["normal_amp"]
+
             interfaces_conf.append(int_conf)
 
         config = {
@@ -366,7 +466,8 @@ class DeviceTypeCollection(VirtDeviceInterface):
         return self._devices[name].is_available()
 
     def inputCount(self) -> int:
-        return len(self._devices)
+        stream_count = sum(dev.stream_count for dev in self._devices)
+        return stream_count
 
     def openInput(self, name: str) -> bool:
         """openInput starts the communication and the data fetching for the given device.
@@ -391,7 +492,7 @@ class DeviceTypeCollection(VirtDeviceInterface):
 
         :param name: The device's identifier string
         :type name: str
-        :param prepareRestart: _description_, defaults to False
+        :param prepareRestart: defaults to False
         :type prepareRestart: bool, optional
         :return: True on success, False otherwise
         :rtype: bool
@@ -403,17 +504,18 @@ class DeviceTypeCollection(VirtDeviceInterface):
             Log_IF.popupError(f'Exception caught during closing virtual device {name}:\n{traceback.format_exc()}')
             return False
 
-    def readInput(self, name: str, stream: int=0) -> List[float]:
+    def readInput(self, name: str, stream: int) -> List[float]:
         """readInput fetches and returns the currently available data from the given device's thread.
 
         :param name: The device's identifier string
         :type name: str
-        :param stream: _description_, defaults to 0
+        :param stream:
         :type stream: int, optional
         :return: List of available new values.
         :rtype: List[float]
         """
-        return self._device_threads[name].fetch_values()
+        vals = self._device_threads[name].fetch_values(stream)
+        return vals
 
     def getConfig(self, name: str) -> QByteArray:
         """The Analyzer4D software calls this function to make settings persistent in the database.
@@ -450,7 +552,7 @@ class DeviceTypeCollection(VirtDeviceInterface):
             json_str = ''
             for c in data:
                 json_str += c.decode()
-            
+
             if json_str:
                 config_dict = json.loads(json_str)
                 self._devices[name].set_config(config_dict)
