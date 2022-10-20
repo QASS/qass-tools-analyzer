@@ -20,7 +20,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from qass_tools.analyzer import buffer_parser as bp
+from qass.tools.analyzer import buffer_parser as bp
 
 import matplotlib.pyplot as plt
 import numpy as np

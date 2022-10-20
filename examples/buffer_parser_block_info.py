@@ -19,7 +19,7 @@
 #
 buff_path = '/data1/MyProject/raw2/MyProject_00008p71840c1b02_dump_00.000'
 
-import qass_tools.analyzer.buffer_parser as bp
+import qass.tools.analyzer.buffer_parser as bp
 
 with bp.Buffer(buff_file) as buff:
     column_list = ['times', 'spectrums', 'inputs']

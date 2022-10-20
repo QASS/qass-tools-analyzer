@@ -1,4 +1,4 @@
-import search_indicator
+from qass.tools.analyzer import search_indicator
 
 si = search_indicator.SearchIndicator(rti, si_out, label='MyTest')
 

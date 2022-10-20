@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from qass_tools.analyzer import deleting_process
+from qass.tools.analyzer import deleting_process
 """Therefore this is a standalone python programm to call out of a batch file or so. As example the required def main is shown."""
 # syntacs for automatic appling of programm
 def main():

@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from Analyzer.Devices import VirtDeviceManager_IF
-from qass_tools.analyzer import virtual_devices
+from qass.tools.analyzer import virtual_devices
 from importlib import reload
 reload(virtual_devices)
 MultiStreamVirtualInputDevice, DeviceTypeCollection = virtual_devices.MultiStreamVirtualInputDevice, virtual_devices.DeviceTypeCollection

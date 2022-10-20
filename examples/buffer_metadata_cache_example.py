@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from qass_tools.analyzer import BufferMetadataCache, BufferMetadata
-from qass_tools.analyzer import buffer_parser as bp
+from qass.tools.analyzer import BufferMetadataCache, BufferMetadata
+from qass.tools.analyzer import buffer_parser as bp
 
 
 
