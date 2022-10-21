@@ -454,7 +454,7 @@ class Buffer:
         else:
             return self._get_data(specFrom, specTo, self.__frq_bands, conversion)
 
-    def getArray(self, specFrom=None, specTo=None, delog = True):
+    def getArray(self, specFrom=None, specTo=None, delog = False):
         """
         Wrapper function to 'get_data'.
         This function provides access to the measurement data in the buffer
