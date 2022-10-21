@@ -24,7 +24,7 @@ The decorator is based on Qt's EventLoop mechanism.
 It can only work inside a Qt Application.
 '''
 
-from mainthread_hook import inMainThread
+from qass.tools.mainthread_hook import inMainThread
 
 @inMainThread(synchron=True)
 def func(testA, testB):

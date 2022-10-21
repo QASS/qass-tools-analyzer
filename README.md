@@ -22,3 +22,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 ```py
 from qass_tools import analyzer
 ```
+
+# Install as Developer
+Navigate your console to the repository where the `setup.py` file resides.
+```sh
+pip install --user -e .
+```
+Will execute the `setup.py` script and install the repository as an editable package. This enables the use of the imports as if the package is installed.

@@ -1,4 +1,4 @@
-from qass_tools.analyzer.buffer_parser import BufferErrorLogger, Buffer
+from qass.tools.analyzer.buffer_parser import BufferErrorLogger, Buffer
 
 
 

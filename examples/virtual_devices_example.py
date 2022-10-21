@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from Analyzer.Devices import VirtDeviceInterface, VirtDeviceManager_IF
-from qass_tools.analyzer.virtual_devices import VirtualInputDevice, DeviceTypeCollection
+from qass.tools.analyzer.virtual_devices import VirtualInputDevice, DeviceTypeCollection
 
 from typing import List
 import numpy as np

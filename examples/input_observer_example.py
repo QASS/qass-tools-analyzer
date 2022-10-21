@@ -1,6 +1,6 @@
 from Analyzer.Core import Buffer_Py_IF
 
-from qass_tools.analyzer.input_observer import InputObserver
+from qass.tools.analyzer.input_observer import InputObserver
 
 def my_callback(input_config, start, end):
     """print every change
