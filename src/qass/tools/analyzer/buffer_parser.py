@@ -1303,6 +1303,26 @@ class Buffer:
         return self.__metainfo["framedur"]
 
     @property
+    def frq_start(self):
+        """
+        The property returns the lowest represented frequency.
+
+        :return: Frequency in Hertz (Hz).
+        :rtype: int
+        """
+        return self.__metainfo["startfrq"] if 'startfrq' in self.__metainfo else 0
+
+    @property
+    def frq_end(self):
+        """
+        The property returns the highest represented frequency.
+
+        :return: Frequency in Hertz (Hz).
+        :rtype: int
+        """
+        return self.__metainfo["end__frq"] if 'end__frq' in self.__metainfo else self.frq_bands * self.frq_per_band
+
+    @property
     def frq_per_band(self):
         """
         The property returns the frequency range per band. The maximum number
