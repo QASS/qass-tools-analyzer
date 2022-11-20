@@ -1020,6 +1020,10 @@ class Buffer:
         return self.__header_size
 
     @property
+    def project_id(self):
+        return self.__metainfo["proj__id"]
+
+    @property
     def process(self):
         """
         The process number.
