@@ -42,6 +42,7 @@ class HeaderDtype(IntEnum):
 
 class Buffer:
     class DATAMODE(IntEnum):
+        """Datamode of a buffer"""
         DATAMODE_UNDEF = -1,
         # Es wird nur ein Zähler übertragen, der im DSP Modul generiert wird
         DATAMODE_COUNTER_UNUSED = 0
@@ -57,6 +58,7 @@ class Buffer:
         DATAMODE_COUNT = auto()
 
     class DATATYPE(IntEnum):  # Kompressionsmethoden oder auch Buffertypen
+        """Compression methods or buffer types"""
         COMP_INVALID = -2,
         COMP_UNDEF = -1,
         COMP_RAW = 0  # Die reinen unkomprimierten Rohdaten, sowie sie aus der Hardware kommen
@@ -111,6 +113,7 @@ class Buffer:
         COMP_COUNT = auto()
 
     class DATAKIND(IntEnum):  # Zusätzliche Spezifikation des Buffers
+        """additional specification of a buffer"""
         KIND_UNDEF = -1,
         KIND_NONE = 0
         KIND_SENSOR_TEST = auto()  # Sensor Pulse Test Daten
@@ -129,6 +132,7 @@ class Buffer:
         KIND_USER = 100
 
     class ADCTYPE(IntEnum):
+        """used analog/digital converter"""
         ADC_NOT_USED = 0,
         ADC_LEGACY_14BIT = 0
         ADC_16BIT = auto()
@@ -422,20 +426,22 @@ class Buffer:
         :return: The buffers data.
         :rtype: numpy ndarray
 
-        :Example:
-            import buffer_parser as bp
-            proc = range(1,100,1)
-            # path contains the path to a directory containing buffer files
-            buff = bp.filter_buffers(path, {'wanted_process': proc , 'datamode': bp.Buffer.DATAMODE.DATAMODE_FFT})
-            for buffer in buff:
-                buff_file = (buffer.filepath)
+        .. code-block:: python
+                :linenos:
 
-            with bp.Buffer(buff_file) as buff:
-                spec_start = 0
-                spec_end = (buff.db_count -1) * buff.db_spec_count
-                print('Spec_end: ' + str(spec_end))
-                conv = 'delog'
-                data = buff.get_data(spec_start, spec_end, conv)
+                import qass.tools.analyzer.buffer_parser as bp
+                proc = range(1,100,1)
+                # path contains the path to a directory containing buffer files
+                buff = bp.filter_buffers(path, {'wanted_process': proc , 'datamode': bp.Buffer.DATAMODE.DATAMODE_FFT})
+                for buffer in buff:
+                    buff_file = (buffer.filepath)
+
+                with bp.Buffer(buff_file) as buff:
+                    spec_start = 0
+                    spec_end = (buff.db_count -1) * buff.db_spec_count
+                    print('Spec_end: ' + str(spec_end))
+                    conv = 'delog'
+                    data = buff.get_data(spec_start, spec_end, conv)
         """
         if specTo and specTo > self.spec_count:
             raise InvalidArgumentError('specTo is out of range')
@@ -475,19 +481,21 @@ class Buffer:
         :return: The buffers data.
         :rtype: numpy ndarray
 
-        :Example:
-            import buffer_parser as bp
-            proc = range(1,100,1)
-            # path contains the path to a directory containing buffer files
-            buff = bp.filter_buffers(path, {'wanted_process': proc , 'datamode': bp.Buffer.DATAMODE.DATAMODE_FFT})
-            for buffer in buff:
-                buff_file = (buffer.filepath)
+        .. code-block:: python
+                :linenos:
 
-            with bp.Buffer(buff_file) as buff:
-                spec_start = 0
-                spec_end = (buff.db_count -1) * buff.db_spec_count
-                print('Spec_end: ' + str(spec_end))
-                data = buff.get_array(spec_start, spec_end, True)
+                import qass.tools.analyzer.buffer_parser as bp
+                proc = range(1,100,1)
+                # path contains the path to a directory containing buffer files
+                buff = bp.filter_buffers(path, {'wanted_process': proc , 'datamode': bp.Buffer.DATAMODE.DATAMODE_FFT})
+                for buffer in buff:
+                    buff_file = (buffer.filepath)
+                
+                with bp.Buffer(buff_file) as buff:
+                    spec_start = 0
+                    spec_end = (buff.db_count -1) * buff.db_spec_count
+                    print('Spec_end: ' + str(spec_end))
+                    data = buff.get_array(spec_start, spec_end, True)
         """
         if delog:
             return self.get_data(specFrom, specTo, conversion="delog")
@@ -545,6 +553,7 @@ class Buffer:
         use the get method to access its content.Otherwise this will
         cause a runtime error.
 
+
         :param db_idx: data block index
         :type db_idx: int
 
@@ -553,13 +562,15 @@ class Buffer:
         :return: a dictionary with the keywords and values
         :rtype: dictionary
 
-        :Example:
-            # The index of the first data block is 0
-            db_idx = 0
-            # Function to retrieve the size of the data block
-            def db_size(db_idx)
-                db_header_dict = db_header(0)
-                return(db_header_dict.get('dbfilled', 0))
+        .. code block:: python
+                :linenos:
+
+                # The index of the first data block is 0
+                db_idx = 0
+                # Function to retrieve the size of the data block
+                def db_size(db_idx):
+                    db_header_dict = db_header(0)
+                    return(db_header_dict.get('dbfilled', 0))
         """
         if db_idx > self.__db_count:
             raise ValueError('db_idx is out of bounds')
@@ -586,13 +597,15 @@ class Buffer:
         :return: The data block header with keywords and values.
         :rtype: dictionary
 
-        :Example:
-            # The index of the spectrum is 50
-             spec = 50
-            # Function to retrieve the size of the data block
-            def db_size(spec)
-                db_header_dict = db_header_spec(spec)
-                return(db_header_dict.get('dbfilled', 0))
+        .. code block:: python
+                :linenos:
+
+                # The index of the spectrum is 50
+                spec = 50
+                # Function to retrieve the size of the data block
+                def db_size(spec):
+                    db_header_dict = db_header_spec(spec)
+                    return(db_header_dict.get('dbfilled', 0))
         """
         db_idx = int(spec * self.__frq_bands / self.db_sample_count)
         return self.db_header(db_idx)
@@ -976,25 +989,27 @@ class Buffer:
         :return: The metainfo dictionary
         :rtype: dictionary
 
-        :Example:
-            key = 'qassdata'
-            def keyword(key)
-                return buffer.metainfo[key]
+        .. code-block:: python
+                :linenos:
 
-            # The above example leads to a runtime error if the keyword is not a
-            # key in the dictionary. It would be better to query this beforehand
-            # and to provide a default value, thus:
-
-            def keyword(key):
-                if key in buffer.metainfo.keys:
+                key = 'qassdata'
+                def keyword(key)
                     return buffer.metainfo[key]
-                else:
-                    return default_value
 
-            # or shorter:
+                # The above example leads to a runtime error if the keyword is not a
+                # key in the dictionary. It would be better to query this beforehand
+                # and to provide a default value, thus:
 
-            def keyword(key):
-                return buffer.metainfo.get(key, default_value)
+                def keyword(key):
+                    if key in buffer.metainfo.keys:
+                        return buffer.metainfo[key]
+                    else:
+                        return default_value
+
+                # or shorter:
+
+                def keyword(key):
+                    return buffer.metainfo.get(key, default_value)
         """
         return self.__metainfo
 
@@ -1572,11 +1587,13 @@ def filter_buffers(directory, filters):
     :return: A list of buffer objects
     :rtype: list
 
-    :Example:
-        import buffer_parser as bp
-        proc = range(1,100,1)
-        # path contains the path to a directory containing buffer files
-        buff = bp.filter_buffers(path, {'wanted_process': proc , 'datamode': bp.Buffer.DATAMODE.DATAMODE_FFT})
+    .. code-block:: python
+            :linenos:
+
+            from qass.tools.analyzer import buffer_parser as bp
+            proc = range(1,100,1)
+            # path contains the path to a directory containing buffer files
+            buff = bp.filter_buffers(path, {'wanted_process': proc , 'datamode': bp.Buffer.DATAMODE.DATAMODE_FFT})
     """
     from pathlib import Path
 
