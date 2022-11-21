@@ -50,7 +50,7 @@ class BufferEnum(TypeDecorator):
 __Base = declarative_base()
 class BufferMetadata(__Base):
     __tablename__ = "buffer_metadata"
-    properties = ("id", "projectid", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
+    properties = ("id", "project_id", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
                 "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
                 "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", 
@@ -58,15 +58,15 @@ class BufferMetadata(__Base):
                 "fft_log_shift")
 
     id = Column(Integer, Identity(start = 1), primary_key = True)
-    projectid = Column(Integer)
+    project_id = Column(BigInteger)
     directory_path = Column(String, nullable = False, index = True)
     filename = Column(String, nullable = False)
     header_size = Column(Integer)
     process = Column(Integer)
     channel = Column(Integer, index = True)
-    datamode = Column(BufferEnum(Buffer.DATAMODE)) # TODO this is an ENUM in buffer_parser
-    datakind = Column(BufferEnum(Buffer.DATAKIND)) # TODO this is an ENUM in buffer_parser
-    datatype = Column(BufferEnum(Buffer.DATATYPE)) # TODO this is an ENUM in buffer_parser
+    datamode = Column(BufferEnum(Buffer.DATAMODE)) # this is an ENUM in buffer_parser
+    datakind = Column(BufferEnum(Buffer.DATAKIND)) # this is an ENUM in buffer_parser
+    datatype = Column(BufferEnum(Buffer.DATATYPE)) # this is an ENUM in buffer_parser
     process_time = Column(BigInteger)
     process_date_time = Column(String)
     db_header_size = Column(Integer)
