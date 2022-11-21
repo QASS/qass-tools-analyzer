@@ -24,13 +24,13 @@ stages:
 test_docs:
   stage: test
   script:
-  - pip install sphinx
-  - pip install sphinx_rtd_theme
-  - mkdir ./docs/source/_static
-  - sphinx-build -W -b html ./docs/source public
-only:
-  - tags
-  - merge_requests
+    - pip install sphinx
+    - pip install sphinx_rtd_theme
+    - mkdir ./docs/source/_static
+    - sphinx-build -W -b html ./docs/source public
+  only:
+    - tags
+    - merge_requests
 
 build-package:
   stage: deploy
