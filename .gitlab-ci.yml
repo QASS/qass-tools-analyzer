@@ -18,7 +18,18 @@
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 stages:
+  - test
   - deploy
+
+test_docs:
+  stage: test
+  script:
+  - pip install sphinx
+  - pip install sphinx_rtd_theme
+  - sphinx-build -b html . public
+only:
+  - tags
+  - merge_requests
 
 build-package:
   stage: deploy
@@ -30,5 +41,17 @@ build-package:
     - pip install twine
     - python3 -m build
     - python3 -m twine upload --repository gitlab dist/* --config-file /tmp/.pypirc
+  only:
+    - tags
+
+pages:
+  stage: deploy
+  script:
+    - pip install sphinx
+    - pip install sphinx_rtd_theme
+    - sphinx-build -b html ./docs/source public
+  artifacts:
+    paths:
+      - public
   only:
     - tags
