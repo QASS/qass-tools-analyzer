@@ -193,7 +193,9 @@ class BufferMetadataCache:
         """Query the Cache for all files matching the properties that are set in the BufferMetadata object
 
 
-        .. code-block::
+        .. code-block:: python
+                :linenos:
+
                 BufferMetadataCache.get_matching_files(
                     buffer_metadata = BufferMetadata(channel = 1, compression_frq = 4),
                     filter_function = lambda bm: bm.process > 100,
