@@ -61,3 +61,4 @@ pages:
       - public
   only:
     - tags
+    - merge_requests
