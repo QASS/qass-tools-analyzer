@@ -42,7 +42,7 @@ class HeaderDtype(IntEnum):
 
 class Buffer:
     class DATAMODE(IntEnum):
-        DATAMODE_UNDEF = -1,
+        DATAMODE_UNDEF = -1
         # Es wird nur ein Zähler übertragen, der im DSP Modul generiert wird
         DATAMODE_COUNTER_UNUSED = 0
         DATAMODE_SIGNAL = auto()  # Es werden die reinen Signaldaten gemessen und übertragen
@@ -57,8 +57,8 @@ class Buffer:
         DATAMODE_COUNT = auto()
 
     class DATATYPE(IntEnum):  # Kompressionsmethoden oder auch Buffertypen
-        COMP_INVALID = -2,
-        COMP_UNDEF = -1,
+        COMP_INVALID = -2
+        COMP_UNDEF = -1
         COMP_RAW = 0  # Die reinen unkomprimierten Rohdaten, sowie sie aus der Hardware kommen
         # Datenreduktion durch einfaches Downsampling (jedes x-te Sample gelangt in den Buffer)
         COMP_DOWNSAMPLE = auto()
@@ -111,7 +111,7 @@ class Buffer:
         COMP_COUNT = auto()
 
     class DATAKIND(IntEnum):  # Zusätzliche Spezifikation des Buffers
-        KIND_UNDEF = -1,
+        KIND_UNDEF = -1
         KIND_NONE = 0
         KIND_SENSOR_TEST = auto()  # Sensor Pulse Test Daten
         # Debug Plot Buffer, der die Zeiten für das "freimachen" eines Datenblocks enthält
@@ -129,7 +129,7 @@ class Buffer:
         KIND_USER = 100
 
     class ADCTYPE(IntEnum):
-        ADC_NOT_USED = 0,
+        ADC_NOT_USED = 0
         ADC_LEGACY_14BIT = 0
         ADC_16BIT = auto()
         ADC_24BIT = auto()
@@ -1048,7 +1048,8 @@ class Buffer:
         """
         The data mode is a constant which specifies what kind of data are in
         the buffer. The most important ones are DATAMODE_FFT and
-        DATAMODE_SIGNAL.
+        DATAMODE_SIGNAL. If you want to obtain the name of the constant, use
+        `datamode.name`.
 
         :return: The data mode constant
         :rtype: enum class defined in :class:`.DATAMODE`
@@ -1060,7 +1061,8 @@ class Buffer:
         """
         The data kind constant is a constant which provides additional
         buffer specifications. A common value often is
-        KIND_UNDEF
+        KIND_UNDEF. If you want to obtain the name of the constant, use
+        `datakind.name`.
 
         :return: The data kind constant.
         :rtype: enum class defined in :class:`.DATAKIND`
@@ -1072,7 +1074,8 @@ class Buffer:
         """
         The data type constant is a constant which specifies different
         compression and buffer types. The most important one being
-        COMP_RAW.
+        COMP_RAW. If you want to obtain the name of the constant, use
+        `datatype.name`.
 
         :return: The data type constant.
         :rtype: enum class defined in :class:`.DATATYPE`
@@ -1395,9 +1398,10 @@ class Buffer:
     def adc_type(self):
         """
         The type of analog/digital converter. The types are defined in class
-        ADC_TYPE with the most important being ADC_16BIT and ADC_24BIT.
+        ADC_TYPE with the most important being ADC_16BIT and ADC_24BIT. If
+        you want to obtain the name of the constant, use `adc_type.name`.
 
-        :return: type defined in class ADC_TYPE
+        :return: The ADCTYPE constant
         :rtype: enum class reference :class:`ADCTYPE`
         """
         return self.ADCTYPE(self.__metainfo["adc_type"])
