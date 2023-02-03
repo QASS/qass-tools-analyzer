@@ -29,6 +29,8 @@ data_path = '/data1/MyProject/'
 file_path = data_path + 'MyProject_00003p27420c0b01_dump_00.000'
 
 with bp.Buffer(file_path) as buff:
+    print(buff.process)
+    print(buff.datamode.name)
     arr = buff.getArray()
 
 vmax = np.percentile(arr, 97)
