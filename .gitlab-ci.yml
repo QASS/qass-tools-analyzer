@@ -17,8 +17,23 @@
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
+image: python:3.6
+
 stages:
+  - test
   - deploy
+
+test_docs:
+  stage: test
+  script:
+    - pip install sphinx
+    - pip install sphinx_rtd_theme sqlalchemy numpy tqdm
+    - pip install --no-deps .
+    - mkdir ./docs/source/_static
+    - sphinx-build -b html ./docs/source public
+  only:
+    - tags
+    - merge_requests
 
 build-package:
   stage: deploy
@@ -30,5 +45,19 @@ build-package:
     - pip install twine
     - python3 -m build
     - python3 -m twine upload --repository gitlab dist/* --config-file /tmp/.pypirc
+  only:
+    - tags
+
+pages:
+  stage: deploy
+  script:
+    - pip install sphinx
+    - pip install sphinx_rtd_theme sqlalchemy numpy tqdm
+    - pip install --no-deps .
+    - mkdir ./docs/source/_static
+    - sphinx-build -b html ./docs/source public
+  artifacts:
+    paths:
+      - public
   only:
     - tags
