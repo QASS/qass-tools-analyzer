@@ -22,7 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 **Read the Docs at [Gitlab Pages](http://developers.gitlab_pages.qass.net/qass_tools/qass_tools_analyzer/index.html)**
 
 ```py
-from qass_tools import analyzer
+from qass.tools import analyzer
 ```
 
 # Install as Developer
