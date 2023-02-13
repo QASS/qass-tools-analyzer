@@ -246,7 +246,9 @@ class BufferMetadataCache:
         for prop in self.BufferMetadata.properties:
             prop_value = getattr(buffer_metadata, prop)
             if prop_value is not None:
-                if isinstance(prop_value, Enum):
+                if isinstance(prop_value, str):
+                    prop_value = f"'{prop_value}'"
+                elif isinstance(prop_value, Enum):
                     prop_value = f"'{prop_value.name}'"
                 q += f"{prop} = {prop_value} AND "
         q = q[:-4]# prune the last AND
