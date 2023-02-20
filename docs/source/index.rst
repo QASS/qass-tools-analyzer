@@ -18,6 +18,10 @@ If you run into a bug or compatibility problems please contact ewiebelitz@qass.n
 
    buffer_metadata_cache
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Changelog
+
    changelog
 
 Indices and tables
