@@ -18,6 +18,8 @@ If you run into a bug or compatibility problems please contact ewiebelitz@qass.n
 
    buffer_metadata_cache
 
+   changelog
+
 Indices and tables
 ==================
 
