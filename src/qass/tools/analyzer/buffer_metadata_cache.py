@@ -242,6 +242,14 @@ class BufferMetadataCache:
         return buffers
 
     def get_buffer_metadata_query(self, buffer_metadata):
+        """Converts a .. py:class:: BufferMetadata object to a complete query. Every property of the object will be converted into
+        SQL and returned as a ..py:class:: sqlalchemy.orm.query.FromStatement object
+
+        :param buffer_metadata: The template BufferMetadata object.
+        :type buffer_metadata: BufferMetadata
+        :return: The sqlalchemy query object
+        :rtype: sqlalchemy.orm.query.FromStatement
+        """
         q = "SELECT * FROM buffer_metadata WHERE "
         for prop in self.BufferMetadata.properties:
             prop_value = getattr(buffer_metadata, prop)
@@ -276,6 +284,13 @@ class BufferMetadataCache:
 
     @staticmethod
     def split_filepath(filepath):
+        """Splits a filepath to folder and filename and returns them as a tuple
+
+        :param filepath: _description_
+        :type filepath: str
+        :return: A tuple containing (directory_path, filename) as strings
+        :rtype: tuple(str)
+        """
         if "/" in filepath:
             filename = filepath.split("/")[-1]
         elif "\\" in filepath:
@@ -284,4 +299,8 @@ class BufferMetadataCache:
         return directory_path, filename
 
 def get_declarative_base():
+    """Getter for the declarative Base that is used by the ..py:class:: BufferMetadataCache.
+
+    :return: declarative base class
+    """
     return __Base
