@@ -49,6 +49,10 @@ class BufferEnum(TypeDecorator):
 
 __Base = declarative_base()
 class BufferMetadata(__Base):
+    """This class acts as a template for buffer files. It's properties represent all available metadata of a buffer file.
+    This class is used internally as a database model and can be instantiated to provide a template for a buffer file by
+    populating desired properties and passing the object to the cache which will in turn create a query based on this object.
+    """
     __tablename__ = "buffer_metadata"
     properties = ("id", "project_id", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
@@ -299,7 +303,7 @@ class BufferMetadataCache:
         return directory_path, filename
 
 def get_declarative_base():
-    """Getter for the declarative Base that is used by the ..py:class:: BufferMetadataCache.
+    """Getter for the declarative Base that is used by the :py:class:`BufferMetadataCache`.
 
     :return: declarative base class
     """
