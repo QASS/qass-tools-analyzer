@@ -269,8 +269,7 @@ class BufferMetadataCache:
         if engine is None:
             engine = create_engine(db_url)
         session = Session(engine)
-        BufferMetadata.metadata.create_all(engine, 
-                            tables = [BufferMetadata.metadata.tables["buffer_metadata"]])
+        BufferMetadata.metadata.create_all(engine)
         return session
 
 
@@ -283,3 +282,6 @@ class BufferMetadataCache:
             filename = filepath.split("\\")[-1]
         directory_path = filepath[:-len(filename)]
         return directory_path, filename
+
+def get_declarative_base():
+    return __Base
