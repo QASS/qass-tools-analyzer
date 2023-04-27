@@ -43,3 +43,5 @@ BufferMetadata
 
 .. autoclass:: qass.tools.analyzer.buffer_metadata_cache.BufferMetadata
     :members:
+
+.. autofunction:: qass.tools.analyzer.buffer_metadata_cache.get_declarative_base

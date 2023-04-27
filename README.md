@@ -28,6 +28,6 @@ from qass.tools import analyzer
 # Install as Developer
 Navigate your console to the repository where the `setup.py` file resides.
 ```sh
-pip install --user -e .
+pip install --user --no-deps -e .
 ```
 Will execute the `setup.py` script and install the repository as an editable package. This enables the use of the imports as if the package is installed.

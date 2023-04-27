@@ -49,6 +49,10 @@ class BufferEnum(TypeDecorator):
 
 __Base = declarative_base()
 class BufferMetadata(__Base):
+    """This class acts as a template for buffer files. It's properties represent all available metadata of a buffer file.
+    This class is used internally as a database model and can be instantiated to provide a template for a buffer file by
+    populating desired properties and passing the object to the cache which will in turn create a query based on this object.
+    """
     __tablename__ = "buffer_metadata"
     properties = ("id", "project_id", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
@@ -242,6 +246,14 @@ class BufferMetadataCache:
         return buffers
 
     def get_buffer_metadata_query(self, buffer_metadata):
+        """Converts a .. py:class:: BufferMetadata object to a complete query. Every property of the object will be converted into
+        SQL and returned as a ..py:class:: sqlalchemy.orm.query.FromStatement object
+
+        :param buffer_metadata: The template BufferMetadata object.
+        :type buffer_metadata: BufferMetadata
+        :return: The sqlalchemy query object
+        :rtype: sqlalchemy.orm.query.FromStatement
+        """
         q = "SELECT * FROM buffer_metadata WHERE "
         for prop in self.BufferMetadata.properties:
             prop_value = getattr(buffer_metadata, prop)
@@ -269,17 +281,30 @@ class BufferMetadataCache:
         if engine is None:
             engine = create_engine(db_url)
         session = Session(engine)
-        BufferMetadata.metadata.create_all(engine, 
-                            tables = [BufferMetadata.metadata.tables["buffer_metadata"]])
+        BufferMetadata.metadata.create_all(engine)
         return session
 
 
 
     @staticmethod
     def split_filepath(filepath):
+        """Splits a filepath to folder and filename and returns them as a tuple
+
+        :param filepath: _description_
+        :type filepath: str
+        :return: A tuple containing (directory_path, filename) as strings
+        :rtype: tuple(str)
+        """
         if "/" in filepath:
             filename = filepath.split("/")[-1]
         elif "\\" in filepath:
             filename = filepath.split("\\")[-1]
         directory_path = filepath[:-len(filename)]
         return directory_path, filename
+
+def get_declarative_base():
+    """Getter for the declarative Base that is used by the :py:class:`BufferMetadataCache`.
+
+    :return: declarative base class
+    """
+    return __Base
