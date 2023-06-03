@@ -1163,6 +1163,7 @@ class Project(Base):
     refobj_usertype_set = Column(String(256), server_default=text("''"))
 
     pattern_result_objects = relationship('PatternResultobj', back_populates = 'project')
+    process_events = relationship('ProcessEvent', back_populates = 'project')
 
 
 class ProjectsAppvar(Base):
@@ -1887,6 +1888,7 @@ class Process(Base):
 
     projects_partnumber_foreign = relationship('ProjectsPartnumber')
     pattern_result_objects = relationship('PatternResultobj')
+    process_events = relationship('ProcessEvent', back_populates = process)
 
 
 class ProcessBufferPath(Base):
@@ -1991,7 +1993,8 @@ class ProcessEvent(Base):
     eventtype = Column(String(512), server_default=text("''"))
     eventdata = Column(MEDIUMTEXT)
 
-    process_events_foreign = relationship('Process')
+    process = relationship('Process', back_populates = 'process_events')
+    project = relationship('Project', back_populates = 'process_events')
 
 
 class ExtMeasurementSery(Base):
