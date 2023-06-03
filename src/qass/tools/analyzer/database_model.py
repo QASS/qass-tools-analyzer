@@ -773,7 +773,7 @@ class PatternResultobj(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     projectid = Column(ForeignKey('projects.projectid'), nullable=False, index=True)
-    process = Column(ForeignKey('process.id'), nullable=False, index=True)
+    process = Column(ForeignKey('process.process'), nullable=False, index=True)
     confignumber = Column(INTEGER(11), nullable=False, server_default=text("1"))
     measureposindex = Column(INTEGER(11), nullable=False, server_default=text("-1"))
     measurepostime = Column(BIGINT(20), nullable=False, server_default=text("0"))
@@ -1165,6 +1165,7 @@ class Project(Base):
     pattern_result_objects = relationship('PatternResultobj', back_populates = 'project')
     process_events = relationship('ProcessEvent', back_populates = 'project')
     part_numbers = relationship('ProjectsPartnumber', back_populates = 'project')
+    processes = relationship('Process', back_populates = 'project')
 
 
 class ProjectsAppvar(Base):
@@ -1850,7 +1851,7 @@ class Process(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     projects_id = Column(INTEGER(11), nullable=False)
-    projectid = Column(ForeignKey('project.projectid'), nullable=False, index=True)
+    projectid = Column(ForeignKey('projects.projectid'), nullable=False, index=True)
     process = Column(INTEGER(11), nullable=False, index=True)
     sub_process = Column(INTEGER(11), nullable=False, server_default=text("-1"))
     projects_partnumber_foreign_id = Column(ForeignKey('projects_partnumber.id'), index=True)
@@ -1891,8 +1892,9 @@ class Process(Base):
     external_locked_video = Column(String(1024))
 
     part_number = relationship('ProjectsPartnumber', back_populates = 'processes')
-    pattern_result_objects = relationship('PatternResultobj')
+    pattern_result_objects = relationship('PatternResultobj', back_populates = 'related_process')
     process_events = relationship('ProcessEvent', back_populates = 'related_process')
+    project = relationship('Project', back_populates = 'processes')
 
 class ProcessBufferPath(Base):
     __tablename__ = 'process_buffer_path'
