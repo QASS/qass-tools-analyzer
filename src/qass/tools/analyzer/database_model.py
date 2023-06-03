@@ -829,8 +829,15 @@ class PatternResultobj(Base):
     clusterid = Column(INTEGER(11), nullable=False, server_default=text("0"))
     clustered_result_count = Column(INTEGER(11), nullable=False, server_default=text("0"))
 
-    related_process = relationship('Process', back_populates = 'pattern_result_objects')
+    _process = relationship('Process', back_populates = 'pattern_result_objects')
     project = relationship('Project', back_populates = 'pattern_result_objects')
+
+    @property
+    def related_process(self):
+        for process in self.project.processes:
+            if process.process == self.process:
+                return process
+        return None 
 
 
 class PatternResultobjsFilterSetting(Base):
@@ -1892,7 +1899,7 @@ class Process(Base):
     external_locked_video = Column(String(1024))
 
     part_number = relationship('ProjectsPartnumber', back_populates = 'processes')
-    pattern_result_objects = relationship('PatternResultobj', back_populates = 'related_process')
+    pattern_result_objects = relationship('PatternResultobj', back_populates = '_process')
     process_events = relationship('ProcessEvent', back_populates = 'related_process')
     project = relationship('Project', back_populates = 'processes')
 
