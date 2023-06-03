@@ -1164,6 +1164,7 @@ class Project(Base):
 
     pattern_result_objects = relationship('PatternResultobj', back_populates = 'project')
     process_events = relationship('ProcessEvent', back_populates = 'project')
+    part_numbers = relationship('ProjectsPartnumber', back_populates = 'project')
 
 
 class ProjectsAppvar(Base):
@@ -1283,11 +1284,14 @@ class ProjectsPartnumber(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     partnumber = Column(String(128), unique=True)
-    projectidgroup = Column(BIGINT(20), nullable=False)
+    projectidgroup = Column(ForeignKey('projects.projectid'), nullable=False)
     partdescription = Column(String(1024), server_default=text("''"))
     partuuid = Column(CHAR(38), nullable=False, index=True, server_default=text("'{00000000-0000-0000-0000-000000000000}'"))
     date_creation = Column(DateTime, nullable=False, server_default=text("'2001-01-01 00:00:00'"))
     date_modified = Column(TIMESTAMP, nullable=False, server_default=text("current_timestamp() ON UPDATE current_timestamp()"))
+
+    project = relationship('Project', back_populates = 'part_numbers')
+    processes = relationship('Process', back_populates = 'part_number')
 
 
 class ProjectsSelection(Base):
@@ -1886,10 +1890,9 @@ class Process(Base):
     video_offsettime = Column(BIGINT(20), nullable=False, server_default=text("-1"))
     external_locked_video = Column(String(1024))
 
-    projects_partnumber_foreign = relationship('ProjectsPartnumber')
+    part_number = relationship('ProjectsPartnumber', back_populates = 'processes')
     pattern_result_objects = relationship('PatternResultobj')
     process_events = relationship('ProcessEvent', back_populates = 'related_process')
-
 
 class ProcessBufferPath(Base):
     __tablename__ = 'process_buffer_path'
