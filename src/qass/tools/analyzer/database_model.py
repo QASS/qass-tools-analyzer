@@ -44,7 +44,7 @@ class AnalyzerDB:
         self._active_session.close()
 
     @staticmethod
-    def create_analyzer_db_engine(ip = 'localhost', db = 'opti', db_url = None):
+    def create_engine(ip = 'localhost', db = 'opti', db_url = None):
         '''
         Create an engine for the Analyzer database schema to connect to an Optimizer
 
@@ -1846,7 +1846,7 @@ class Process(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     projects_id = Column(INTEGER(11), nullable=False)
-    projectid = Column(BIGINT(20), nullable=False, index=True)
+    projectid = Column(ForeignKey('project.projectid'), nullable=False, index=True)
     process = Column(INTEGER(11), nullable=False, index=True)
     sub_process = Column(INTEGER(11), nullable=False, server_default=text("-1"))
     projects_partnumber_foreign_id = Column(ForeignKey('projects_partnumber.id'), index=True)
@@ -1888,7 +1888,7 @@ class Process(Base):
 
     projects_partnumber_foreign = relationship('ProjectsPartnumber')
     pattern_result_objects = relationship('PatternResultobj')
-    process_events = relationship('ProcessEvent', back_populates = process)
+    process_events = relationship('ProcessEvent', back_populates = 'related_process')
 
 
 class ProcessBufferPath(Base):
@@ -1984,7 +1984,7 @@ class ProcessEvent(Base):
 
     id = Column(INTEGER(11), primary_key=True)
     process_events_foreign_id = Column(ForeignKey('process.id', ondelete='CASCADE'), nullable=False, index=True)
-    projectid = Column(BIGINT(20), nullable=False)
+    projectid = Column(ForeignKey('projects.projectid'), nullable=False)
     process = Column(INTEGER(11), nullable=False)
     date = Column(DATETIME(fsp=3), nullable=False, server_default=text("'2001-01-01 00:00:00.000'"))
     timestamp = Column(BIGINT(20), nullable=False)
@@ -1993,7 +1993,7 @@ class ProcessEvent(Base):
     eventtype = Column(String(512), server_default=text("''"))
     eventdata = Column(MEDIUMTEXT)
 
-    process = relationship('Process', back_populates = 'process_events')
+    related_process = relationship('Process', back_populates = 'process_events')
     project = relationship('Project', back_populates = 'process_events')
 
 
