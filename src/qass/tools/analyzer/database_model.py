@@ -26,7 +26,10 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 metadata = Base.metadata
 
-def get_analyzer_db_engine(ip = 'localhost', db = 'opti', db_url = None):
+def foo():
+    print('foo')
+
+def create_analyzer_db_engine(ip = 'localhost', db = 'opti', db_url = None):
     '''
     Create an engine for the Analyzer database schema to connect to an Optimizer
 
@@ -809,6 +812,7 @@ class PatternResultobj(Base):
     clustered_result_count = Column(INTEGER(11), nullable=False, server_default=text("0"))
 
     related_process = relationship('Process', back_populates = 'pattern_result_objects')
+    project = relationship('Projects', back_populates = 'pattern_result_objects')
 
 
 class PatternResultobjsFilterSetting(Base):
@@ -1139,6 +1143,8 @@ class Project(Base):
     guisettings_file = Column(String(1024), server_default=text("''"))
     guisettings_ext = Column(LONGTEXT)
     refobj_usertype_set = Column(String(256), server_default=text("''"))
+
+    pattern_resultobjs = relationship('PatternResultobj', back_populates = 'project')
 
 
 class ProjectsAppvar(Base):
@@ -1967,7 +1973,7 @@ class ProcessEvent(Base):
     eventtype = Column(String(512), server_default=text("''"))
     eventdata = Column(MEDIUMTEXT)
 
-    process_events_foreign = relationship('Proces')
+    process_events_foreign = relationship('Process')
 
 
 class ExtMeasurementSery(Base):
