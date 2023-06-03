@@ -829,7 +829,7 @@ class PatternResultobj(Base):
     clusterid = Column(INTEGER(11), nullable=False, server_default=text("0"))
     clustered_result_count = Column(INTEGER(11), nullable=False, server_default=text("0"))
 
-    _process = relationship('Process', back_populates = 'pattern_result_objects')
+    _process = relationship('Process', back_populates = '_pattern_result_objects')
     project = relationship('Project', back_populates = 'pattern_result_objects')
 
     @property
@@ -1899,9 +1899,13 @@ class Process(Base):
     external_locked_video = Column(String(1024))
 
     part_number = relationship('ProjectsPartnumber', back_populates = 'processes')
-    pattern_result_objects = relationship('PatternResultobj', back_populates = '_process')
+    _pattern_result_objects = relationship('PatternResultobj', back_populates = '_process')
     process_events = relationship('ProcessEvent', back_populates = 'related_process')
     project = relationship('Project', back_populates = 'processes')
+
+    @property
+    def pattern_result_objects(self):
+        return [pattern_result_obj for pattern_result_obj in self._pattern_result_objects if pattern_result_obj.projectid == self.projectid]
 
 class ProcessBufferPath(Base):
     __tablename__ = 'process_buffer_path'
