@@ -20,28 +20,46 @@
 # coding: utf-8
 from sqlalchemy import CHAR, Column, DateTime, Float, ForeignKey, Index, LargeBinary, String, TIMESTAMP, Text, text, create_engine
 from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIUMBLOB, MEDIUMTEXT, TINYINT, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 metadata = Base.metadata
 
-def foo():
-    print('foo')
+class AnalyzerDB:
 
-def create_analyzer_db_engine(ip = 'localhost', db = 'opti', db_url = None):
-    '''
-    Create an engine for the Analyzer database schema to connect to an Optimizer
+    def __init__(self, engine):
+        self.engine = engine
+        self.Session = sessionmaker(bind = engine)
+        self._active_session = None
 
-    :param str ip: the ip adress of the device
-    :param str db: the name of the database you want to connect to 
-    :param str db_url: the complete db_url
-    :returns: An engine object that can be used to create a connection
-    '''
-    if db_url is None:
-        db_url = f'mysql://opti:mizerdb@{ip}/{db}'
-    engine = create_engine(db_url)
-    return engine 
+    def __enter__(self):
+        '''
+        returns a sqlalchemy Session instance that can be used for querying
+        '''
+        self._active_session = self.create_session()
+        return self._active_session
+
+    def __exit__(self, *args, **kwargs):
+        self._active_session.close()
+
+    @staticmethod
+    def create_analyzer_db_engine(ip = 'localhost', db = 'opti', db_url = None):
+        '''
+        Create an engine for the Analyzer database schema to connect to an Optimizer
+
+        :param str ip: the ip adress of the device
+        :param str db: the name of the database you want to connect to 
+        :param str db_url: the complete db_url
+        :returns: An engine object that can be used to create a connection
+        '''
+        if db_url is None:
+            db_url = f'mysql://opti:mizerdb@{ip}/{db}'
+        engine = create_engine(db_url)
+        return engine 
+    
+    def create_session(self):
+        return self.Session()
 
 
 class AgglomerativeClusterTreeTable(Base):
@@ -812,7 +830,7 @@ class PatternResultobj(Base):
     clustered_result_count = Column(INTEGER(11), nullable=False, server_default=text("0"))
 
     related_process = relationship('Process', back_populates = 'pattern_result_objects')
-    project = relationship('Projects', back_populates = 'pattern_result_objects')
+    project = relationship('Project', back_populates = 'pattern_result_objects')
 
 
 class PatternResultobjsFilterSetting(Base):
@@ -1144,7 +1162,7 @@ class Project(Base):
     guisettings_ext = Column(LONGTEXT)
     refobj_usertype_set = Column(String(256), server_default=text("''"))
 
-    pattern_resultobjs = relationship('PatternResultobj', back_populates = 'project')
+    pattern_result_objects = relationship('PatternResultobj', back_populates = 'project')
 
 
 class ProjectsAppvar(Base):
