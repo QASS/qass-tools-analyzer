@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import glob
-from deleting_process import DeleteHandler
+from  qass.tools.analyzer.deleting_process import DeleteHandler
 from pathlib import Path
 import os
 import shutil
