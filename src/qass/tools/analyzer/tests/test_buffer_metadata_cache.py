@@ -99,12 +99,20 @@ def test_session_creation():
     inspector = inspect(engine)
     assert "buffer_metadata" in inspector.get_table_names()
 
-def test_get_non_synchronized_files(cache, buffer_objects):
+@pytest.mark.parametrize('new_files,unsynced_files,missing_files',
+                         [
+                             (["./foop1c0b.000", "./hellop1c0b.000"], [], []),
+                             ([], [], []),
+                         ])
+def test_get_non_synchronized_files(cache, buffer_objects, new_files, unsynced_files, missing_files):
     cache._db.add_all(buffer_objects)
-    unsynchronized_files, _ = cache.get_non_synchronized_files(["./foop1c0b.000", "./hellop1c0b.000"])
-    assert "./hellop1c0b.000" in unsynchronized_files
-    assert not "./foop1c0b.000" in unsynchronized_files
-    assert len(cache.get_non_synchronized_files(["./foop1c0b.000", "./barp1c0b.000"])[0]) == 0
+    unsynchronized_files, synced_but_missing_files = cache.get_non_synchronized_files(new_files)
+    for unsynced_file in unsynced_files:
+        assert unsynced_file in unsynchronized_files
+    for buffer_metadata in buffer_objects:
+        assert not buffer_metadata in unsynchronized_files
+    for missing_file in missing_files:
+        assert missing_file in synced_but_missing_files
 
 def test_get_non_synchronized_files_more_files(cache):
     N = 1000
