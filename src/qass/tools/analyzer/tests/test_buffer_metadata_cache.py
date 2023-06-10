@@ -99,18 +99,21 @@ def test_session_creation():
     inspector = inspect(engine)
     assert "buffer_metadata" in inspector.get_table_names()
 
-@pytest.mark.parametrize('new_files,unsynced_files,missing_files',
+@pytest.mark.parametrize('pre_added_files,new_files,unsynced_files,missing_files',
                          [
-                             (["./foop1c0b.000", "./hellop1c0b.000"], [], []),
-                             ([], [], []),
+                             ([], ["./foop1c0b0.000", "./hellop1c0b0.000"], ["./foop1c0b0.000", "./hellop1c0b0.000"], []),
+                             (['./hoop1c0b0.000'], ["./foop1c0b0.000", "./hellop1c0b0.000"], ["./foop1c0b0.000", "./hellop1c0b0.000"], ['./hoop1c0b0.000']),
                          ])
-def test_get_non_synchronized_files(cache, buffer_objects, new_files, unsynced_files, missing_files):
-    cache._db.add_all(buffer_objects)
+def test_get_non_synchronized_files(cache, pre_added_files, new_files, unsynced_files, missing_files):
+    for pre_added_file in pre_added_files:
+        _, file = pre_added_file.split('/')
+        cache._db.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = file))
+        cache._db.commit()
     unsynchronized_files, synced_but_missing_files = cache.get_non_synchronized_files(new_files)
     for unsynced_file in unsynced_files:
         assert unsynced_file in unsynchronized_files
-    for buffer_metadata in buffer_objects:
-        assert not buffer_metadata in unsynchronized_files
+    for pre_added_file in pre_added_files:
+        assert not pre_added_file in unsynchronized_files
     for missing_file in missing_files:
         assert missing_file in synced_but_missing_files
 
