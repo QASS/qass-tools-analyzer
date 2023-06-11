@@ -35,12 +35,11 @@ reload(bmc)
 @pytest.fixture
 def mock_buffer():
     class Mock_Buffer:
-        def __init__(self, *args): pass
+        def __init__(self, filepath, *args): 
+            self.filepath = filepath
         def __enter__(self):
             return self
         def __exit__(self, *args): pass
-        @property
-        def filepath(self): return "./foop1c0b.000"
         @property
         def process(self): return 1
         @property
@@ -139,7 +138,7 @@ def test_get_non_synchronized_files_more_files_duplicates(cache):
     assert len(unsynchronized_files) == N
 
 def test_buffer_to_buffer_metadata(mock_buffer):
-    buffer_metadata = bmc.BufferMetadata.buffer_to_metadata(mock_buffer())
+    buffer_metadata = bmc.BufferMetadata.buffer_to_metadata(mock_buffer("./foop1c0b.000"))
     assert buffer_metadata.directory_path == "./"
     assert buffer_metadata.filename == "foop1c0b.000"
     assert buffer_metadata.process == 1
@@ -182,15 +181,24 @@ def test_add_files_to_cache_warning(cache, mocker):
     assert buffer_metadata.filename == "foop1c0b.000"
     cache._db.commit.assert_called_once()
 
-def test_synchronize_directory(cache, mock_buffer, mocker):
+@pytest.mark.parametrize('pre_added_files,glob_return,files_in_cache,files_missing', [
+    ([], ['./foop1c1b01.000'], ['./foop1c1b01.000'], []),
+    (['./hoop1c1b01.000'], ['./foop1c1b01.000'], ['./foop1c1b01.000'], ['./hoop1c1b01.000']),
+])
+def test_synchronize_directory(cache, mock_buffer, mocker, pre_added_files, glob_return, files_in_cache, files_missing):
     cache.Buffer_cls = mock_buffer
-    mocker.patch("qass.tools.analyzer.buffer_metadata_cache.Path.glob", return_value = ["./foop1c0b01.000"])    
+    for pre_added_file in pre_added_files:
+        _, file = pre_added_file.split('/')
+        cache._db.add(bmc.BufferMetadataCache.BufferMetadata(directory_path = "./", filename = file))
+        cache._db.commit()
+    mocker.patch("qass.tools.analyzer.buffer_metadata_cache.Path.glob", return_value = glob_return)    
     mocker.patch("os.path.isfile", return_value = True)
-    cache.synchronize_directory("./", sync_subdirectories = False)
-    cache._db.commit()
-    cache._db.query(bmc.BufferMetadata).all()
-    buffer_metadata = cache._db.query(bmc.BufferMetadata).one()
-    assert buffer_metadata.filename == "foop1c0b.000"
+    cache.synchronize_directory("./", sync_subdirectories = False, delete_missing_entries = True)
+    actual_files_in_cache = [b.filepath for b in cache._db.query(bmc.BufferMetadata).all()]
+    for file in files_in_cache:
+        assert file in actual_files_in_cache
+    for file in files_missing:
+        assert file not in actual_files_in_cache
 
 def test_get_matching_files_single_property(cache, mock_buffer):
     db_session = cache._db
@@ -247,7 +255,12 @@ def test_get_matching_files_enum_properties(cache, mock_buffer):
     assert "./foop1c0b.000" in cache.get_matching_files(filter_function=lambda bm: bm.process == 1 and bm.datatype == Buffer.DATATYPE.COMP_MOV_AVERAGE)
     assert "./foop1c0b.000" in cache.get_matching_files(metadata)
 
-@pytest.mark.parametrize("filepath,directory_path,filename", [("./foo/bar/hoo", "./foo/bar/", "hoo"), ("\\hello\\file\\filename", "\\hello\\file\\", "filename")])
+@pytest.mark.parametrize("filepath,directory_path,filename", [
+    ("./foo/bar/hoo", "./foo/bar/", "hoo"), 
+    ("\\hello\\file\\filename", "\\hello\\file\\", "filename"),
+    ('./foop1c0b.000', './', 'foop1c0b.000'),
+    ('./foop1c0b01.000', './', 'foop1c0b01.000'),
+])
 def test_split_filepath(filepath, directory_path, filename):
     path, f_name = bmc.BufferMetadataCache.split_filepath(filepath)
     assert path == directory_path

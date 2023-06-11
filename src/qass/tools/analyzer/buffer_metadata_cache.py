@@ -155,7 +155,7 @@ class BufferMetadataCache:
                 files = (str(file) for file in Path(path).glob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
             unsynchronized_files, synchronized_missing_buffers = self.get_non_synchronized_files(files)
             if delete_missing_entries:
-                self.remove_files_from_cache(synchronized_missing_buffers)
+                self.remove_files_from_cache(synchronized_missing_buffers, verbose = verbose)
             self.add_files_to_cache(unsynchronized_files, verbose = verbose)
 
     def synchronize_database(self, *sync_connections):
