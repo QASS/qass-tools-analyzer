@@ -54,7 +54,7 @@ class AnalyzerDB:
         :returns: An engine object that can be used to create a connection
         '''
         if db_url is None:
-            db_url = f'mysql://opti:mizerdb@{ip}/{db}'
+            db_url = f'mysql+pymysql://opti:mizerdb@{ip}/{db}'
         engine = create_engine(db_url)
         return engine 
     
