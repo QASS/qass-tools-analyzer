@@ -135,7 +135,7 @@ class BufferMetadataCache:
         self.Buffer_cls = Buffer_cls
 
 
-    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}", verbose = 1, delete_missing_entries = False):
+    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}", verbose = 1, delete_stale_entries = False):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
 
         :param paths: The absolute paths to the directory
@@ -154,7 +154,7 @@ class BufferMetadataCache:
             else:
                 files = (str(file) for file in Path(path).glob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
             unsynchronized_files, synchronized_missing_buffers = self.get_non_synchronized_files(files)
-            if delete_missing_entries:
+            if delete_stale_entries:
                 self.remove_files_from_cache(synchronized_missing_buffers, verbose = verbose)
             self.add_files_to_cache(unsynchronized_files, verbose = verbose)
 
