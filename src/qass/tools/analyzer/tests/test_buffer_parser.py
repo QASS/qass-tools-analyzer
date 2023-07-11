@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from sqlalchemy import create_engine, MetaData, create_mock_engine, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
-from analyzer.buffer_parser import BufferErrorLogger
+from qass.tools.analyzer.buffer_parser import BufferErrorLogger
 
 
 @pytest.fixture(scope="session")

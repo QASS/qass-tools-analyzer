@@ -135,7 +135,7 @@ class BufferMetadataCache:
         self.Buffer_cls = Buffer_cls
 
 
-    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}", verbose = 1):
+    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}", verbose = 1, delete_stale_entries = False):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
 
         :param paths: The absolute paths to the directory
@@ -153,7 +153,9 @@ class BufferMetadataCache:
                 files = (str(file) for file in Path(path).rglob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
             else:
                 files = (str(file) for file in Path(path).glob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
-            unsynchronized_files = self.get_non_synchronized_files(files)
+            unsynchronized_files, synchronized_missing_buffers = self.get_non_synchronized_files(files)
+            if delete_stale_entries:
+                self.remove_files_from_cache(synchronized_missing_buffers, verbose = verbose)
             self.add_files_to_cache(unsynchronized_files, verbose = verbose)
 
     def synchronize_database(self, *sync_connections):
@@ -163,15 +165,15 @@ class BufferMetadataCache:
     def get_non_synchronized_files(self, files):
         """calculate the difference between the set of files and the set of synchronized files
 
-        :param filepath: full path to the files
-        :type filepath: list, tuple of str
         :param files: filenames
         :type files: str
-        :return: The set of files that are not synchronized
+        :return: The set of files that are not synchronized, and the database entries that exist but the file is not present anymore
         """
+        file_set = set(files)
         synchronized_buffers = set(buffer.filepath for buffer in self._db.query(self.BufferMetadata).all())
-        unsynchronized_files = set(files).difference(synchronized_buffers)
-        return unsynchronized_files
+        unsynchronized_files = file_set.difference(synchronized_buffers)
+        synchronized_missing_buffers = synchronized_buffers.difference(file_set)
+        return unsynchronized_files, synchronized_missing_buffers
 
     def add_files_to_cache(self, files, verbose = 0):
         """Add buffer files to the cache by providing the complete filepaths
@@ -191,6 +193,26 @@ class BufferMetadataCache:
                 directory_path, filename = self.split_filepath(file)
                 self._db.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e)))
                 warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
+        self._db.commit()
+
+    def remove_files_from_cache(self, files, verbose = 0):
+        '''Remove synchronized files from the cache
+
+        :param files: complete filepaths that are present in the cache
+        :type files: list, tuple of str 
+        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
+        :type verbose: int, optional       
+        '''
+        files = tqdm(files, desc = "Removing File Entries") if verbose > 0 and len(files) > 0 else files
+        for file in files:
+            try:
+                entry = self._db.query(BufferMetadata).filter_by(filepath = file).one()
+                if not entry:
+                    continue
+                self._db.delete(entry)
+            except Exception as e:
+                self._db.rollback()
+                raise e
         self._db.commit()
 
     def get_matching_files(self, buffer_metadata = None, filter_function = None, sort_key = None):
