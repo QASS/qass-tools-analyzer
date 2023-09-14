@@ -23,6 +23,8 @@ from sqlalchemy.dialects.mysql import BIGINT, DATETIME, INTEGER, LONGTEXT, MEDIU
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+from functools import wraps
+
 Base = declarative_base()
 metadata = Base.metadata
 
@@ -38,10 +40,25 @@ class AnalyzerDB:
         returns a sqlalchemy Session instance that can be used for querying
         '''
         self._active_session = self.create_session()
-        return self._active_session
+        return self
 
     def __exit__(self, *args, **kwargs):
         self._active_session.close()
+        self._active_session = None
+
+    def __check_for_active_session(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            self, *args = args
+            if self._active_session is None:
+                raise AssertionError("There is currently no active sesssion open. Are you inside of a 'with' statement?")
+            return func(self, *args, **kwargs)
+        return inner
+    
+    @property
+    @__check_for_active_session
+    def session(self):
+        return self._active_session
 
     @staticmethod
     def create_engine(ip = 'localhost', db = 'opti', db_url = None):
@@ -54,7 +71,7 @@ class AnalyzerDB:
         :returns: An engine object that can be used to create a connection
         '''
         if db_url is None:
-            db_url = f'mysql://opti:mizerdb@{ip}/{db}'
+            db_url = f'mysql+pymysql://opti:mizerdb@{ip}/{db}'
         engine = create_engine(db_url)
         return engine 
     
