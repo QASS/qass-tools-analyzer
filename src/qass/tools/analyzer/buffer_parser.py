@@ -468,7 +468,7 @@ class Buffer:
         :type specFrom: int, optional
         :param specTo: Last spectrum to be retrieved (default last available spectrum).
         :type specTo: int, optional
-        :param delog: To de-logarithmize the data (default True).
+        :param delog: To de-logarithmize the data (default None).
         :type delog: boolean, optional
 
         :raise InvalidArgumentError: The specFrom value is out of range.
