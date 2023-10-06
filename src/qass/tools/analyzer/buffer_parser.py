@@ -456,7 +456,7 @@ class Buffer:
         else:
             return self._get_data(specFrom, specTo, self.__frq_bands, conversion)
 
-    def getArray(self, specFrom=None, specTo=None, delog = False):
+    def getArray(self, specFrom=None, specTo=None, delog = None):
         """
         Wrapper function to 'get_data'.
         This function provides access to the measurement data in the buffer
@@ -493,10 +493,12 @@ class Buffer:
                     print('Spec_end: ' + str(spec_end))
                     data = buff.get_array(spec_start, spec_end, True)
         """
-        if delog:
+        if delog == True:
+            return self.get_data(specFrom, specTo, conversion="delog")
+        elif delog == False:
             return self.get_data(specFrom, specTo, conversion="delog")
         else:
-            return self.get_data(specFrom, specTo, conversion="log")
+            return self.get_data(specFrom, specTo)
 
     def getSpecDuration(self):
         """
