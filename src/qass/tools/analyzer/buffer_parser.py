@@ -496,7 +496,7 @@ class Buffer:
         if delog == True:
             return self.get_data(specFrom, specTo, conversion="delog")
         elif delog == False:
-            return self.get_data(specFrom, specTo, conversion="delog")
+            return self.get_data(specFrom, specTo, conversion="log")
         else:
             return self.get_data(specFrom, specTo)
 
