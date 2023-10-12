@@ -243,7 +243,7 @@ class BufferMetadataCache:
         if (buffer_metadata is not None):
             q = self.get_buffer_metadata_query(buffer_metadata)
         elif filter_function is not None:
-            q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata"))
+            q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata WHERE opening_error IS NULL"))
         else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
 
         buffers = list(self._db.execute(q).scalars())
@@ -276,7 +276,7 @@ class BufferMetadataCache:
         :return: The sqlalchemy query object
         :rtype: sqlalchemy.orm.query.FromStatement
         """
-        q = "SELECT * FROM buffer_metadata WHERE "
+        q = "SELECT * FROM buffer_metadata WHERE opening_error IS NULL AND "
         for prop in self.BufferMetadata.properties:
             prop_value = getattr(buffer_metadata, prop)
             if prop_value is not None:
