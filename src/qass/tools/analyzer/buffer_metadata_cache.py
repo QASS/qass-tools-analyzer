@@ -62,7 +62,7 @@ class BufferMetadata(__Base):
                 "fft_log_shift")
 
     id = Column(Integer, Identity(start = 1), primary_key = True)
-    project_id = Column(BigInteger)
+    project_id = Column(BigInteger, index = True)
     directory_path = Column(String, nullable = False, index = True)
     filename = Column(String, nullable = False)
     header_size = Column(Integer)
@@ -87,8 +87,8 @@ class BufferMetadata(__Base):
     avg_frq = Column(Integer, index = True)
     spec_duration = Column(Float)
     frq_per_band = Column(Float)
-    sample_count = Column(Integer)
-    spec_count = Column(Integer)
+    sample_count = Column(BigInteger)
+    spec_count = Column(BigInteger)
     adc_type = Column(BufferEnum(Buffer.ADCTYPE)) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
