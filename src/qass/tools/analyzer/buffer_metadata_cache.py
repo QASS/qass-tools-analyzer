@@ -61,14 +61,14 @@ class BufferMetadata(__Base):
                 "bit_resolution",
                 "fft_log_shift")
 
-    id = Column(Integer, Identity(start = 1), primary_key = True)
-    project_id = Column(BigInteger, index = True)
-    directory_path = Column(String, nullable = False, index = True)
-    filename = Column(String, nullable = False)
+    id = Column(Integer, Identity(start = 1), primary_key=True)
+    project_id = Column(BigInteger, index=True)
+    directory_path = Column(String, nullable=False, index=True)
+    filename = Column(String, nullable=False)
     header_size = Column(Integer)
-    process = Column(Integer)
-    channel = Column(Integer, index = True)
-    datamode = Column(BufferEnum(Buffer.DATAMODE)) # this is an ENUM in buffer_parser
+    process = Column(Integer, index=True)
+    channel = Column(Integer, index=True)
+    datamode = Column(BufferEnum(Buffer.DATAMODE), index=True) # this is an ENUM in buffer_parser
     datakind = Column(BufferEnum(Buffer.DATAKIND)) # this is an ENUM in buffer_parser
     datatype = Column(BufferEnum(Buffer.DATATYPE)) # this is an ENUM in buffer_parser
     process_time = Column(BigInteger)
@@ -81,10 +81,10 @@ class BufferMetadata(__Base):
     db_sample_count = Column(Integer)
     frq_bands = Column(Integer)
     db_spec_count = Column(Integer)
-    compression_frq = Column(Integer, index = True)
-    compression_time = Column(Integer, index = True)
-    avg_time = Column(Integer, index = True)
-    avg_frq = Column(Integer, index = True)
+    compression_frq = Column(Integer, index=True)
+    compression_time = Column(Integer, index=True)
+    avg_time = Column(Integer, index=True)
+    avg_frq = Column(Integer, index=True)
     spec_duration = Column(Float)
     frq_per_band = Column(Float)
     sample_count = Column(BigInteger)
@@ -93,9 +93,7 @@ class BufferMetadata(__Base):
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
 
-    opening_error = Column(String, nullable = True)
-
-    Index("channel_compression", "channel", "compression_frq")
+    opening_error = Column(String, nullable=True)
 
 
     @hybrid_property
@@ -123,6 +121,10 @@ class BufferMetadata(__Base):
                 continue
         return buffer_metadata
 
+Index("project_id_process_index", BufferMetadata.project_id, BufferMetadata.process)
+Index("project_id_process_channel_index", BufferMetadata.project_id, BufferMetadata.process, BufferMetadata.channel)
+Index("compression_time_frq_index", BufferMetadata.compression_time, BufferMetadata.compression_frq)
+Index("project_id_compression_time_frq_index", BufferMetadata.project_id, BufferMetadata.compression_time, BufferMetadata.compression_frq)
 
 class BufferMetadataCache:
     """This class acts as a Cache for Buffer Metadata. It uses a database session with a buffer_metadata table to map
