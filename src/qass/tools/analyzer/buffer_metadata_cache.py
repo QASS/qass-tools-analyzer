@@ -18,9 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import os, re, warnings
+from typing import Any, Union
+from abc import ABC, abstractmethod
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql.selectable import Select
 from pathlib import Path
 from enum import Enum
 from tqdm.auto import tqdm
@@ -130,8 +133,10 @@ class BufferMetadataCache:
     """
     BufferMetadata = BufferMetadata
 
-    def __init__(self, session, Buffer_cls = None):
-        self._db = session
+    def __init__(self, Buffer_cls=None, db_url="sqlite:///:memory:"):
+        self.engine = create_engine(db_url)
+        BufferMetadata.metadata.create_all(self.engine)
+        self.Session = sessionmaker(bind=self.engine)
         self.Buffer_cls = Buffer_cls
 
 
@@ -170,12 +175,13 @@ class BufferMetadataCache:
         :return: The set of files that are not synchronized, and the database entries that exist but the file is not present anymore
         """
         file_set = set(files)
-        synchronized_buffers = set(buffer.filepath for buffer in self._db.query(self.BufferMetadata).all())
+        with self.Session() as session:
+            synchronized_buffers = set(buffer.filepath for buffer in session.query(self.BufferMetadata).all())
         unsynchronized_files = file_set.difference(synchronized_buffers)
         synchronized_missing_buffers = synchronized_buffers.difference(file_set)
         return unsynchronized_files, synchronized_missing_buffers
 
-    def add_files_to_cache(self, files, verbose = 0):
+    def add_files_to_cache(self, files, verbose=0, batch_size=1000):
         """Add buffer files to the cache by providing the complete filepaths
 
         :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
@@ -183,17 +189,20 @@ class BufferMetadataCache:
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         """
-        files = tqdm(files, desc = "Adding Buffers") if verbose > 0 and len(files) > 0 else files
-        for file in files:
-            try:
-                with self.Buffer_cls(file) as buffer:
-                    buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
-                    self._db.add(buffer_metadata)
-            except Exception as e:
-                directory_path, filename = self.split_filepath(file)
-                self._db.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e)))
-                warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
-        self._db.commit()
+        with self.Session() as session:
+            files = tqdm(files, desc = "Adding Buffers") if verbose > 0 and len(files) > 0 else files
+            for i, file in enumerate(files):
+                try:
+                    with self.Buffer_cls(file) as buffer:
+                        buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
+                        session.add(buffer_metadata)
+                except Exception as e:
+                    directory_path, filename = self.split_filepath(file)
+                    session.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e)))
+                    warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
+                if i % batch_size == 0:
+                    session.commit()
+            session.commit()
 
     def remove_files_from_cache(self, files, verbose = 0):
         '''Remove synchronized files from the cache
@@ -203,68 +212,63 @@ class BufferMetadataCache:
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional       
         '''
-        files = tqdm(files, desc = "Removing File Entries") if verbose > 0 and len(files) > 0 else files
-        for file in files:
-            try:
-                entry = self._db.query(BufferMetadata).filter_by(filepath = file).one()
-                if not entry:
-                    continue
-                self._db.delete(entry)
-            except Exception as e:
-                self._db.rollback()
-                raise e
-        self._db.commit()
+        with self.Session() as session:
+            files = tqdm(files, desc = "Removing File Entries") if verbose > 0 and len(files) > 0 else files
+            for file in files:
+                try:
+                    entry = session.query(BufferMetadata).filter_by(filepath = file).one()
+                    if not entry:
+                        continue
+                    session.delete(entry)
+                except Exception as e:
+                    session.rollback()
+                    raise e
+            session.commit()
 
-    def get_matching_files(self, buffer_metadata = None, filter_function = None, sort_key = None):
-        """Query the Cache for all files matching the properties that are set in the BufferMetadata object
+    def get_matching_metadata(self, query: Select):
+        """Query the cache for all BufferMetadata database entries matching 
 
+        :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
+        :type query: Select
+        """
+        with self.Session() as session:
+            matching_metadata = session.scalars(query).all()
+        return matching_metadata
+
+    def get_matching_files(self, query: Select):
+        """Query the Cache for all files matching the properties that selected by the query object
 
         .. code-block:: python
                 :linenos:
 
                 BufferMetadataCache.get_matching_files(
-                    buffer_metadata = BufferMetadata(channel = 1, compression_frq = 4),
-                    filter_function = lambda bm: bm.process > 100,
-                    sort_key = lambda bm: bm.process)
+                    select(BM).filter(BM.channel==1, BM.compression_freq==4, BM.process>100)
+                )
                 # Returns all buffer filepaths with channel = 1, A frequency compression of 4, 
                 # processes above 100 sorted by the process number
 
-        :param buffer_metadata: A metadata object acting as the filter. Only buffers matching the attributes of the provided
-            BufferMetadata object are selected. This operation is done on the database
-        :type buffer_metadata: BufferMetadata
-        :param filter_function: A function taking a BufferMetadata object as a parameter returning a boolean.
-            This means a conjunction of BufferMetadata attributes.
-        :type filter_function: function
-        :param sort_key: A function taking a BufferMetadata object as a parameter returning an attribute the objects can be sorted with
-        :type sort_key: function
+        :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
+        :type query: Select
         :return: A list with the paths to the buffer files that match the buffer_metadata
         :rtype: list[str]
         """
-        if (buffer_metadata is not None):
-            q = self.get_buffer_metadata_query(buffer_metadata)
-        elif filter_function is not None:
-            q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata WHERE opening_error IS NULL"))
-        else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
+        matching_metadata = self.get_matching_metadata(query)
+        return [m.filepath for m in matching_metadata]
 
-        buffers = list(self._db.execute(q).scalars())
-
-        if filter_function is not None:
-            buffers = [buffer for buffer in buffers if filter_function(buffer)]
-        if sort_key is not None:
-            buffers.sort(key = sort_key)
-        return [buffer.filepath for buffer in buffers]
-
-    def get_matching_buffers(self, buffer_metadata = None, filter_function = None, sort_key = None):
+    def get_matching_buffers(self, query: Select):
         """Calls get_matching_files and converts the result to Buffer objects
 
         :return: List of Buffer objects
         :rtype: list
         """
-        files = self.get_matching_files(buffer_metadata = buffer_metadata, filter_function = filter_function, sort_key = sort_key)
+        files = self.get_matching_files(query)
         buffers = []
         for file in files:
-            with self.Buffer_cls(file) as buffer:
-                buffers.append(buffer)
+            try:
+                with self.Buffer_cls(file) as buffer:
+                    buffers.append(buffer)
+            except Exception as e:
+                warnings.warn(f'An error occured while parsing a file header, this file will be skipped: {file}')
         return buffers
 
     def get_buffer_metadata_query(self, buffer_metadata):
@@ -287,26 +291,6 @@ class BufferMetadataCache:
                 q += f"{prop} = {prop_value} AND "
         q = q[:-4]# prune the last AND
         return select(BufferMetadata).from_statement(text(q))
-
-    @staticmethod
-    def create_session(engine = None, db_url = "sqlite:///:memory:"):
-        """Create a session and initialize the schema for the BufferMetadataCache. If an engine is provided
-        the schema will be expanded by the buffer_metadata table.
-        
-        :param engine: An instance of a sqlalchemy engine. Typically sqlalchemy.create_engine()
-        :type engine:
-        :param db_url: The string used to create the engine. This can be a psycopg2, mysql or sqlite3 string. The default will create the database in main memory.
-        :type db_url: str
-        :return: A sqlalchemy session instance
-        :rtype: sqlalchemy.orm.Session
-        """
-        if engine is None:
-            engine = create_engine(db_url)
-        session = Session(engine)
-        BufferMetadata.metadata.create_all(engine)
-        return session
-
-
 
     @staticmethod
     def split_filepath(filepath):
