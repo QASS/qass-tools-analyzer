@@ -132,7 +132,7 @@ class BufferMetadataCache:
     """
     BufferMetadata = BufferMetadata
 
-    def __init__(self, Buffer_cls=None, db_url="sqlite:///:memory:"):
+    def __init__(self, Buffer_cls=Buffer, db_url="sqlite:///:memory:"):
         self.engine = create_engine(db_url)
         BufferMetadata.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
