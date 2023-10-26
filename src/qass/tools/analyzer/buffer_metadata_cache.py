@@ -18,10 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import os, re, warnings
-from typing import Any, Union
-from abc import ABC, abstractmethod
+from typing import Any
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
-from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.selectable import Select
 from pathlib import Path
