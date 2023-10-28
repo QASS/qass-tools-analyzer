@@ -209,7 +209,7 @@ class BufferMetadataCache:
         :param files: complete filepaths that are present in the cache
         :type files: list, tuple of str 
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
-        :type verbose: int, optional       
+        :type verbose: int, optional
         '''
         with self.Session() as session:
             files = tqdm(files, desc = "Removing File Entries") if verbose > 0 and len(files) > 0 else files
@@ -232,7 +232,7 @@ class BufferMetadataCache:
             q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata"))
         else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
         with self.Session() as session:
-            metadata = list(self._db.execute(q).scalars())
+            metadata = list(session.execute(q).scalars())
 
         if filter_function is not None:
             metadata = [m for m in metadata if filter_function(m)]
@@ -251,6 +251,8 @@ class BufferMetadataCache:
 
         :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
         :type query: Select
+        :return: A list with the paths to the buffer files that match the buffer_metadata
+        :rtype: list[str]
         """
         if query is not None:
             return self._get_matching_metadata(query)
@@ -258,17 +260,37 @@ class BufferMetadataCache:
 
     def get_matching_files(self, buffer_metadata: BufferMetadata = None, filter_function: Callable = None, 
                               sort_key: Callable = None, query: Select = None):
-        """Query the Cache for all files matching the properties that selected by the query object
+        """Query the Cache for all files matching the properties that selected by the query object.
+        The usage of the buffer_metadata, filter_functions and sort_key is deprecated and will be removed in
+        two minor versions. Use the sqlalchemy query parameter instead.
 
         .. code-block:: python
                 :linenos:
 
                 BufferMetadataCache.get_matching_files(
-                    select(BM).filter(BM.channel==1, BM.compression_freq==4, BM.process>100)
+                    select(BM).filter(BM.channel==1, BM.compression_freq==4, BM.process > 100)
                 )
                 # Returns all buffer filepaths with channel = 1, A frequency compression of 4, 
                 # processes above 100 sorted by the process number
 
+        .. code-block:: python
+                :linenos:
+                ### DEPRECATED ###
+                BufferMetadataCache.get_matching_files(
+                    buffer_metadata = BufferMetadata(channel=1, compression_frq=4),
+                    filter_function = lambda bm: bm.process>100,
+                    sort_key = lambda bm: bm.process)
+                # Returns all buffer filepaths with channel = 1, A frequency compression of 4, 
+                # processes above 100 sorted by the process number
+
+        :param buffer_metadata: A metadata object acting as the filter. Only buffers matching the attributes of the provided
+            BufferMetadata object are selected. This operation is done on the database
+        :type buffer_metadata: BufferMetadata
+        :param filter_function: A function taking a BufferMetadata object as a parameter returning a boolean.
+            This means a conjunction of BufferMetadata attributes.
+        :type filter_function: function
+        :param sort_key: A function taking a BufferMetadata object as a parameter returning an attribute the objects can be sorted with
+        :type sort_key: function
         :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
         :type query: Select
         :return: A list with the paths to the buffer files that match the buffer_metadata
