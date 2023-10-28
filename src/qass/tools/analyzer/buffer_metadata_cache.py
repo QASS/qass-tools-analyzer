@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import os, re, warnings
-from typing import Any
+from typing import Any, Callable
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -224,17 +224,40 @@ class BufferMetadataCache:
                     raise e
             session.commit()
 
-    def get_matching_metadata(self, query: Select):
+    def _deprecated_get_matching_metadata(self, buffer_metadata: BufferMetadata = None, filter_function: Callable = None,
+                                  sort_key: Callable = None):
+        if (buffer_metadata is not None):
+            q = self.get_buffer_metadata_query(buffer_metadata)
+        elif filter_function is not None:
+            q = select(BufferMetadata).from_statement(text("SELECT * FROM buffer_metadata"))
+        else: raise ValueError("You need to provide either a BufferMetadata object or a filter function, or both")
+        with self.Session() as session:
+            metadata = list(self._db.execute(q).scalars())
+
+        if filter_function is not None:
+            metadata = [m for m in metadata if filter_function(m)]
+        if sort_key is not None:
+            metadata.sort(key = sort_key)
+        return metadata
+
+    def _get_matching_metadata(self,  query: Select = None):
+        with self.Session() as session:
+            matching_metadata = session.scalars(query).all()
+        return matching_metadata
+
+    def get_matching_metadata(self, buffer_metadata: BufferMetadata = None, filter_function: Callable = None, 
+                              sort_key: Callable = None, query: Select = None):
         """Query the cache for all BufferMetadata database entries matching 
 
         :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
         :type query: Select
         """
-        with self.Session() as session:
-            matching_metadata = session.scalars(query).all()
-        return matching_metadata
+        if query is not None:
+            return self._get_matching_metadata(query)
+        return self._deprecated_get_matching_metadata(buffer_metadata, filter_function, sort_key)
 
-    def get_matching_files(self, query: Select):
+    def get_matching_files(self, buffer_metadata: BufferMetadata = None, filter_function: Callable = None, 
+                              sort_key: Callable = None, query: Select = None):
         """Query the Cache for all files matching the properties that selected by the query object
 
         .. code-block:: python
@@ -251,16 +274,17 @@ class BufferMetadataCache:
         :return: A list with the paths to the buffer files that match the buffer_metadata
         :rtype: list[str]
         """
-        matching_metadata = self.get_matching_metadata(query)
+        matching_metadata = self.get_matching_metadata(buffer_metadata, filter_function, sort_key, query)
         return [m.filepath for m in matching_metadata]
 
-    def get_matching_buffers(self, query: Select):
+    def get_matching_buffers(self, buffer_metadata: BufferMetadata = None, filter_function: Callable = None, 
+                              sort_key: Callable = None, query: Select = None):
         """Calls get_matching_files and converts the result to Buffer objects
 
         :return: List of Buffer objects
         :rtype: list
         """
-        files = self.get_matching_files(query)
+        files = self.get_matching_files(buffer_metadata, filter_function, sort_key, query)
         buffers = []
         for file in files:
             try:
