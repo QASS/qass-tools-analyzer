@@ -256,6 +256,7 @@ class BufferMetadataCache:
         """
         if query is not None:
             return self._get_matching_metadata(query)
+        warnings.warn("The usage of the parameters buffer_metadata, filter_function, sort_key is deprecated since version 2.3 and will be removed in two minor versions. Use the query parameter instead.", DeprecationWarning, stacklevel=2)
         return self._deprecated_get_matching_metadata(buffer_metadata, filter_function, sort_key)
 
     def get_matching_files(self, buffer_metadata: BufferMetadata = None, filter_function: Callable = None, 
@@ -296,6 +297,9 @@ class BufferMetadataCache:
         :return: A list with the paths to the buffer files that match the buffer_metadata
         :rtype: list[str]
         """
+        if any(p is not None for p in (buffer_metadata, filter_function, sort_key)):
+            warnings.warn("The usage of the parameters buffer_metadata, filter_function, sort_key is deprecated since version 2.3 and will be removed in two minor versions. Use the query parameter instead.", DeprecationWarning, stacklevel=2)
+
         matching_metadata = self.get_matching_metadata(buffer_metadata, filter_function, sort_key, query)
         return [m.filepath for m in matching_metadata]
 
@@ -306,6 +310,9 @@ class BufferMetadataCache:
         :return: List of Buffer objects
         :rtype: list
         """
+        if any(p is not None for p in (buffer_metadata, filter_function, sort_key)):
+            warnings.warn("The usage of the parameters buffer_metadata, filter_function, sort_key is deprecated since version 2.3 and will be removed in two minor versions. Use the query parameter instead.", DeprecationWarning, stacklevel=2)
+
         files = self.get_matching_files(buffer_metadata, filter_function, sort_key, query)
         buffers = []
         for file in files:
