@@ -22,9 +22,8 @@ that are in this case sorted by their process number (as specified in the `sort_
     :linenos:
 	
     from qass.tools.analyzer.buffer_metadata_cache import BufferMetadataCache as BMC, BufferMetadata as BM, select
-    from qass.tools.analyzer.buffer_parser import Buffer
 
-    cache = BMC(BMC.create_session(), Buffer)
+    cache = BMC()
     cache.synchronize_directory("my/directory")
 
     results = cache.get_matching_buffers(query=select(BM).filter(BM.compression_frq==8).order_by(BM.process))
