@@ -9,14 +9,29 @@ You could go through each file and check out if the compression matches your req
 The cache creates a database that caches all the metadata available in the :class:`qass.tools.analyzer.buffer_parser.Buffer` class.
 You can then query the cache very fast and programmatically in Python!
 
-
 Example
 *******
+
 In this example we create an instance of the cache and synchronize it with the directory `my/directory`.
 We then create a template `BufferMetadata` object and use it with the cache to query for all buffers with a compression_frq = 8.
 You can use all properties that are in :py:attr:`BufferMetadata.properties`.
 The :py:meth:`BufferMetadataCache.get_matching_buffers` method returns a list of :class:`Buffer` objects
 that are in this case sorted by their process number (as specified in the `sort_key`).
+
+.. code-block:: python
+    :linenos:
+	
+    from qass.tools.analyzer.buffer_metadata_cache import BufferMetadataCache as BMC, BufferMetadata as BM, select
+    from qass.tools.analyzer.buffer_parser import Buffer
+
+    cache = BMC(BMC.create_session(), Buffer)
+    cache.synchronize_directory("my/directory")
+
+    results = cache.get_matching_buffers(query=select(BM).filter(BM.compression_frq==8).order_by(BM.process))
+
+
+Example (Deprecated)
+********************
 
 .. code-block:: python
     :linenos:
@@ -29,6 +44,7 @@ that are in this case sorted by their process number (as specified in the `sort_
 
     buffer_metadata = BM(compression_frq = 8)
     results = cache.get_matching_buffers(buffer_metadata, sort_key = lambda bm: bm.process)
+
 
 BufferMetadataCache
 *******************
