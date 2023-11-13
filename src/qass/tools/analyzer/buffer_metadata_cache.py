@@ -132,8 +132,12 @@ class BufferMetadataCache:
     """
     BufferMetadata = BufferMetadata
 
-    def __init__(self, Buffer_cls=Buffer, db_url="sqlite:///:memory:"):
-        self.engine = create_engine(db_url)
+    def __init__(self, session=None, Buffer_cls=Buffer, db_url="sqlite:///:memory:"):
+        if session is not None:
+            warnings.warn('The use of the session parameter is deprecated since version 2.3 and will be removed in two minor versions. Use the db_url keyword instead', DeprecationWarning, stacklevel=2)
+            self.engine = session.get_bind()
+        else:
+            self.engine = create_engine(db_url)
         BufferMetadata.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
         self.Buffer_cls = Buffer_cls
