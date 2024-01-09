@@ -213,6 +213,12 @@ class Buffer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.file.close()
 
+    def __getstate__(self):
+        return (self.__filepath, )
+    
+    def __setstate__(self, state):
+        self.__init__(*state)
+
     def _get_var_chars(self, content, key, val, idx):
         if key in ['asc_desc', 'comments', 'sparemem']:
             d_len = val
