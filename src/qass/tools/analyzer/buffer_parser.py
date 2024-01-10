@@ -214,9 +214,23 @@ class Buffer:
         self.file.close()
 
     def __getstate__(self):
+        """
+        Return path to buffer file, since this is everything needed to reconstruct a buffer object.
+        This function is needed for pickling buffer objects.
+
+        :return: Single-element tuple containing the path to the buffer file.
+        :rtype: tuple
+        """
         return (self.__filepath, )
     
     def __setstate__(self, state):
+        """
+        Reconstruct buffer from state, which only contains the path to the buffer file.
+        This function is needed for unpickling buffer objects.
+
+        :param state: Single-element tuple containing the path to the buffer file.
+        :type state: tuple
+        """
         self.__init__(*state)
 
     def _get_var_chars(self, content, key, val, idx):
