@@ -17,7 +17,7 @@
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-image: python:3.6
+image: python:3.9
 
 stages:
   - test
@@ -45,7 +45,7 @@ build-package:
     - pip install --upgrade twine
     - python3 -m build
     - python3 -m twine upload --repository gitlab dist/* --config-file /tmp/.pypirc
-    - python3 -m twine upload --repostiory pypi dist/* --config-file /tmp/.pypirc
+    - python3 -m twine upload --repository pypi dist/* --config-file /tmp/.pypirc
   only:
     - tags
 
