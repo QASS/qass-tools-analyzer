@@ -37,7 +37,6 @@ test_docs:
 
 build-package:
   stage: deploy
-  image: python:3.6
   script:
     - touch /tmp/.pypirc
     - cat $PYPIRC > /tmp/.pypirc
