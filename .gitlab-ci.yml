@@ -41,6 +41,7 @@ build-package:
   script:
     - touch /tmp/.pypirc
     - cat $PYPIRC > /tmp/.pypirc
+    - pip install --upgrade pip
     - python3 -m pip install --upgrade build
     - pip install --upgrade twine
     - python3 -m build
