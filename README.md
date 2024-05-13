@@ -19,15 +19,43 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 # Analyzer package for Qass Tools
 
-**Read the Docs at [Gitlab Pages](http://developers.gitlab_pages.qass.net/qass_tools/qass_tools_analyzer/index.html)**
+This package contains python modules that can be used to interact with the [Analyzer4D](https://business.qass.net/en/software) software or with the data it produces.
+
+It provides:
+
+- A parser for the files containing the measurement data by the [Analyzer4D](https://business.qass.net/en/software)
+- An index to query for measurement data
+- A database abstraction for the [Analyzer4D](https://business.qass.net/en/software)
+- Abstractions for modules available in the operator network of the [Analyzer4D](https://business.qass.net/en/software)
+
+## Examples
+
+**Read Buffer files**
+
+In the example we provide the path to a buffer file to the Buffer class and use the with-statement to open it to read the process number.
 
 ```py
-from qass.tools import analyzer
+from qass.tools.analyzer.buffer_parser import Buffer
+
+buffer_file = "path/to/my/buffer_file"
+with Buffer(buffer_file) as buff:
+   print(buff.process)
+   data = buff.get_data() # this is a numpy array
 ```
 
-# Install as Developer
-Navigate your console to the repository where the `setup.py` file resides.
-```sh
-pip install --user --no-deps -e .
+**Query Buffer files**
+
+In this example we create an instance of the cache and synchronize it with the directory `my/directory`. 
+We then create a template BufferMetadata object and use it with the cache to query for all buffers with a compression_frq = 8. 
+You can use all properties that are in `BufferMetadata.properties`. The `BufferMetadataCache.get_matching_buffers()` method 
+returns a list of Buffer objects that are in this case sorted by their process number (as specified in the sort_key).
+
+```py
+from qass.tools.analyzer.buffer_metadata_cache import BufferMetadataCache as BMC, BufferMetadata as BM, select
+
+cache = BMC()
+cache.synchronize_directory("my/directory")
+
+results = cache.get_matching_buffers(query=select(BM).filter(BM.compression_frq==8).order_by(BM.process))
 ```
-Will execute the `setup.py` script and install the repository as an editable package. This enables the use of the imports as if the package is installed.
+
