@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
 from Analyzer.Devices import VirtDeviceInterface, VirtDeviceManager_IF
 from qass.tools.analyzer.virtual_devices import VirtualInputDevice, DeviceTypeCollection
 
