@@ -385,7 +385,7 @@ class DeviceTypeCollection(VirtDeviceInterface):
                 raise ValueError('The devices` names have to be unique, but got multiple devices with the same name')
             self._devices[dev.name] = dev
 
-        self._device_threads = {}
+        self._device_threads: Dict[_DeviceThread] = {}
         for name, dev in self._devices.items():
             self._device_threads[name] = _DeviceThread(dev)
 
@@ -480,7 +480,8 @@ class DeviceTypeCollection(VirtDeviceInterface):
         :rtype: bool
         """
         try:
-            self._device_threads[name].start()
+            if not self._device_threads[name].isRunning():
+                self._device_threads[name].start()
             return True
         except Exception as e:
             Log_IF.popupError(f'Exception caught during opening virtual device {name}:\n{traceback.format_exc()}')
@@ -497,8 +498,16 @@ class DeviceTypeCollection(VirtDeviceInterface):
         :return: True on success, False otherwise
         :rtype: bool
         """
+        if prepareRestart and self._device_threads[name].isRunning():
+            return True
+
         try:
             self._device_threads[name].stop()
+            deadline = 100 # ms
+            if not self._device_threads[name].wait(deadline):
+                Log_IF.popupError(f'Failed to close virtual device {name} within {deadline} ms - Timeout.')
+                return False
+
             return True
         except Exception as e:
             Log_IF.popupError(f'Exception caught during closing virtual device {name}:\n{traceback.format_exc()}')
