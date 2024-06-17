@@ -498,7 +498,7 @@ class DeviceTypeCollection(VirtDeviceInterface):
         :return: True on success, False otherwise
         :rtype: bool
         """
-        if prepareRestart and self._device_threads.isRunning():
+        if prepareRestart and self._device_threads[name].isRunning():
             return True
 
         try:
