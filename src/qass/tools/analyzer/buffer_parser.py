@@ -19,7 +19,7 @@
 #
 from logging import warning
 import os
-from typing import Any, List
+from typing import Any, List, Union
 import numpy as np
 from enum import IntEnum, auto
 from struct import unpack
@@ -187,6 +187,7 @@ class Buffer:
             ("sim_mode----", HeaderDtype.INT32), ("partnoid----", HeaderDtype.UINT32),
             ("asc_part----", HeaderDtype.UINT32), ("asc_desc----", HeaderDtype.UINT32),
             ("comments----", HeaderDtype.UINT32), ("sparemem----", HeaderDtype.UINT32),
+            ("streamno----", HeaderDtype.UINT32),
             ("headsend", None)
         ]
 
@@ -1075,6 +1076,10 @@ class Buffer:
         :rtype: int
         """
         return self.__metainfo["dumpchan"] + 1
+
+    @property
+    def streamno(self) -> Union[int, None]:
+        return self.__metainfo.get("streamno", None)
 
     @property
     def datamode(self):

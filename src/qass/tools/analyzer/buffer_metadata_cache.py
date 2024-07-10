@@ -60,8 +60,7 @@ class BufferMetadata(__Base):
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
                 "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
                 "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", 
-                "bit_resolution",
-                "fft_log_shift")
+                "bit_resolution", "fft_log_shift", "streamno")
 
     id = Column(Integer, Identity(start = 1), primary_key=True)
     project_id = Column(BigInteger, index=True)
@@ -94,6 +93,7 @@ class BufferMetadata(__Base):
     adc_type = Column(BufferEnum(Buffer.ADCTYPE)) # TODO this is an ENUM in buffer_parser
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
+    streamno = Column(Integer)
 
     opening_error = Column(String, nullable=True)
 
