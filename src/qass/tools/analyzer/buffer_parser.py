@@ -1500,6 +1500,15 @@ class Buffer:
         """
         return self.refEnergy
 
+    @property
+    def preamp_gain(self):
+        """
+        The preamplifier setting in the multiplexer tab of the Analyzer4D software.
+
+        :rtype: int
+        """
+        return self.__metainfo["pampgain"]
+
     def spec_to_time_ns(self, spec):
         """
         The method calculates the time since measurement start for a given

@@ -59,8 +59,8 @@ class BufferMetadata(__Base):
     properties = ("id", "project_id", "directory_path", "filename", "header_size", "process", "channel", "datamode", "datakind", "datatype", 
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
                 "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
-                "avg_frq", "spec_duration", "frq_per_band", "sample_count", "spec_count", "adc_type", 
-                "bit_resolution", "fft_log_shift", "streamno")
+                "avg_frq", "spec_duration", "frq_start", "frq_end", "frq_per_band", "sample_count", "spec_count", "adc_type", 
+                "bit_resolution", "fft_log_shift", "streamno", "preamp_gain")
 
     id = Column(Integer, Identity(start = 1), primary_key=True)
     project_id = Column(BigInteger, index=True)
@@ -87,6 +87,8 @@ class BufferMetadata(__Base):
     avg_time = Column(Integer, index=True)
     avg_frq = Column(Integer, index=True)
     spec_duration = Column(Float)
+    frq_start = Column(Integer)
+    frq_end = Column(Integer)
     frq_per_band = Column(Float)
     sample_count = Column(BigInteger)
     spec_count = Column(BigInteger)
@@ -94,6 +96,7 @@ class BufferMetadata(__Base):
     bit_resolution = Column(Integer)
     fft_log_shift = Column(Integer)
     streamno = Column(Integer)
+    preamp_gain = Column(Integer)
 
     opening_error = Column(String, nullable=True)
 
