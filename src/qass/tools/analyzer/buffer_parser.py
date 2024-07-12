@@ -1079,6 +1079,13 @@ class Buffer:
 
     @property
     def streamno(self) -> Union[int, None]:
+        """
+        The index of a stream of an extra channel.
+
+        Extra channels in the analyzer software can map multiple different data 
+        streams to the same channel of the software. This makes them only distuinguishable
+        by this property.
+        """
         return self.__metainfo.get("streamno", None)
 
     @property
