@@ -19,12 +19,13 @@
 #
 from logging import warning
 import os
-from typing import Any, List, Union
+from typing import Any, List, Tuple, Union
 import numpy as np
 from enum import IntEnum, auto
 from struct import unpack
 import math
 import warnings
+import codecs
 
 class InvalidArgumentError(ValueError):
     pass
@@ -38,6 +39,7 @@ class HeaderDtype(IntEnum):
     UINT64 = auto()
     FLOAT = auto()
     DOUBLE = auto()
+    HEX_TUPLE = auto()
 
 
 class Buffer:
@@ -187,7 +189,7 @@ class Buffer:
             ("sim_mode----", HeaderDtype.INT32), ("partnoid----", HeaderDtype.UINT32),
             ("asc_part----", HeaderDtype.UINT32), ("asc_desc----", HeaderDtype.UINT32),
             ("comments----", HeaderDtype.UINT32), ("sparemem----", HeaderDtype.UINT32),
-            ("streamno----", HeaderDtype.UINT32),
+            ("streamno----", HeaderDtype.UINT32), ("an4dvers----", HeaderDtype.HEX_TUPLE),
             ("headsend", None)
         ]
 
@@ -287,6 +289,11 @@ class Buffer:
                 val, = unpack("f", bytes)
             elif data_type == HeaderDtype.DOUBLE:
                 val, = unpack("d", bytes)
+            elif data_type == HeaderDtype.HEX_TUPLE:
+                # encode the hex representation into a hex string and convert the strings to integer representations
+                hex_string = codecs.encode(bytes, "hex")
+                # val contains the reversed order of the hex byte representations as a tuple of integers
+                val = tuple(int(hex_string[i:i + 2]) for i in range(0, len(hex_string), 2))[::-1]
             elif data_type == None:
                 pass
             else:
@@ -1508,6 +1515,14 @@ class Buffer:
         :rtype: int
         """
         return self.__metainfo["pampgain"]
+
+    @property
+    def analyzer_version(self) -> Union[Tuple[int, int, int, int], None]:
+        """
+        The analyzer4D version as a tuple consisting of (major, minor, patch, ---)
+        :rtype: tuple, None
+        """
+        return self.__metainfo.get("an4dvers", None)
 
     def spec_to_time_ns(self, spec):
         """
