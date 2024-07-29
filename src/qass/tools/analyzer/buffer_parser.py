@@ -290,10 +290,7 @@ class Buffer:
             elif data_type == HeaderDtype.DOUBLE:
                 val, = unpack("d", bytes)
             elif data_type == HeaderDtype.HEX_TUPLE:
-                # encode the hex representation into a hex string and convert the strings to integer representations
-                hex_string = codecs.encode(bytes, "hex")
-                # val contains the reversed order of the hex byte representations as a tuple of integers
-                val = tuple(int(hex_string[i:i + 2]) for i in range(0, len(hex_string), 2))[::-1]
+                val = codecs.encode(bytes, "hex")
             elif data_type == None:
                 pass
             else:
@@ -1517,12 +1514,17 @@ class Buffer:
         return self.__metainfo["pampgain"]
 
     @property
-    def analyzer_version(self) -> Union[Tuple[int, int, int, int], None]:
+    def analyzer_version(self) -> Union[str, None]:
         """
-        The analyzer4D version as a tuple consisting of (major, minor, patch, ---)
-        :rtype: tuple, None
+        The analyzer4D version as a dot separated string consisting of major.minor.micro.patch
+        :rtype: str, None
         """
-        return self.__metainfo.get("an4dvers", None)
+        version = self.__metainfo.get("an4dvers", None)
+        if version is None:
+            return None
+        version = version.decode("utf-8")
+        version_tuple = tuple(version[i: i + 2] for i in range(0, len(version), 2))
+        return ".".join(version_tuple[::-1])
 
     @property
     def partnumber(self) -> str:
