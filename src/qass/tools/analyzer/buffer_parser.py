@@ -39,7 +39,7 @@ class HeaderDtype(IntEnum):
     UINT64 = auto()
     FLOAT = auto()
     DOUBLE = auto()
-    HEX_TUPLE = auto()
+    HEX_STRING = auto()
 
 
 class Buffer:
@@ -189,7 +189,7 @@ class Buffer:
             ("sim_mode----", HeaderDtype.INT32), ("partnoid----", HeaderDtype.UINT32),
             ("asc_part----", HeaderDtype.UINT32), ("asc_desc----", HeaderDtype.UINT32),
             ("comments----", HeaderDtype.UINT32), ("sparemem----", HeaderDtype.UINT32),
-            ("streamno----", HeaderDtype.UINT32), ("an4dvers----", HeaderDtype.HEX_TUPLE),
+            ("streamno----", HeaderDtype.UINT32), ("an4dvers----", HeaderDtype.HEX_STRING),
             ("headsend", None)
         ]
 
@@ -289,7 +289,7 @@ class Buffer:
                 val, = unpack("f", bytes)
             elif data_type == HeaderDtype.DOUBLE:
                 val, = unpack("d", bytes)
-            elif data_type == HeaderDtype.HEX_TUPLE:
+            elif data_type == HeaderDtype.HEX_STRING:
                 val = codecs.encode(bytes, "hex")
             elif data_type == None:
                 pass
