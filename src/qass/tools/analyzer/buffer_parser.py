@@ -237,7 +237,7 @@ class Buffer:
         self.__init__(*state)
 
     def _get_var_chars(self, content, key, val, idx):
-        if key in ['asc_desc', 'comments', 'sparemem']:
+        if key in ['asc_desc', 'comments', 'sparemem', 'asc_part']:
             d_len = val
             val = content[idx:idx + d_len]
             idx += d_len
@@ -1523,6 +1523,17 @@ class Buffer:
         :rtype: tuple, None
         """
         return self.__metainfo.get("an4dvers", None)
+
+    @property
+    def partnumber(self) -> str:
+        """
+        The string representation of the partnumber of the measurement.
+        :rtype: str
+        """
+        asc_part_string = self.__metainfo.get("asc_part", "")
+        if isinstance(asc_part_string, str):
+            return asc_part_string
+        return asc_part_string.decode("utf-8").replace("\x00", "")
 
     def spec_to_time_ns(self, spec):
         """
