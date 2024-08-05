@@ -19,12 +19,13 @@
 #
 from logging import warning
 import os
-from typing import Any, List
+from typing import Any, List, Tuple, Union
 import numpy as np
 from enum import IntEnum, auto
 from struct import unpack
 import math
 import warnings
+import codecs
 
 class InvalidArgumentError(ValueError):
     pass
@@ -38,6 +39,7 @@ class HeaderDtype(IntEnum):
     UINT64 = auto()
     FLOAT = auto()
     DOUBLE = auto()
+    HEX_STRING = auto()
 
 
 class Buffer:
@@ -187,6 +189,7 @@ class Buffer:
             ("sim_mode----", HeaderDtype.INT32), ("partnoid----", HeaderDtype.UINT32),
             ("asc_part----", HeaderDtype.UINT32), ("asc_desc----", HeaderDtype.UINT32),
             ("comments----", HeaderDtype.UINT32), ("sparemem----", HeaderDtype.UINT32),
+            ("streamno----", HeaderDtype.UINT32), ("an4dvers----", HeaderDtype.HEX_STRING),
             ("headsend", None)
         ]
 
@@ -234,7 +237,7 @@ class Buffer:
         self.__init__(*state)
 
     def _get_var_chars(self, content, key, val, idx):
-        if key in ['asc_desc', 'comments', 'sparemem']:
+        if key in ['asc_desc', 'comments', 'sparemem', 'asc_part']:
             d_len = val
             val = content[idx:idx + d_len]
             idx += d_len
@@ -286,6 +289,8 @@ class Buffer:
                 val, = unpack("f", bytes)
             elif data_type == HeaderDtype.DOUBLE:
                 val, = unpack("d", bytes)
+            elif data_type == HeaderDtype.HEX_STRING:
+                val = codecs.encode(bytes, "hex")
             elif data_type == None:
                 pass
             else:
@@ -1077,6 +1082,17 @@ class Buffer:
         return self.__metainfo["dumpchan"] + 1
 
     @property
+    def streamno(self) -> Union[int, None]:
+        """
+        The index of a stream of an extra channel.
+
+        Extra channels in the analyzer software can map multiple different data 
+        streams to the same channel of the software. This makes them only distuinguishable
+        by this property.
+        """
+        return self.__metainfo.get("streamno", None)
+
+    @property
     def datamode(self):
         """
         The data mode is a constant which specifies what kind of data are in
@@ -1487,6 +1503,39 @@ class Buffer:
         alias for refEnergy()
         """
         return self.refEnergy
+
+    @property
+    def preamp_gain(self):
+        """
+        The preamplifier setting in the multiplexer tab of the Analyzer4D software.
+
+        :rtype: int
+        """
+        return self.__metainfo["pampgain"]
+
+    @property
+    def analyzer_version(self) -> Union[str, None]:
+        """
+        The analyzer4D version as a dot separated string consisting of major.minor.micro.patch
+        :rtype: str, None
+        """
+        version = self.__metainfo.get("an4dvers", None)
+        if version is None:
+            return None
+        version = version.decode("utf-8")
+        version_tuple = tuple(version[i: i + 2] for i in range(0, len(version), 2))
+        return ".".join(version_tuple[::-1])
+
+    @property
+    def partnumber(self) -> str:
+        """
+        The string representation of the partnumber of the measurement.
+        :rtype: str
+        """
+        asc_part_string = self.__metainfo.get("asc_part", "")
+        if isinstance(asc_part_string, str):
+            return asc_part_string
+        return asc_part_string.decode("utf-8").replace("\x00", "")
 
     def spec_to_time_ns(self, spec):
         """
