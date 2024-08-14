@@ -28,6 +28,8 @@ It provides:
 - A database abstraction for the [Analyzer4D](https://business.qass.net/en/software)
 - Abstractions for modules available in the operator network of the [Analyzer4D](https://business.qass.net/en/software)
 
+Check out the **[documentation](https://qass.github.io/qass-tools-analyzer/)**!
+
 ## Examples
 
 **Read Buffer files**
