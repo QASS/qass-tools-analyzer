@@ -30,6 +30,20 @@ It provides:
 
 Check out the **[documentation](https://qass.github.io/qass-tools-analyzer/)**!
 
+## Installation
+
+Just install using pypi.
+
+```sh
+pip install qass-tools-analyzer
+```
+
+Or install as a developer.
+Having the working directory of your terminal in the repository folder:
+```sh
+pip install -e .
+```
+
 ## Examples
 
 **Read Buffer files**
