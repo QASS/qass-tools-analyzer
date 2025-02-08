@@ -325,18 +325,21 @@ class Buffer:
     def _parse_header(self):
         self.file.seek(0)
         # this should contain the complete header i sugest...
-        file_start = self.file.read(4096)
+        header_arr = self.file.read(4096)
         _, header_size, _ = self._get_header_val(
-            0, file_start, self.__keywords[0])
+            0, header_arr, self.__keywords[0])
+
+        header_arr = header_arr[:header_size]
+        self.__header_hash = hash(header_arr)
 
         idx = 0
         while idx < header_size:
             try:
                 key, val, idx = self._read_next_value(
-                    idx, file_start, self.__keywords)
+                    idx, header_arr, self.__keywords)
             except:
                 idx += 12  # skip unknown parameter value
-                testkey = file_start[idx: idx+8]
+                testkey = header_arr[idx: idx+8]
                 # check if current position contains a possible keyword, otherwise
                 # add 4 to idx, because most likely the unknown keyword has a 64bit value
                 if not self._is_possible_keyword(testkey):
@@ -1003,6 +1006,17 @@ class Buffer:
             return result_arr[changes_idx]
         else:
             return result_arr
+
+    @property
+    def header_hash(self):
+        """A hash value for the buffer's header.
+        The header of the buffer is almost unique for a buffer.
+        A buffer should only differ in the length of the contained data.
+
+        :return: The header's hash
+        :rtype: int
+        """
+        return self.__header_hash
 
     @property
     def metainfo(self):
