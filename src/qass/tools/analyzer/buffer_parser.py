@@ -354,7 +354,7 @@ class Buffer:
 
         self.__header_size = header_size
         self.__db_header_size = self.__metainfo["dbhdsize"]
-        self.__bytes_per_sample = self.__metainfo["b_p_samp"]
+        self.__bytes_per_sample = self.__metainfo["b_p_samp"] if "b_p_samp" in self.__metainfo else 2
         self.__db_size = self.__metainfo["db__size"]
         self.__frq_bands = self.__metainfo["s_p_fram"]
         self.__db_count = math.ceil(
