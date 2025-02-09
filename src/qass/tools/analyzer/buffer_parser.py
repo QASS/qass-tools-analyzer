@@ -26,6 +26,8 @@ from struct import unpack
 import math
 import warnings
 import codecs
+import hashlib
+
 
 class InvalidArgumentError(ValueError):
     pass
@@ -330,7 +332,9 @@ class Buffer:
             0, header_arr, self.__keywords[0])
 
         header_arr = header_arr[:header_size]
-        self.__header_hash = hash(header_arr)
+        m = hashlib.sha256()
+        m.update(header_arr)
+        self.__header_hash = m.hexdigest()
 
         idx = 0
         while idx < header_size:

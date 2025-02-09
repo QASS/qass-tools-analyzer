@@ -19,7 +19,7 @@
 #
 import os, re, warnings
 from typing import Any, Callable, Tuple, Union
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text, BINARY
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.selectable import Select
@@ -66,7 +66,7 @@ class BufferMetadata(__Base):
     project_id = Column(BigInteger, index=True)
     directory_path = Column(String, nullable=False, index=True)
     filename = Column(String, nullable=False)
-    header_hash = Column(BigInteger)
+    header_hash = Column(String(64))
     machine_id = Column(String)
     header_size = Column(Integer)
     process = Column(Integer, index=True)
