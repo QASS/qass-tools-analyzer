@@ -66,7 +66,7 @@ class BufferMetadata(__Base):
     project_id = Column(BigInteger, index=True)
     directory_path = Column(String, nullable=False, index=True)
     filename = Column(String, nullable=False)
-    header_hash = Column(String(64))
+    header_hash = Column(String(64), index=True)
     machine_id = Column(String)
     header_size = Column(Integer)
     process = Column(Integer, index=True)
@@ -135,7 +135,8 @@ Index("project_id_process_channel_index", BufferMetadata.project_id, BufferMetad
 Index("compression_time_frq_index", BufferMetadata.compression_time, BufferMetadata.compression_frq)
 Index("project_id_compression_time_frq_index", BufferMetadata.project_id, BufferMetadata.compression_time, BufferMetadata.compression_frq)
 
-def _create_metadata(Buffer_cls, file):
+def _create_metadata(args):
+    Buffer_cls, file = args
     try:
         with Buffer_cls(file) as buffer:
             buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
@@ -215,7 +216,7 @@ class BufferMetadataCache:
         with self.Session() as session:
             with Pool() as pool:
                 params = [(self.Buffer_cls, f) for f in files]
-                f_gen = enumerate(pool.starmap(_create_metadata, params))
+                f_gen = enumerate(pool.imap_unordered(_create_metadata, params))
                 f_gen = tqdm(f_gen, desc = "Adding Buffers", total=len(params)) if verbose > 0 and len(params) > 0 else f_gen
                 for i, metadata in f_gen:
                     metadata: BufferMetadata
