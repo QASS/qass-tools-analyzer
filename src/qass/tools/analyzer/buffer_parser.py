@@ -356,7 +356,14 @@ class Buffer:
         self.__db_header_size = self.__metainfo["dbhdsize"]
         self.__bytes_per_sample = self.__metainfo["b_p_samp"] if "b_p_samp" in self.__metainfo else 2
         self.__db_size = self.__metainfo["db__size"]
-        self.__frq_bands = self.__metainfo["s_p_fram"]
+
+        self.__frq_bands = None
+        for k in ("frqbands", "s_p_fram", "framsize"):
+            if k in self.__metainfo:
+                self.__frq_bands = self.__metainfo[k]
+        
+        if self.__frq_bands is None:
+            raise ValueError('Failed to determine the frq_bands of the buffer')
         self.__db_count = math.ceil(
             (self.file_size - self.__header_size) / (self.__db_size + self.__db_header_size))
 
