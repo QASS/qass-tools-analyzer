@@ -174,6 +174,8 @@ class BufferMetadataCache:
         :type regex_pattern: string, optional
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
+        :param machine_id: An optional identifier for a certain machine to enable synchronization of different platforms
+        :type machine_id: string, optional
         """
         pattern = re.compile(regex_pattern)
         for path in paths:
