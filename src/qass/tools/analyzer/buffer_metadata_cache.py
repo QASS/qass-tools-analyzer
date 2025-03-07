@@ -19,13 +19,14 @@
 #
 import os, re, warnings
 from typing import Any, Callable, Tuple, Union
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Identity, Index, Enum, TypeDecorator, select, text, BINARY
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.selectable import Select
 from pathlib import Path
 from enum import Enum
 from tqdm.auto import tqdm
+from multiprocessing.pool import Pool as Pool
 
 from .buffer_parser import Buffer
 
@@ -59,12 +60,14 @@ class BufferMetadata(__Base):
                 "process_time", "process_date_time", "db_header_size", "bytes_per_sample", "db_count", "full_blocks", "db_size",
                 "db_sample_count", "frq_bands", "db_spec_count", "compression_frq", "compression_time", "avg_time",
                 "avg_frq", "spec_duration", "frq_start", "frq_end", "frq_per_band", "sample_count", "spec_count", "adc_type", 
-                "bit_resolution", "fft_log_shift", "streamno", "preamp_gain", "analyzer_version", "partnumber")
+                "bit_resolution", "fft_log_shift", "streamno", "preamp_gain", "analyzer_version", "partnumber", "header_hash")
 
     id = Column(Integer, Identity(start = 1), primary_key=True)
     project_id = Column(BigInteger, index=True)
     directory_path = Column(String, nullable=False, index=True)
     filename = Column(String, nullable=False)
+    header_hash = Column(String(64), index=True)
+    machine_id = Column(String)
     header_size = Column(Integer)
     process = Column(Integer, index=True)
     channel = Column(Integer, index=True)
@@ -132,6 +135,17 @@ Index("project_id_process_channel_index", BufferMetadata.project_id, BufferMetad
 Index("compression_time_frq_index", BufferMetadata.compression_time, BufferMetadata.compression_frq)
 Index("project_id_compression_time_frq_index", BufferMetadata.project_id, BufferMetadata.compression_time, BufferMetadata.compression_frq)
 
+def _create_metadata(args):
+    Buffer_cls, file = args
+    try:
+        with Buffer_cls(file) as buffer:
+            buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
+            return buffer_metadata
+    except Exception as e:
+            directory_path, filename = BufferMetadataCache.split_filepath(file)
+            warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
+            return BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e))
+
 class BufferMetadataCache:
     """This class acts as a Cache for Buffer Metadata. It uses a database session with a buffer_metadata table to map
     metadata to files on the disk. The cache can be queried a lot faster than manually opening a lot of buffer files.
@@ -149,7 +163,7 @@ class BufferMetadataCache:
         self.Buffer_cls = Buffer_cls
 
 
-    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}", verbose = 1, delete_stale_entries = False):
+    def synchronize_directory(self, *paths, sync_subdirectories = True, regex_pattern = "^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}", verbose = 1, delete_stale_entries = False, machine_id = None):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
 
         :param paths: The absolute paths to the directory
@@ -160,6 +174,8 @@ class BufferMetadataCache:
         :type regex_pattern: string, optional
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
+        :param machine_id: An optional identifier for a certain machine to enable synchronization of different platforms
+        :type machine_id: string, optional
         """
         pattern = re.compile(regex_pattern)
         for path in paths:
@@ -167,16 +183,16 @@ class BufferMetadataCache:
                 files = (str(file) for file in Path(path).rglob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
             else:
                 files = (str(file) for file in Path(path).glob("*p*c?b*") if os.path.isfile(file) and pattern.match(str(file)))
-            unsynchronized_files, synchronized_missing_buffers = self.get_non_synchronized_files(files)
+            unsynchronized_files, synchronized_missing_buffers = self.get_non_synchronized_files(files, machine_id)
             if delete_stale_entries:
                 self.remove_files_from_cache(synchronized_missing_buffers, verbose = verbose)
-            self.add_files_to_cache(unsynchronized_files, verbose = verbose)
+            self.add_files_to_cache(unsynchronized_files, verbose = verbose, machine_id=machine_id)
 
     def synchronize_database(self, *sync_connections):
         # TODO
         pass
 
-    def get_non_synchronized_files(self, files):
+    def get_non_synchronized_files(self, files, machine_id):
         """calculate the difference between the set of files and the set of synchronized files
 
         :param files: filenames
@@ -185,12 +201,12 @@ class BufferMetadataCache:
         """
         file_set = set(files)
         with self.Session() as session:
-            synchronized_buffers = set(buffer.filepath for buffer in session.query(self.BufferMetadata).all())
+            synchronized_buffers = set(buffer.filepath for buffer in session.query(self.BufferMetadata).filter(BufferMetadata.machine_id==machine_id).all())
         unsynchronized_files = file_set.difference(synchronized_buffers)
         synchronized_missing_buffers = synchronized_buffers.difference(file_set)
         return unsynchronized_files, synchronized_missing_buffers
 
-    def add_files_to_cache(self, files, verbose=0, batch_size=1000):
+    def add_files_to_cache(self, files, verbose=0, batch_size=1000, machine_id = None):
         """Add buffer files to the cache by providing the complete filepaths
 
         :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
@@ -198,19 +214,18 @@ class BufferMetadataCache:
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         """
+        import time
         with self.Session() as session:
-            files = tqdm(files, desc = "Adding Buffers") if verbose > 0 and len(files) > 0 else files
-            for i, file in enumerate(files):
-                try:
-                    with self.Buffer_cls(file) as buffer:
-                        buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
-                        session.add(buffer_metadata)
-                except Exception as e:
-                    directory_path, filename = self.split_filepath(file)
-                    session.add(BufferMetadata(directory_path = directory_path, filename = filename, opening_error = str(e)))
-                    warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
-                if i % batch_size == 0:
-                    session.commit()
+            with Pool() as pool:
+                params = [(self.Buffer_cls, f) for f in files]
+                f_gen = enumerate(pool.imap_unordered(_create_metadata, params))
+                f_gen = tqdm(f_gen, desc = "Adding Buffers", total=len(params)) if verbose > 0 and len(params) > 0 else f_gen
+                for i, metadata in f_gen:
+                    metadata: BufferMetadata
+                    metadata.machine_id = machine_id
+                    session.add(metadata)
+                    if i % batch_size == 0:
+                        session.commit()
             session.commit()
 
     def remove_files_from_cache(self, files, verbose = 0):
