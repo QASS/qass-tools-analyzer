@@ -44,7 +44,7 @@ build-package:
     - python3 -m pip install --upgrade build
     - pip install --upgrade twine
     - python3 -m build
-    - python3 -m twine upload --repository gitlab -u gitlab-ci-token -p $CI_JOB_TOKEN dist/*
+    - python3 -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi -u gitlab-ci-token -p ${CI_JOB_TOKEN} dist/*
     - python3 -m twine upload --repository pypi dist/* --config-file /tmp/.pypirc
   only:
     - tags
