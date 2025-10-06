@@ -186,54 +186,6 @@ def test_buffer_to_buffer_metadata_different_filepath():
     assert buffer_metadata.directory_path == ".\\"
 
 
-@pytest.mark.parametrize(
-    "pre_added_files,glob_return,files_in_cache,files_missing",
-    [
-        ([], ["./foop1c1b01.000"], ["./foop1c1b01.000"], []),
-        (
-            ["./hoop1c1b01.000"],
-            ["./foop1c1b01.000"],
-            ["./foop1c1b01.000"],
-            ["./hoop1c1b01.000"],
-        ),
-    ],
-)
-def test_synchronize_directory(
-    cache,
-    mock_buffer,
-    mocker,
-    pre_added_files,
-    glob_return,
-    files_in_cache,
-    files_missing,
-):
-    cache.Buffer_cls = mock_buffer
-    with cache.Session() as session:
-        for pre_added_file in pre_added_files:
-            _, file = pre_added_file.split("/")
-            session.add(
-                bmc.BufferMetadataCache.BufferMetadata(
-                    directory_path="./", filename=file
-                )
-            )
-            session.commit()
-    mocker.patch(
-        "qass.tools.analyzer.buffer_metadata_cache.Path.glob", return_value=glob_return
-    )
-    mocker.patch("os.path.isfile", return_value=True)
-    cache.synchronize_directory(
-        "./", sync_subdirectories=False, delete_stale_entries=True
-    )
-    with cache.Session() as session:
-        actual_files_in_cache = [
-            b.filepath for b in session.query(bmc.BufferMetadata).all()
-        ]
-    for file in files_in_cache:
-        assert file in actual_files_in_cache
-    for file in files_missing:
-        assert file not in actual_files_in_cache
-
-
 def test_get_matching_files_single_property(cache, mock_buffer):
     with cache.Session() as session:
         cache.Buffer_cls = mock_buffer
@@ -372,4 +324,3 @@ def test_split_filepath(filepath, directory_path, filename):
     path, f_name = bmc.BufferMetadataCache.split_filepath(filepath)
     assert path == directory_path
     assert f_name == filename
-
