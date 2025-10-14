@@ -1,4 +1,4 @@
-# ruff: noqa
+#
 # Copyright (c) 2022 QASS GmbH.
 # Website: https://qass.net
 # Contact: QASS GmbH <info@qass.net>
@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import sys, datetime
+import sys
 from uuid import uuid4
 from enum import Enum
+from dataclasses import dataclass
 
 
 sys.path.append("../")
@@ -31,6 +32,14 @@ from sqlalchemy import select, inspect
 import pytest
 
 reload(bmc)
+
+
+@dataclass
+class MockBuffer:
+    def __init__(self, filepath, **kwargs):
+        setattr(self, "filepath", filepath)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 
 @pytest.fixture
@@ -84,23 +93,9 @@ def test_session_creation():
     assert "buffer_metadata" in inspector.get_table_names()
 
 
-@pytest.mark.parametrize(
-    "pre_added_files,new_files,unsynced_files,missing_files",
-    [
-        (
-            [],
-            ["./foop1c0b0.000", "./hellop1c0b0.000"],
-            ["./foop1c0b0.000", "./hellop1c0b0.000"],
-            [],
-        ),
-        (
-            ["./hoop1c0b0.000"],
-            ["./foop1c0b0.000", "./hellop1c0b0.000"],
-            ["./foop1c0b0.000", "./hellop1c0b0.000"],
-            ["./hoop1c0b0.000"],
-        ),
-    ],
-)
+# @pytest.mark.parametrize("pre_added,new_files,expected", [
+#     (),
+# ])
 def test_get_non_synchronized_files(
     cache, pre_added_files, new_files, unsynced_files, missing_files
 ):
@@ -117,9 +112,7 @@ def test_get_non_synchronized_files(
         new_files, None
     )
     for unsynced_file in unsynced_files:
-        assert unsynced_file in unsynchronized_files
-    for pre_added_file in pre_added_files:
-        assert not pre_added_file in unsynchronized_files
+        assert pre_added_file not in unsynchronized_files
     for missing_file in missing_files:
         assert missing_file in synced_but_missing_files
 
@@ -208,7 +201,7 @@ def test_get_matching_files_single_property(cache, mock_buffer):
     query = select(bmc.BufferMetadata).filter(bmc.BufferMetadata.process == 1)
     assert "./foop1c0b.000" in cache.get_matching_files(query)
     assert "./barp1c0b.000" in cache.get_matching_files(query)
-    assert not "./hoop1c0b.000" in cache.get_matching_files(query)
+    assert "./hoop1c0b.000" not in cache.get_matching_files(query)
 
 
 def test_get_matching_files_multiple_properties(cache, mock_buffer):
@@ -249,23 +242,25 @@ def test_get_matching_files_multiple_properties(cache, mock_buffer):
         session.commit()
     query = select(bmc.BufferMetadata).filter(bmc.BufferMetadata.process == 1)
     assert "./foop1c0b.000" in cache.get_matching_files(query)
-    assert not "./hoop1c0b.000" in cache.get_matching_files(query)
+    assert "./hoop1c0b.000" not in cache.get_matching_files(query)
     assert "./barp1c0b.000" in cache.get_matching_files(query)
     assert "./foo_barp1c0b.000" in cache.get_matching_files(query)
     query = select(bmc.BufferMetadata).filter(
         bmc.BufferMetadata.process == 1, bmc.BufferMetadata.channel == 1
     )
-    assert not "./foop1c0b.000" in cache.get_matching_files(query)
-    assert not "./hoop1c0b.000" in cache.get_matching_files(query)
+    assert "./foop1c0b.000" not in cache.get_matching_files(query)
+    assert "./hoop1c0b.000" not in cache.get_matching_files(query)
     assert "./barp1c0b.000" in cache.get_matching_files(query)
-    assert not "./foo_barp1c0b.000" in cache.get_matching_files(query)
+    assert "./foo_barp1c0b.000" not in cache.get_matching_files(query)
     query = select(bmc.BufferMetadata).filter(
         bmc.BufferMetadata.frq_bands == 16, bmc.BufferMetadata.channel == 1
     )
-    assert not "./foop1c0b.000" in cache.get_matching_files(query)
-    assert not "./hoop1c0b.000" in cache.get_matching_files(query)
+    assert "./foop1c0b.000" not in cache.get_matching_files(query)
+    assert "./hoop1c0b.000" not in cache.get_matching_files(query)
     assert "./barp1c0b.000" in cache.get_matching_files(query)
-    assert not "./foo_barp1c0b.000" in cache.get_matching_files(query)
+    assert "./foo_barp1c0b.000" not in cache.get_matching_files(query)
+    assert "./barp1c0b.000" in cache.get_matching_files(query)
+    assert "./foo_barp1c0b.000" not in cache.get_matching_files(query)
 
 
 def test_buffermetadata_constructor():

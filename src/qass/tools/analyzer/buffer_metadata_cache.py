@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import os
+from collections.abc import Iterable
+from typing import List, Tuple
 import re
 import warnings
 from sqlalchemy import (
@@ -122,7 +123,7 @@ class BufferMetadata(__Base):
     directory_path = Column(String, nullable=False, index=True)
     filename = Column(String, nullable=False)
     header_hash = Column(String(64), index=True)
-    machine_id = Column(String)
+    machine_id = Column(String, nullable=True)
     header_size = Column(Integer)
     process = Column(Integer, index=True)
     channel = Column(Integer, index=True)
@@ -220,7 +221,7 @@ def _create_metadata(args):
             buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
             return buffer_metadata
     except Exception as e:
-        directory_path, filename = BufferMetadataCache.split_filepath(file)
+        directory_path, filename = str(file.parent), file.name
         warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
         return BufferMetadata(
             directory_path=directory_path, filename=filename, opening_error=str(e)
@@ -255,27 +256,28 @@ class BufferMetadataCache:
         :type paths: str
         :param recursive: When True synchronize all of the subdirectories recursively, defaults to True
         :type recursive: bool, optional
-        :param regex_pattern: The regex pattern validating the buffer naming format
+        :param regex_pattern: The regex pattern validating the buffer naming format (matched on file.name)
         :type regex_pattern: string, optional
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         :param machine_id: An optional identifier for a certain machine to enable synchronization of different platforms
         :type machine_id: string, optional
         """
+        # TODO: make the glob and rglob regex parameters as well
         pattern = re.compile(regex_pattern)
         for path in paths:
             if sync_subdirectories:
-                files = (
-                    str(file)
-                    for file in Path(path).rglob("*p*c?b*")
-                    if os.path.isfile(file) and pattern.match(str(file))
-                )
+                files = [
+                    file
+                    for file in Path(path).resolve().rglob("*p*c?b*")
+                    if file.is_file() and pattern.match(file.name)
+                ]
             else:
-                files = (
-                    str(file)
-                    for file in Path(path).glob("*p*c?b*")
-                    if os.path.isfile(file) and pattern.match(str(file))
-                )
+                files = [
+                    file
+                    for file in Path(path).resolve().glob("*p*c?b*")
+                    if file.is_file() and pattern.match(file.name)
+                ]
             unsynchronized_files, synchronized_missing_buffers = (
                 self.get_non_synchronized_files(files, machine_id)
             )
@@ -340,14 +342,44 @@ class BufferMetadataCache:
             except Exception:
                 pass
 
-    def get_non_synchronized_files(self, files, machine_id):
+    def get_non_synchronized_files(
+        self, files: List[Path], machine_id: str | None = None
+    ) -> Tuple[List[Path], List[Path]]:
         """calculate the difference between the set of files and the set of synchronized files
 
         :param files: filenames
         :type files: str
         :return: The set of files that are not synchronized, and the database entries that exist but the file is not present anymore
         """
-        file_set = set(files)
+        incoming_hashes = dict()
+        for file in files:
+            with self.Buffer_cls(file) as b:
+                incoming_hashes[b.header_hash] = file
+        incoming_hash_keys = set(incoming_hashes.keys())
+
+        with self.Session() as session:
+            existing_hashes = set(
+                session.query(
+                    select(self.BufferMetadata.header_hash).filter(
+                        BufferMetadata.machine_id == machine_id
+                    )
+                ).all()
+            )
+        unsynced_hashes = incoming_hash_keys.difference(existing_hashes)
+        synced_missing_hashes = list(existing_hashes.difference(incoming_hash_keys))
+        with self.Session() as session:
+            BATCH_SIZE = 100
+            missing_files: List[Path] = []
+            for i in range(0, len(synced_missing_hashes), BATCH_SIZE):
+                batch_hashes = synced_missing_hashes[i : i + BATCH_SIZE]
+                metadatas = session.query(self.BufferMetadata).filter(
+                    BufferMetadata.header_hash.in_(batch_hashes)
+                )
+                for metadata in metadatas:
+                    missing_files.append(Path(metadata.filepath))
+        return [incoming_hashes[h] for h in unsynced_hashes], missing_files
+        ## OLD
+        file_set = set([str(file) for file in files])
         with self.Session() as session:
             synchronized_buffers = set(
                 buffer.filepath
@@ -357,9 +389,11 @@ class BufferMetadataCache:
             )
         unsynchronized_files = file_set.difference(synchronized_buffers)
         synchronized_missing_buffers = synchronized_buffers.difference(file_set)
-        return unsynchronized_files, synchronized_missing_buffers
+        return list(unsynchronized_files), list(synchronized_missing_buffers)
 
-    def add_files_to_cache(self, files, verbose=0, batch_size=1000, machine_id=None):
+    def add_files_to_cache(
+        self, files: Iterable[Path], verbose=0, batch_size=1000, machine_id=None
+    ):
         """Add buffer files to the cache by providing the complete filepaths
 
         :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
@@ -384,23 +418,27 @@ class BufferMetadataCache:
                         session.commit()
             session.commit()
 
-    def remove_files_from_cache(self, files, verbose=0):
+    def remove_files_from_cache(self, files: List[Path], verbose=0):
         """Remove synchronized files from the cache
 
         :param files: complete filepaths that are present in the cache
-        :type files: list, tuple of str
+        :type files: list, tuple of Path
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         """
         with self.Session() as session:
-            files = (
+            file_iter = (
                 tqdm(files, desc="Removing File Entries")
                 if verbose > 0 and len(files) > 0
                 else files
             )
-            for file in files:
+            for file in file_iter:
                 try:
-                    entry = session.query(BufferMetadata).filter_by(filepath=file).one()
+                    entry = (
+                        session.query(BufferMetadata)
+                        .filter_by(filepath=str(file))
+                        .one()
+                    )
                     if not entry:
                         continue
                     session.delete(entry)
@@ -429,22 +467,6 @@ class BufferMetadataCache:
                 q += f"{prop} = {prop_value} AND "
         q = q[:-4]  # prune the last AND
         return select(BufferMetadata).from_statement(text(q))
-
-    @staticmethod
-    def split_filepath(filepath):
-        """Splits a filepath to folder and filename and returns them as a tuple
-
-        :param filepath: _description_
-        :type filepath: str
-        :return: A tuple containing (directory_path, filename) as strings
-        :rtype: tuple(str)
-        """
-        if "/" in filepath:
-            filename = filepath.split("/")[-1]
-        elif "\\" in filepath:
-            filename = filepath.split("\\")[-1]
-        directory_path = filepath[: -len(filename)]
-        return directory_path, filename
 
 
 def get_declarative_base():
