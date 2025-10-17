@@ -33,6 +33,10 @@ class InvalidArgumentError(ValueError):
     pass
 
 
+class InvalidFileError(FileNotFoundError):
+    pass
+
+
 class HeaderDtype(IntEnum):
     # Enum helper class to mark data types
     INT32 = auto()
