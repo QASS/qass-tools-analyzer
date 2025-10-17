@@ -43,7 +43,7 @@ from enum import Enum
 from tqdm.auto import tqdm
 from multiprocessing.pool import Pool as Pool
 
-from .buffer_parser import Buffer
+from .buffer_parser import Buffer, InvalidFileError
 
 
 __all__ = ["BufferMetadataCache", "BufferMetadata"]
@@ -220,6 +220,8 @@ def _create_metadata(args):
         with Buffer_cls(file) as buffer:
             buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
             return buffer_metadata
+    except InvalidFileError:
+        pass
     except Exception as e:
         directory_path, filename = str(file.parent), file.name
         warnings.warn(f"One or more Buffers couldn't be opened {file}", UserWarning)
