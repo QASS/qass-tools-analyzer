@@ -215,6 +215,8 @@ Index(
 
 
 def _create_metadata(args):
+    """Create a metadata object from a Buffer object by trying to open
+    the buffer file contained in the args tuple"""
     Buffer_cls, file = args
     try:
         with Buffer_cls(file) as buffer:
@@ -237,7 +239,7 @@ class BufferMetadataCache:
 
     BufferMetadata = BufferMetadata
 
-    def __init__(self, Buffer_cls=Buffer, db_url="sqlite:///:memory:"):
+    def __init__(self, db_url="sqlite:///:memory:", Buffer_cls=Buffer):
         self.engine = create_engine(db_url)
         BufferMetadata.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
