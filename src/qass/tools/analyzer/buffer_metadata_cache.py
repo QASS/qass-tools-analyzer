@@ -176,13 +176,10 @@ class BufferMetadata(__Base):
         :param buffer: Buffer object
         :type buffer: buffer_parser.Buffer
         """
-        if "/" in buffer.filepath:
-            filename = buffer.filepath.split("/")[-1]
-        elif "\\" in buffer.filepath:
-            filename = buffer.filepath.split("\\")[-1]
-        directory_path = buffer.filepath[: -len(filename)]
+        file = Path(buffer.filepath)
+        directory_path = str(file.parent)
         buffer_metadata = BufferMetadata(
-            filename=filename, directory_path=directory_path
+            filename=file.name, directory_path=directory_path
         )
         for prop in BufferMetadata.properties:
             try:  # try to map all the buffer properties and skip on error
@@ -253,6 +250,7 @@ class BufferMetadataCache:
         verbose=1,
         delete_stale_entries=False,
         machine_id=None,
+        glob_pattern="*p*c?b*",
     ):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
 
@@ -266,6 +264,9 @@ class BufferMetadataCache:
         :type verbose: int, optional
         :param machine_id: An optional identifier for a certain machine to enable synchronization of different platforms
         :type machine_id: string, optional
+        :param glob_pattern: The pattern forwarded to Path.glob. This pattern acts as a preselection for the
+            files retrieved for the regex pattern
+        :type glob_pattern: string, optional
         """
         # TODO: make the glob and rglob regex parameters as well
         pattern = re.compile(regex_pattern)
@@ -273,13 +274,13 @@ class BufferMetadataCache:
             if sync_subdirectories:
                 files = [
                     file
-                    for file in Path(path).resolve().rglob("*p*c?b*")
+                    for file in Path(path).resolve().rglob(glob_pattern)
                     if file.is_file() and pattern.match(file.name)
                 ]
             else:
                 files = [
                     file
-                    for file in Path(path).resolve().glob("*p*c?b*")
+                    for file in Path(path).resolve().glob(glob_pattern)
                     if file.is_file() and pattern.match(file.name)
                 ]
             unsynchronized_files, synchronized_missing_buffers = (
@@ -414,8 +415,9 @@ class BufferMetadataCache:
                     if verbose > 0 and len(params) > 0
                     else f_gen
                 )
-                for i, metadata in f_gen:
+                for i, metadata in filter(lambda m: m is not None, f_gen):
                     metadata: BufferMetadata
+                    assert metadata is not None, "BufferMetadata object is None"
                     metadata.machine_id = machine_id
                     session.add(metadata)
                     if i % batch_size == 0:
