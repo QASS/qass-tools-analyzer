@@ -166,7 +166,7 @@ class BufferMetadata(__Base):
 
     @hybrid_property
     def filepath(self):
-        return self.directory_path + self.filename
+        return str(Path(self.directory_path) / self.filename)
 
     @staticmethod
     def buffer_to_metadata(buffer):
@@ -348,7 +348,7 @@ class BufferMetadataCache:
                 pass
 
     def get_non_synchronized_files(
-        self, files: List[Path], machine_id: str | None = None
+        self, files: List[Path], machine_id: str | None = None, batch_size: int = 100
     ) -> Tuple[List[Path], List[Path]]:
         """calculate the difference between the set of files and the set of synchronized files
 
@@ -358,43 +358,34 @@ class BufferMetadataCache:
         """
         incoming_hashes = dict()
         for file in files:
-            with self.Buffer_cls(file) as b:
-                incoming_hashes[b.header_hash] = file
+            # WARN: if the file is invalid, this crashes
+            try:
+                with self.Buffer_cls(file) as b:
+                    incoming_hashes[b.header_hash] = file
+            except InvalidFileError:
+                continue
         incoming_hash_keys = set(incoming_hashes.keys())
 
         with self.Session() as session:
             existing_hashes = set(
-                session.query(
-                    select(self.BufferMetadata.header_hash).filter(
-                        BufferMetadata.machine_id == machine_id
+                session.scalars(
+                    select(self.BufferMetadata.header_hash).where(
+                        self.BufferMetadata.machine_id == machine_id
                     )
                 ).all()
             )
         unsynced_hashes = incoming_hash_keys.difference(existing_hashes)
         synced_missing_hashes = list(existing_hashes.difference(incoming_hash_keys))
         with self.Session() as session:
-            BATCH_SIZE = 100
             missing_files: List[Path] = []
-            for i in range(0, len(synced_missing_hashes), BATCH_SIZE):
-                batch_hashes = synced_missing_hashes[i : i + BATCH_SIZE]
+            for i in range(0, len(synced_missing_hashes), batch_size):
+                batch_hashes = synced_missing_hashes[i : i + batch_size]
                 metadatas = session.query(self.BufferMetadata).filter(
                     BufferMetadata.header_hash.in_(batch_hashes)
                 )
                 for metadata in metadatas:
                     missing_files.append(Path(metadata.filepath))
         return [incoming_hashes[h] for h in unsynced_hashes], missing_files
-        ## OLD
-        file_set = set([str(file) for file in files])
-        with self.Session() as session:
-            synchronized_buffers = set(
-                buffer.filepath
-                for buffer in session.query(self.BufferMetadata)
-                .filter(BufferMetadata.machine_id == machine_id)
-                .all()
-            )
-        unsynchronized_files = file_set.difference(synchronized_buffers)
-        synchronized_missing_buffers = synchronized_buffers.difference(file_set)
-        return list(unsynchronized_files), list(synchronized_missing_buffers)
 
     def add_files_to_cache(
         self, files: Iterable[Path], verbose=0, batch_size=1000, machine_id=None

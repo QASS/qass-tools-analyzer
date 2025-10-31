@@ -155,8 +155,80 @@ def test_add_files_to_cache_invalid_file(tmp_path, cache):
         assert bm is None
 
 
-def test_get_non_synchronized_files():
-    pass
+@pytest.mark.parametrize(
+    "synced, new_hashes, machine_id, r_unsynced, r_stale",
+    [
+        ([BM(filename="0", header_hash="0")], ["0"], None, [], []),
+        (
+            [BM(filename="0", header_hash="0"), BM(filename="1", header_hash="1")],
+            ["0"],
+            None,
+            [],
+            ["1"],
+        ),
+        (
+            [BM(filename="0", header_hash="0"), BM(filename="1", header_hash="1")],
+            ["0", "2", "3"],
+            None,
+            ["2", "3"],
+            ["1"],
+        ),
+        (
+            [],
+            ["0", "2", "3"],
+            None,
+            ["0", "2", "3"],
+            [],
+        ),
+        (
+            [
+                BM(filename="0", header_hash="0", machine_id="0.0.0.0"),
+                BM(filename="1", header_hash="1"),
+            ],
+            ["0", "1", "2", "3"],
+            "0.0.0.0",
+            ["1", "2", "3"],
+            [],
+        ),
+        (
+            [BM(filename=str(i), header_hash=str(i)) for i in range(200)],
+            [str(i) for i in range(100)],
+            None,
+            [],
+            [str(i) for i in range(100, 200)],
+        ),
+    ],
+)
+def test_get_non_synchronized_files(
+    tmp_path, cache, synced, new_hashes, machine_id, r_unsynced, r_stale
+):
+    with cache.Session() as session:
+        for bm in synced:
+            bm.directory_path = str(tmp_path)
+            session.add(bm)
+        session.commit()
+
+    new_files = []
+    for hash_ in new_hashes:
+        # name files same as their hashes
+        test_file = tmp_path / hash_
+        with open(test_file, "w") as f:
+            json.dump({"header_hash": hash_}, f)
+        new_files.append(test_file)
+    unsynced, stale = cache.get_non_synchronized_files(new_files, machine_id=machine_id)
+    unsynced_files = [tmp_path / hash_ for hash_ in r_unsynced]
+    stale_files = [tmp_path / hash_ for hash_ in r_stale]
+    print(unsynced, stale, stale_files)
+    assert len(set(unsynced).difference(set(unsynced_files))) == 0
+    assert len(set(stale).difference(set(stale_files))) == 0
+
+
+def test_get_non_synchronized_files_invalid_files(tmp_path, cache):
+    file = tmp_path / "invalid.txt"
+    with open(file, "w") as f:
+        f.write("invalid data")
+    _, _ = cache.get_non_synchronized_files([file])
+    assert True
 
 
 def test_synchronize_directory():
