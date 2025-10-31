@@ -50,6 +50,7 @@ class MockBuffer:
                 raise InvalidFileError("Not a Buffer file")
         for key, value in data.items():
             setattr(self, key, value)
+        return self
 
     def __exit__(self, *args, **kwargs):
         pass
@@ -58,7 +59,7 @@ class MockBuffer:
 @pytest.fixture(scope="function")
 def cache():
     """Returns a BufferMetadataCache instance with an in memory database"""
-    cache = BMC()
+    cache = BMC(Buffer_cls=MockBuffer)  # type: ignore
     return cache
 
 
@@ -113,11 +114,45 @@ def test_buffer_to_metadata(filepath, data):
     assert metadata.datamode == mock_buffer.datamode  # type: ignore
 
 
-def test_add_files_to_cache(cache):
-    # test different batch sizes
-    # test different file names
+@pytest.mark.parametrize(
+    "filenames,datas",
+    [
+        (["foo"], [{"process": 1}]),
+        (["foo", "bar", "hoo"], [{}, {}, {}]),
+        (
+            ["foo", "bar", "hoo"],
+            [
+                {"process": 2, "compression_time": 1},
+                {"header_hash": str(uuid4())},
+                {"compression_time": 4, "compression_frq": 8},
+            ],
+        ),
+    ],
+)
+def test_add_files_to_cache(tmp_path, cache, filenames, datas):
+    files = [tmp_path / filename for filename in filenames]
+    assert len(set(filenames)) == len(filenames), "Duplicate filenames are not allowed!"
+    for file, data in zip(files, datas, strict=True):
+        with open(file, "w") as f:
+            json.dump(data, f)
+    cache.add_files_to_cache(files)
+    with cache.Session() as session:
+        for filename, data in zip(filenames, datas, strict=True):
+            bm = session.query(BM).filter(BM.filename == filename).first()
+            assert bm is not None, f"File {filename} is missing from the cache"
+            for key, value in data.items():
+                assert getattr(bm, key) == value
 
-    pass
+
+def test_add_files_to_cache_invalid_file(tmp_path, cache):
+    # Invalid files should be ignored silently
+    file = tmp_path / "invalid.txt"
+    with open(file, "w") as f:
+        f.write("invalid data")
+    cache.add_files_to_cache([file])
+    with cache.Session() as session:
+        bm = session.query(BM).first()
+        assert bm is None
 
 
 def test_get_non_synchronized_files():

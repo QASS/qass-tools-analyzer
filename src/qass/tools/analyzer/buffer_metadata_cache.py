@@ -409,13 +409,13 @@ class BufferMetadataCache:
         with self.Session() as session:
             with Pool() as pool:
                 params = [(self.Buffer_cls, f) for f in files]
-                f_gen = enumerate(pool.imap_unordered(_create_metadata, params))
+                f_gen = pool.imap_unordered(_create_metadata, params)
                 f_gen = (
                     tqdm(f_gen, desc="Adding Buffers", total=len(params))
                     if verbose > 0 and len(params) > 0
                     else f_gen
                 )
-                for i, metadata in filter(lambda m: m is not None, f_gen):
+                for i, metadata in enumerate(filter(lambda m: m is not None, f_gen)):
                     metadata: BufferMetadata
                     assert metadata is not None, "BufferMetadata object is None"
                     metadata.machine_id = machine_id
