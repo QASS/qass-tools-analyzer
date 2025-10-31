@@ -89,18 +89,20 @@ def test_session_creation():
             {
                 "directory_path": "foo",
                 "filename": "bar.000",
-                "project_id": 0,
+                "project_id": 2,
                 "header_hash": uuid4(),
-                "header_size": 2000,
-                "process": 0,
-                "channel": 0,
+                "header_size": 4000,
+                "process": 1234,
+                "channel": 1,
                 "datamode": Buffer.DATAMODE.DATAMODE_FFT,
+                "bit_resolution": 2,
+                "compression_time": 4,
+                "compression_frq": 4,
             },
         ),
     ],
 )
 def test_buffer_to_metadata(filepath, data):
-    # test conversion function
     mock_buffer = MockBuffer(filepath, **data)
     metadata = BM.buffer_to_metadata(mock_buffer)
     assert metadata.directory_path == mock_buffer.directory_path  # type: ignore
