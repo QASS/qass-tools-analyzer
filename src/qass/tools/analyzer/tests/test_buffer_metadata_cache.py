@@ -26,7 +26,7 @@ from qass.tools.analyzer.buffer_metadata_cache import (
     BufferMetadata as BM,
 )
 from qass.tools.analyzer.buffer_parser import Buffer, InvalidFileError
-from sqlalchemy import inspect
+from sqlalchemy import inspect, func
 import pytest
 
 SEED = 42
@@ -231,12 +231,16 @@ def test_get_non_synchronized_files_invalid_files(tmp_path, cache):
     assert True
 
 
-def test_synchronize_directory():
-    # test whether files from a tempdir are correctly inserted
-    # test glob and rglob
-    # test the glob and regex patterns
-    # check that invalid files are ignored
-    pass
+def test_synchronize_directory(tmp_path, cache):
+    N = 100
+    files = [tmp_path / str(i) for i in range(N)]
+    for file in files:
+        with open(file, "w") as f:
+            json.dump({"header_hash": file.stem}, f)
+    cache.synchronize_directory(tmp_path, glob_pattern="*", regex_pattern=".*")
+    with cache.Session() as session:
+        synced_files = session.query(func.count(BM.id)).scalar()
+    assert synced_files == N
 
 
 def test_remove_files_from_cache():
