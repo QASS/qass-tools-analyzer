@@ -351,7 +351,6 @@ class BufferMetadataCache:
         self,
         files: List[Path],
         machine_id: Union[str, None] = None,
-        batch_size: int = 100,
     ) -> Tuple[List[Path], List[Path]]:
         """calculate the difference between the set of files and the set of synchronized files
 
