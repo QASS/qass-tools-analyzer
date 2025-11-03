@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from collections.abc import Iterable
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import re
 import warnings
 from sqlalchemy import (
@@ -348,7 +348,10 @@ class BufferMetadataCache:
                 pass
 
     def get_non_synchronized_files(
-        self, files: List[Path], machine_id: str | None = None, batch_size: int = 100
+        self,
+        files: List[Path],
+        machine_id: Union[str, None] = None,
+        batch_size: int = 100,
     ) -> Tuple[List[Path], List[Path]]:
         """calculate the difference between the set of files and the set of synchronized files
 

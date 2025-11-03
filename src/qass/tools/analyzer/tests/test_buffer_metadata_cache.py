@@ -132,12 +132,12 @@ def test_buffer_to_metadata(filepath, data):
 def test_add_files_to_cache(tmp_path, cache, filenames, datas):
     files = [tmp_path / filename for filename in filenames]
     assert len(set(filenames)) == len(filenames), "Duplicate filenames are not allowed!"
-    for file, data in zip(files, datas, strict=True):
+    for file, data in zip(files, datas):
         with open(file, "w") as f:
             json.dump(data, f)
     cache.add_files_to_cache(files)
     with cache.Session() as session:
-        for filename, data in zip(filenames, datas, strict=True):
+        for filename, data in zip(filenames, datas):
             bm = session.query(BM).filter(BM.filename == filename).first()
             assert bm is not None, f"File {filename} is missing from the cache"
             for key, value in data.items():
