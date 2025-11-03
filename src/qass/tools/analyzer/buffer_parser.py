@@ -330,14 +330,12 @@ class Buffer:
 
     def _parse_header(self):
         self.file.seek(0)
-        magic_bytes = self.file.read(8)
-        if magic_bytes != b"qassdata":
-            raise InvalidFileError(f"{self.file.name} is not a valid data stream file")
-        self.file.seek(0)
         # this should contain the complete header i sugest...
         header_arr = self.file.read(4096)
-        _, header_size, _ = self._get_header_val(
-            0, header_arr, self.__keywords[0])
+        magic_bytes = header_arr[:8]
+        if magic_bytes != b"qassdata":
+            raise InvalidFileError(f"{self.file.name} is not a valid data stream file")
+        _, header_size, _ = self._get_header_val(0, header_arr, self.__keywords[0])
 
         header_arr = header_arr[:header_size]
         m = hashlib.sha256()
