@@ -243,8 +243,26 @@ def test_synchronize_directory(tmp_path, cache):
     assert synced_files == N
 
 
-def test_remove_files_from_cache():
-    pass
+def test_remove_files_from_cache(tmp_path, cache):
+    synced = [
+        BM(filename="0", directory_path="./", header_hash="0"),
+        BM(filename="1", directory_path="./", header_hash="1"),
+        BM(filename="2", directory_path="./", header_hash="2"),
+    ]
+    with cache.Session() as session:
+        for bm in synced:
+            session.add(bm)
+        session.commit()
+        assert session.query(func.count(BM.id)).scalar() == 3
+    test_file = tmp_path / "1"
+    with open(test_file, "w") as f:
+        json.dump({"header_hash": "1"}, f)
+    cache.remove_files_from_cache([test_file])
+    with cache.Session() as session:
+        assert session.query(func.count(BM.id)).scalar() == 2
+        synced_bm = session.query(BM).all()
+        for bm in synced_bm:
+            assert bm.header_hash in ("0", "2")
 
 
 def test_get_buffer_metadata():

@@ -166,7 +166,7 @@ class BufferMetadata(__Base):
 
     @hybrid_property
     def filepath(self):
-        return str(Path(self.directory_path) / self.filename)
+        return str(Path(str(self.directory_path)) / self.filename)
 
     @staticmethod
     def buffer_to_metadata(buffer):
@@ -431,9 +431,11 @@ class BufferMetadataCache:
             )
             for file in file_iter:
                 try:
+                    with self.Buffer_cls(file) as b:
+                        pass
                     entry = (
-                        session.query(BufferMetadata)
-                        .filter_by(filepath=str(file))
+                        session.query(self.BufferMetadata)
+                        .filter(self.BufferMetadata.header_hash == b.header_hash)
                         .one()
                     )
                     if not entry:
