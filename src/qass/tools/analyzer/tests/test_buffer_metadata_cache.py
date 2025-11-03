@@ -204,7 +204,7 @@ def test_get_non_synchronized_files(
 ):
     with cache.Session() as session:
         for bm in synced:
-            bm.directory_path = str(tmp_path)
+            bm.directory_path = str(tmp_path.resolve())
             session.add(bm)
         session.commit()
 
@@ -218,7 +218,6 @@ def test_get_non_synchronized_files(
     unsynced, stale = cache.get_non_synchronized_files(new_files, machine_id=machine_id)
     unsynced_files = [tmp_path / hash_ for hash_ in r_unsynced]
     stale_files = [tmp_path / hash_ for hash_ in r_stale]
-    print(unsynced, stale, stale_files)
     assert len(set(unsynced).difference(set(unsynced_files))) == 0
     assert len(set(stale).difference(set(stale_files))) == 0
 
