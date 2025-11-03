@@ -26,7 +26,7 @@ from qass.tools.analyzer.buffer_metadata_cache import (
     BufferMetadata as BM,
 )
 from qass.tools.analyzer.buffer_parser import Buffer, InvalidFileError
-from sqlalchemy import inspect, func
+from sqlalchemy import inspect, func, select
 import pytest
 
 SEED = 42
@@ -265,9 +265,19 @@ def test_remove_files_from_cache(tmp_path, cache):
             assert bm.header_hash in ("0", "2")
 
 
-def test_get_buffer_metadata():
-    # the rest of the functionality should work
-    pass
+def test_get_matching_metadata(cache):
+    synced = [
+        BM(filename="0", directory_path="./", header_hash="0", process=1),
+        BM(filename="1", directory_path="./", header_hash="1", process=2),
+        BM(filename="2", directory_path="./", header_hash="2", process=3),
+    ]
+    with cache.Session() as session:
+        for bm in synced:
+            session.add(bm)
+        session.commit()
+        assert session.query(func.count(BM.id)).scalar() == 3
+        results = cache.get_matching_metadata(select(BM).filter(BM.process < 3))
+        assert len(results) == 2
 
 
 def test_get_buffer_metadata_query():
