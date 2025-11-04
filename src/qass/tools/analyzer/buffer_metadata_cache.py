@@ -293,10 +293,6 @@ class BufferMetadataCache:
                 unsynchronized_files, verbose=verbose, machine_id=machine_id
             )
 
-    def synchronize_database(self, *sync_connections):
-        # TODO
-        pass
-
     def get_matching_metadata(self, query: Select):
         """Query the cache for all BufferMetadata database entries matching
 
