@@ -33,7 +33,7 @@ class InvalidArgumentError(ValueError):
     pass
 
 
-class InvalidFileError(FileNotFoundError):
+class InvalidFileError(Exception):
     pass
 
 
