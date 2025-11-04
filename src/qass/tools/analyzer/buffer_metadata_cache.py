@@ -268,7 +268,6 @@ class BufferMetadataCache:
             files retrieved for the regex pattern
         :type glob_pattern: string, optional
         """
-        # TODO: make the glob and rglob regex parameters as well
         pattern = re.compile(regex_pattern)
         for path in paths:
             if sync_subdirectories:
