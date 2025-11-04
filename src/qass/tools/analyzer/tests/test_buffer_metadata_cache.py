@@ -19,41 +19,17 @@
 #
 import json
 from uuid import uuid4
-from dataclasses import dataclass
 
 from qass.tools.analyzer.buffer_metadata_cache import (
     BufferMetadataCache as BMC,
     BufferMetadata as BM,
 )
-from qass.tools.analyzer.buffer_parser import Buffer, InvalidFileError
+from qass.tools.analyzer.buffer_parser import Buffer
+from qass.tools.analyzer.testing import MockBuffer
 from sqlalchemy import inspect, func, select
 import pytest
 
 SEED = 42
-
-
-@dataclass
-class MockBuffer:
-    """Mock buffer class that is able to parse JSON encoded files.
-    All attributes in the JSON are added as fields in the object"""
-
-    def __init__(self, filepath, **kwargs):
-        self.filepath = filepath
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def __enter__(self):
-        with open(self.filepath, "r") as f:
-            try:
-                data = json.load(f)
-            except Exception:
-                raise InvalidFileError("Not a Buffer file")
-        for key, value in data.items():
-            setattr(self, key, value)
-        return self
-
-    def __exit__(self, *args, **kwargs):
-        pass
 
 
 @pytest.fixture(scope="function")
