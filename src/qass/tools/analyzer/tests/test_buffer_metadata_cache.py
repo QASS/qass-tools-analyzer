@@ -279,6 +279,20 @@ def test_get_matching_metadata(cache):
         assert len(results) == 2
 
 
-def test_get_buffer_metadata_query():
-    # test for equal results
-    pass
+def test_get_buffer_metadata_query(cache):
+    synced = [
+        BM(filename="0", directory_path="./", header_hash="0", process=1),
+        BM(filename="1", directory_path="./", header_hash="1", process=2),
+        BM(filename="2", directory_path="./", header_hash="2", process=3),
+    ]
+    with cache.Session() as session:
+        for bm in synced:
+            session.add(bm)
+        session.commit()
+    match_result = cache.get_matching_metadata(select(BM).filter(BM.process == 2))
+    query_result = cache.get_matching_metadata(
+        cache.get_buffer_metadata_query(BM(process=2))
+    )
+    match_hashes = set(map(lambda bm: bm.header_hash, match_result))
+    query_hashes = set(map(lambda bm: bm.header_hash, query_result))
+    assert len(match_hashes.difference(query_hashes)) == 0
