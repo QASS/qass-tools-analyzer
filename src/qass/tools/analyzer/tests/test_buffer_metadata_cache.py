@@ -127,6 +127,15 @@ def test_add_files_to_cache(tmp_path, cache, filenames, datas):
         assert session.query(func.count(BM.id)).scalar() == len(unique_files)
 
 
+def test_add_files_to_cache_no_check_synced(tmp_path, cache):
+    file = tmp_path / "a"
+    with open(file, "w") as f:
+        json.dump({"header_hash": file.name}, f)
+    cache.add_files_to_cache([file] * 10, check_synced=False)
+    with cache.Session() as session:
+        assert session.query(func.count(BM.id)).scalar() == 10
+
+
 def test_add_files_to_cache_invalid_file(tmp_path, cache):
     # Invalid files should be ignored silently
     file = tmp_path / "invalid.txt"

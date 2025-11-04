@@ -289,7 +289,10 @@ class BufferMetadataCache:
                     synchronized_missing_buffers, verbose=verbose
                 )
             self.add_files_to_cache(
-                unsynchronized_files, verbose=verbose, machine_id=machine_id
+                unsynchronized_files,
+                verbose=verbose,
+                machine_id=machine_id,
+                check_synced=False,
             )
 
     def get_matching_metadata(self, query: Select):
@@ -371,7 +374,12 @@ class BufferMetadataCache:
         return unsynchronized_files, synchronized_missing_buffers
 
     def add_files_to_cache(
-        self, files: Sequence[Path], verbose=0, batch_size=1000, machine_id=None
+        self,
+        files: Sequence[Path],
+        verbose: int = 0,
+        batch_size: int = 1000,
+        machine_id: Union[str, None] = None,
+        check_synced: bool = True,
     ):
         """Add buffer files to the cache by providing the complete filepaths
         If a file (determined by filename and directory) is already synchronized it will be skipped
@@ -380,11 +388,18 @@ class BufferMetadataCache:
         :type files: list, tuple of str
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
+        :param batch_size: The batch size after which the cache will commit a batch to the database
+        :type batch_size: int, optional
+        :param machine_id: A unique identifier for a different machine
+        :type machine_id: str, optional
+        :param check_synced: Whether to check if the files that are about to be added are already synced to the cache
+        :type check_synced: bool, optional
         """
-        unsynchronized_files, _ = self.get_non_synchronized_files(files, machine_id)
+        if check_synced:
+            files, _ = self.get_non_synchronized_files(files, machine_id)
         with self.Session() as session:
             with Pool() as pool:
-                params = [(self.Buffer_cls, f) for f in unsynchronized_files]
+                params = [(self.Buffer_cls, f) for f in files]
                 f_gen = pool.imap_unordered(_create_metadata, params)
                 f_gen = (
                     tqdm(f_gen, desc="Adding Buffers", total=len(params))
