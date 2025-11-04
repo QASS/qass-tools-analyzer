@@ -95,6 +95,7 @@ def test_buffer_to_metadata(filepath, data):
     [
         (["foo"], [{"process": 1}]),
         (["foo", "bar", "hoo"], [{}, {}, {}]),
+        (["foo", "bar", "foo"], [{}, {}, {}]),
         (
             ["foo", "bar", "hoo"],
             [
@@ -107,8 +108,11 @@ def test_buffer_to_metadata(filepath, data):
 )
 def test_add_files_to_cache(tmp_path, cache, filenames, datas):
     files = [tmp_path / filename for filename in filenames]
-    assert len(set(filenames)) == len(filenames), "Duplicate filenames are not allowed!"
+    unique_files = set(files)
     for file, data in zip(files, datas):
+        if file.exists():
+            # skip duplicate files
+            continue
         with open(file, "w") as f:
             json.dump(data, f)
     cache.add_files_to_cache(files)
@@ -117,7 +121,10 @@ def test_add_files_to_cache(tmp_path, cache, filenames, datas):
             bm = session.query(BM).filter(BM.filename == filename).first()
             assert bm is not None, f"File {filename} is missing from the cache"
             for key, value in data.items():
-                assert getattr(bm, key) == value
+                assert getattr(bm, key) == value, (
+                    f"key: {key} did not match: {getattr(bm, key), value}"
+                )
+        assert session.query(func.count(BM.id)).scalar() == len(unique_files)
 
 
 def test_add_files_to_cache_invalid_file(tmp_path, cache):

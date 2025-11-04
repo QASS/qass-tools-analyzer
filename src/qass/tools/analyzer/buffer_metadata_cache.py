@@ -17,8 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from collections.abc import Iterable
-from typing import List, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 import re
 import warnings
 from sqlalchemy import (
@@ -216,7 +215,7 @@ def _create_metadata(args):
     the buffer file contained in the args tuple"""
     Buffer_cls, file = args
     try:
-        with Buffer_cls(file) as buffer:
+        with Buffer_cls(file.resolve()) as buffer:
             buffer_metadata = BufferMetadata.buffer_to_metadata(buffer)
             return buffer_metadata
     except InvalidFileError:
@@ -344,13 +343,15 @@ class BufferMetadataCache:
 
     def get_non_synchronized_files(
         self,
-        files: List[Path],
+        files: Sequence[Path],
         machine_id: Union[str, None] = None,
     ) -> Tuple[List[Path], List[Path]]:
         """calculate the difference between the set of files and the set of synchronized files
 
         :param files: filenames
-        :type files: str
+        :type files: Sequence[Path]
+        :param machine_id: machine identifier
+        :type machine_id: Union[str, None]
         :return: The set of files that are not synchronized, and the database entries that exist but the file is not present anymore
         """
         file_set = set(files)
@@ -370,18 +371,20 @@ class BufferMetadataCache:
         return unsynchronized_files, synchronized_missing_buffers
 
     def add_files_to_cache(
-        self, files: Iterable[Path], verbose=0, batch_size=1000, machine_id=None
+        self, files: Sequence[Path], verbose=0, batch_size=1000, machine_id=None
     ):
         """Add buffer files to the cache by providing the complete filepaths
+        If a file (determined by filename and directory) is already synchronized it will be skipped
 
         :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
         :type files: list, tuple of str
         :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
         :type verbose: int, optional
         """
+        unsynchronized_files, _ = self.get_non_synchronized_files(files, machine_id)
         with self.Session() as session:
             with Pool() as pool:
-                params = [(self.Buffer_cls, f) for f in files]
+                params = [(self.Buffer_cls, f) for f in unsynchronized_files]
                 f_gen = pool.imap_unordered(_create_metadata, params)
                 f_gen = (
                     tqdm(f_gen, desc="Adding Buffers", total=len(params))
