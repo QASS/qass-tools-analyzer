@@ -21,7 +21,7 @@ that are in this case sorted by their process number (as specified in the query)
 .. code-block:: python
     :linenos:
 	
-    from qass.tools.analyzer.buffer_metadata_cache import BufferMetadataCache as BMC, BufferMetadata as BM
+    from qass.tools.analyzer.buffer_metadata_cache import BufferMetadataCache as BMC, BufferMetadata as BM, select
 
     cache = BMC()
     cache.synchronize_directory("my/directory")
