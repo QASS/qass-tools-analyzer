@@ -295,7 +295,7 @@ class BufferMetadataCache:
                 check_synced=False,
             )
 
-    def get_matching_metadata(self, query: Select):
+    def get_matching_metadata(self, query: Select) -> List[BufferMetadata]:
         """Query the cache for all BufferMetadata database entries matching
 
         :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
@@ -307,7 +307,7 @@ class BufferMetadataCache:
             matching_metadata = session.scalars(query).all()
         return matching_metadata
 
-    def get_matching_files(self, query: Select):
+    def get_matching_files(self, query: Select) -> List[str]:
         """Query the Cache for all files matching the properties that selected by the query object.
         The usage of the buffer_metadata, filter_functions and sort_key is deprecated and will be removed in
         two minor versions. Use the sqlalchemy query parameter instead.
@@ -327,9 +327,9 @@ class BufferMetadataCache:
         :rtype: list[str]
         """
         matching_metadata = self.get_matching_metadata(query)
-        return [m.filepath for m in matching_metadata]
+        return [str(m.filepath) for m in matching_metadata]
 
-    def get_matching_buffers(self, query: Select):
+    def get_matching_buffers(self, query: Select) -> List[Buffer]:
         """Calls get_matching_files and converts the result to Buffer objects
 
         :return: List of Buffer objects
@@ -341,8 +341,9 @@ class BufferMetadataCache:
             try:
                 with self.Buffer_cls(file) as buffer:
                     buffers.append(buffer)
-            except Exception:
-                pass
+            except Exception as e:
+                raise e
+        return buffers
 
     def get_non_synchronized_files(
         self,

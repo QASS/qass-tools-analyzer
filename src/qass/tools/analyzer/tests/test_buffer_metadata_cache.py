@@ -271,6 +271,22 @@ def test_get_matching_metadata(cache):
         assert len(results) == 2
 
 
+def test_get_matching_buffers(tmp_path, cache):
+    data = [
+        {"header_hash": "0", "process": 0},
+        {"header_hash": "1", "process": 1},
+        {"header_hash": "2", "process": 2},
+        {"header_hash": "3", "process": 3},
+    ]
+    for d in data:
+        file = tmp_path / d["header_hash"]
+        with file.open(mode="w") as f:
+            json.dump(d, f)
+    cache.synchronize_directory(tmp_path, glob_pattern="*", regex_pattern=".*")
+    buffers = cache.get_matching_buffers(select(BM))
+    assert len(buffers) == 4
+
+
 def test_get_buffer_metadata_query(cache):
     synced = [
         BM(filename="0", directory_path="./", header_hash="0", process=1),

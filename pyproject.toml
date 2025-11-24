@@ -1,6 +1,6 @@
 [project]
 name = "qass-tools-analyzer"
-version = "2.6"
+version = "2.6.1"
 authors = [
   { name="Nicklas Osmers", email="nosmers@qass.net" },
 ]
