@@ -341,8 +341,8 @@ class BufferMetadataCache:
             try:
                 with self.Buffer_cls(file) as buffer:
                     buffers.append(buffer)
-            except Exception as e:
-                raise e
+            except Exception:
+                pass
         return buffers
 
     def get_non_synchronized_files(
