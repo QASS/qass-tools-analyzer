@@ -484,17 +484,15 @@ class Buffer:
                     conv = 'delog'
                     data = buff.get_data(spec_start, spec_end, conv)
         """
-        if specTo and specTo > self.spec_count:
-            raise InvalidArgumentError('specTo is out of range')
+        specFrom = 0 if specFrom is None else specFrom
+        specTo = self.spec_count if specTo is None else specTo
 
-        if specFrom and (specFrom < 0 or specFrom > specTo):
-            raise InvalidArgumentError('specFrom is out of range')
-
-        if not specFrom:
-            specFrom = 0
-
-        if not specTo:
-            specTo = self.spec_count
+        if specFrom > specTo:
+            raise InvalidArgumentError(f'specFrom {specFrom} cannot be larger than specTo {specTo}!')
+        if specTo < 0 or specTo > self.spec_count:
+            raise InvalidArgumentError(f'specTo {specTo} is out of range (0, {self.spec_count})!')
+        if specFrom < 0 or specFrom > self.spec_count:
+            raise InvalidArgumentError(f'specFrom {specFrom} is out of range (0, {self.spec_count})!')
 
         if self.datamode == self.DATAMODE.DATAMODE_SIGNAL:
             return self._get_data(specFrom, specTo, 1, conversion).reshape(-1)
