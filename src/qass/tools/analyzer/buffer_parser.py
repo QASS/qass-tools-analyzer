@@ -878,7 +878,7 @@ class Buffer:
 
         subdat=np.frombuffer(mi['begin_subdat'],dtype=np.int32)
         #if it is of extended type, we expect a reasonable value here
-        mysize=int(subdat[10:11])
+        mysize = subdat[10].item()
 
         if mysize==80:#the extended data length, additional sizes may occur
             ds_size=20 #again the size in 32bit entries
