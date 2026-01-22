@@ -461,6 +461,7 @@ class Buffer:
 
         :raises InvalidArgumentError: The specFrom value is out of range
         :raises InvalidArgumentError: The specTo value is out of range
+        :raises InvalidArgumentError: specTo or specFrom is not of type int or None
         :raises ValueError: The given indices exceed the buffer file's size
         :raises InvalidArgumentError: The given conversion is unknown
 
@@ -487,6 +488,8 @@ class Buffer:
         specFrom = 0 if specFrom is None else specFrom
         specTo = self.spec_count if specTo is None else specTo
 
+        if not (isinstance(specFrom, int) and isinstance(specTo, int)):
+            raise InvalidArgumentError("specFrom/specTo must be int or None!")
         if specFrom > specTo:
             raise InvalidArgumentError(f'specFrom {specFrom} cannot be larger than specTo {specTo}!')
         if specTo < 0 or specTo > self.spec_count:
