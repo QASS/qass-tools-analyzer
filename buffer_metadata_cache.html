@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview &mdash; Qass Tools Analyzer 2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f35be339"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MockBuffer" href="testing.html" />
+    <link rel="prev" title="Overview" href="buffer_parser.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Qass Tools Analyzer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Reading Buffer files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buffer_parser.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer_parser.html#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer_parser.html#buffer">Buffer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer_parser.html#filter-buffers">Filter buffers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Cache and Search Metadata</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#buffermetadatacache">BufferMetadataCache</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.BufferMetadata</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata.buffer_to_metadata"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.BufferMetadata.buffer_to_metadata()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.add_files_to_cache"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.add_files_to_cache()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_buffer_metadata_query"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.get_buffer_metadata_query()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_buffers"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.get_matching_buffers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_files"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.get_matching_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_metadata"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.get_matching_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_non_synchronized_files"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.get_non_synchronized_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.remove_files_from_cache"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.remove_files_from_cache()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.synchronize_directory"><code class="docutils literal notranslate"><span class="pre">BufferMetadataCache.synchronize_directory()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#buffermetadata">BufferMetadata</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata"><code class="docutils literal notranslate"><span class="pre">BufferMetadata</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata.buffer_to_metadata"><code class="docutils literal notranslate"><span class="pre">BufferMetadata.buffer_to_metadata()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.get_declarative_base"><code class="docutils literal notranslate"><span class="pre">get_declarative_base()</span></code></a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Testing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">MockBuffer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Changelog</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#id1">2.2</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Qass Tools Analyzer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/buffer_metadata_cache.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>The Metadata class can be used in order to organize lot’s of Buffer files.
+For example you might have a project generated by the Analyzer4D Software and you want to search through all buffer files
+in order to find all buffers with a certain compression.
+You could go through each file and check out if the compression matches your requirement which takes a lot of time.
+The cache creates a database that caches all the metadata available in the <a class="reference internal" href="buffer_parser.html#qass.tools.analyzer.buffer_parser.Buffer" title="qass.tools.analyzer.buffer_parser.Buffer"><code class="xref py py-class docutils literal notranslate"><span class="pre">qass.tools.analyzer.buffer_parser.Buffer</span></code></a> class.
+You can then query the cache very fast and programmatically in Python!</p>
+</section>
+<section id="example">
+<h1>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h1>
+<p>In this example we create an instance of the cache and synchronize it with the directory <cite>my/directory</cite>.
+We then create a template <cite>BufferMetadata</cite> object and use it with the cache to query for all buffers with a compression_frq = 8.
+You can use all properties that are in <code class="xref py py-attr docutils literal notranslate"><span class="pre">BufferMetadata.properties</span></code>.
+The <code class="xref py py-meth docutils literal notranslate"><span class="pre">BufferMetadataCache.get_matching_buffers()</span></code> method returns a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code> objects
+that are in this case sorted by their process number (as specified in the query).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">qass.tools.analyzer.buffer_metadata_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">BufferMetadataCache</span> <span class="k">as</span> <span class="n">BMC</span><span class="p">,</span> <span class="n">BufferMetadata</span> <span class="k">as</span> <span class="n">BM</span><span class="p">,</span> <span class="n">select</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">cache</span> <span class="o">=</span> <span class="n">BMC</span><span class="p">()</span>
+<span class="linenos">4</span><span class="n">cache</span><span class="o">.</span><span class="n">synchronize_directory</span><span class="p">(</span><span class="s2">&quot;my/directory&quot;</span><span class="p">)</span>
+<span class="linenos">5</span>
+<span class="linenos">6</span><span class="n">results</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_matching_buffers</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">BM</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">BM</span><span class="o">.</span><span class="n">compression_frq</span><span class="o">==</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">BM</span><span class="o">.</span><span class="n">process</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="buffermetadatacache">
+<h1>BufferMetadataCache<a class="headerlink" href="#buffermetadatacache" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qass.tools.analyzer.buffer_metadata_cache.</span></span><span class="sig-name descname"><span class="pre">BufferMetadataCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_url='sqlite:///:memory:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Buffer_cls=&lt;class</span> <span class="pre">'qass.tools.analyzer.buffer_parser.Buffer'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache" title="Link to this definition"></a></dt>
+<dd><p>This class acts as a Cache for Buffer Metadata. It uses a database session with a buffer_metadata table to map
+metadata to files on the disk. The cache can be queried a lot faster than manually opening a lot of buffer files.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BufferMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata" title="Link to this definition"></a></dt>
+<dd><p>This class acts as a template for buffer files. It’s properties represent all available metadata of a buffer file.
+This class is used internally as a database model and can be instantiated to provide a template for a buffer file by
+populating desired properties and passing the object to the cache which will in turn create a query based on this object.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata.buffer_to_metadata">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">buffer_to_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata.buffer_to_metadata" title="Link to this definition"></a></dt>
+<dd><p>Converts a Buffer object to a BufferMetadata database object by copying all the &#64;properties from the Buffer
+object putting them in the BufferMetadata object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>buffer</strong> (<a class="reference internal" href="buffer_parser.html#qass.tools.analyzer.buffer_parser.Buffer" title="qass.tools.analyzer.buffer_parser.Buffer"><em>buffer_parser.Buffer</em></a>) – Buffer object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.add_files_to_cache">
+<span class="sig-name descname"><span class="pre">add_files_to_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_synced</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.add_files_to_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.add_files_to_cache" title="Link to this definition"></a></dt>
+<dd><p>Add buffer files to the cache by providing the complete filepaths
+If a file (determined by filename and directory) is already synchronized it will be skipped</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files</strong> (<em>list</em><em>, </em><em>tuple</em><em> of </em><em>str</em>) – complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – verbosity level. 0 = no feedback, 1 = progress bar</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The batch size after which the cache will commit a batch to the database</p></li>
+<li><p><strong>machine_id</strong> (<em>str</em><em>, </em><em>optional</em>) – A unique identifier for a different machine</p></li>
+<li><p><strong>check_synced</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to check if the files that are about to be added are already synced to the cache</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_buffer_metadata_query">
+<span class="sig-name descname"><span class="pre">get_buffer_metadata_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.get_buffer_metadata_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_buffer_metadata_query" title="Link to this definition"></a></dt>
+<dd><p>Converts a .. py:class:: BufferMetadata object to a complete query. Every property of the object will be converted into
+SQL and returned as a ..py:class:: sqlalchemy.orm.query.FromStatement object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>buffer_metadata</strong> (<a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata" title="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata"><em>BufferMetadata</em></a>) – The template BufferMetadata object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sqlalchemy query object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sqlalchemy.orm.query.FromStatement</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_buffers">
+<span class="sig-name descname"><span class="pre">get_matching_buffers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Select</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="buffer_parser.html#qass.tools.analyzer.buffer_parser.Buffer" title="qass.tools.analyzer.buffer_parser.Buffer"><span class="pre">Buffer</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.get_matching_buffers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_buffers" title="Link to this definition"></a></dt>
+<dd><p>Calls get_matching_files and converts the result to Buffer objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of Buffer objects</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_files">
+<span class="sig-name descname"><span class="pre">get_matching_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Select</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.get_matching_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_files" title="Link to this definition"></a></dt>
+<dd><p>Query the Cache for all files matching the properties that selected by the query object.
+The usage of the buffer_metadata, filter_functions and sort_key is deprecated and will be removed in
+two minor versions. Use the sqlalchemy query parameter instead.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">BufferMetadataCache</span><span class="o">.</span><span class="n">get_matching_files</span><span class="p">(</span>
+<span class="linenos">2</span>    <span class="n">select</span><span class="p">(</span><span class="n">BM</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">BM</span><span class="o">.</span><span class="n">channel</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span> <span class="n">BM</span><span class="o">.</span><span class="n">compression_freq</span><span class="o">==</span><span class="mi">4</span><span class="p">,</span> <span class="n">BM</span><span class="o">.</span><span class="n">process</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+<span class="linenos">3</span><span class="p">)</span>
+<span class="linenos">4</span><span class="c1"># Returns all buffer filepaths with channel = 1, A frequency compression of 4,</span>
+<span class="linenos">5</span><span class="c1"># processes above 100 sorted by the process number</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>query</strong> (<em>Select</em>) – A sqlalchemy select statement specifying the properties of the BufferMetadata objects</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list with the paths to the buffer files that match the buffer_metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_metadata">
+<span class="sig-name descname"><span class="pre">get_matching_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Select</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata" title="qass.tools.analyzer.buffer_metadata_cache.BufferMetadata"><span class="pre">BufferMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.get_matching_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_metadata" title="Link to this definition"></a></dt>
+<dd><p>Query the cache for all BufferMetadata database entries matching</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>query</strong> (<em>Select</em>) – A sqlalchemy select statement specifying the properties of the BufferMetadata objects</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list with the matching BufferMetadata objects</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata" title="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.BufferMetadata">BufferMetadata</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_non_synchronized_files">
+<span class="sig-name descname"><span class="pre">get_non_synchronized_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.get_non_synchronized_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_non_synchronized_files" title="Link to this definition"></a></dt>
+<dd><p>calculate the difference between the set of files and the set of synchronized files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files</strong> (<em>Sequence</em><em>[</em><em>Path</em><em>]</em>) – filenames</p></li>
+<li><p><strong>machine_id</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>None</em><em>]</em>) – machine identifier</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The set of files that are not synchronized, and the database entries that exist but the file is not present anymore</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.remove_files_from_cache">
+<span class="sig-name descname"><span class="pre">remove_files_from_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.remove_files_from_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.remove_files_from_cache" title="Link to this definition"></a></dt>
+<dd><p>Remove synchronized files from the cache</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files</strong> (<em>list</em><em>, </em><em>tuple</em><em> of </em><em>Path</em>) – complete filepaths that are present in the cache</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – verbosity level. 0 = no feedback, 1 = progress bar</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.synchronize_directory">
+<span class="sig-name descname"><span class="pre">synchronize_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_subdirectories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex_pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'^.*[p][0-9]*[c][0-9]{1}[b][0-9]{2}'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_stale_entries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob_pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'*p*c?b*'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadataCache.synchronize_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.synchronize_directory" title="Link to this definition"></a></dt>
+<dd><p>synchronize the buffer files in the given paths with the database matching the regex pattern</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>str</em>) – The absolute paths to the directory</p></li>
+<li><p><strong>recursive</strong> (<em>bool</em><em>, </em><em>optional</em>) – When True synchronize all of the subdirectories recursively, defaults to True</p></li>
+<li><p><strong>regex_pattern</strong> (<em>string</em><em>, </em><em>optional</em>) – The regex pattern validating the buffer naming format (matched on file.name)</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – verbosity level. 0 = no feedback, 1 = progress bar</p></li>
+<li><p><strong>machine_id</strong> (<em>string</em><em>, </em><em>optional</em>) – An optional identifier for a certain machine to enable synchronization of different platforms</p></li>
+<li><p><strong>glob_pattern</strong> (<em>string</em><em>, </em><em>optional</em>) – The pattern forwarded to Path.glob. This pattern acts as a preselection for the
+files retrieved for the regex pattern</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="buffermetadata">
+<h1>BufferMetadata<a class="headerlink" href="#buffermetadata" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadata">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qass.tools.analyzer.buffer_metadata_cache.</span></span><span class="sig-name descname"><span class="pre">BufferMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata" title="Link to this definition"></a></dt>
+<dd><p>This class acts as a template for buffer files. It’s properties represent all available metadata of a buffer file.
+This class is used internally as a database model and can be instantiated to provide a template for a buffer file by
+populating desired properties and passing the object to the cache which will in turn create a query based on this object.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.BufferMetadata.buffer_to_metadata">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">buffer_to_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#BufferMetadata.buffer_to_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata.buffer_to_metadata" title="Link to this definition"></a></dt>
+<dd><p>Converts a Buffer object to a BufferMetadata database object by copying all the &#64;properties from the Buffer
+object putting them in the BufferMetadata object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>buffer</strong> (<a class="reference internal" href="buffer_parser.html#qass.tools.analyzer.buffer_parser.Buffer" title="qass.tools.analyzer.buffer_parser.Buffer"><em>buffer_parser.Buffer</em></a>) – Buffer object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_metadata_cache.get_declarative_base">
+<span class="sig-prename descclassname"><span class="pre">qass.tools.analyzer.buffer_metadata_cache.</span></span><span class="sig-name descname"><span class="pre">get_declarative_base</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_metadata_cache.html#get_declarative_base"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_metadata_cache.get_declarative_base" title="Link to this definition"></a></dt>
+<dd><p>Getter for the declarative Base that is used by the <a class="reference internal" href="#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache" title="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache"><code class="xref py py-class docutils literal notranslate"><span class="pre">BufferMetadataCache</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>declarative base class</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="buffer_parser.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="testing.html" class="btn btn-neutral float-right" title="MockBuffer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, QASS GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
