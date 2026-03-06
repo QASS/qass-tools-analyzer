@@ -1,0 +1,633 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qass.tools.analyzer.buffer_metadata_cache &mdash; Qass Tools Analyzer 2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=f35be339"></script>
+      <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Qass Tools Analyzer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Reading Buffer files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_parser.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_parser.html#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_parser.html#buffer">Buffer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_parser.html#filter-buffers">Filter buffers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Cache and Search Metadata</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_metadata_cache.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_metadata_cache.html#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_metadata_cache.html#buffermetadatacache">BufferMetadataCache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../buffer_metadata_cache.html#buffermetadata">BufferMetadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Testing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../testing.html">MockBuffer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Changelog</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html#id1">2.2</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Qass Tools Analyzer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">qass.tools.analyzer.buffer_metadata_cache</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for qass.tools.analyzer.buffer_metadata_cache</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2022 QASS GmbH.</span>
+<span class="c1"># Website: https://qass.net</span>
+<span class="c1"># Contact: QASS GmbH &lt;info@qass.net&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of Qass tools</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Lesser General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, version 3 of the License.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Lesser General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Float</span><span class="p">,</span>
+    <span class="n">create_engine</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">,</span>
+    <span class="n">Integer</span><span class="p">,</span>
+    <span class="n">String</span><span class="p">,</span>
+    <span class="n">BigInteger</span><span class="p">,</span>
+    <span class="n">Identity</span><span class="p">,</span>
+    <span class="n">Index</span><span class="p">,</span>
+    <span class="n">Enum</span><span class="p">,</span>
+    <span class="n">TypeDecorator</span><span class="p">,</span>
+    <span class="n">select</span><span class="p">,</span>
+    <span class="n">text</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.orm</span><span class="w"> </span><span class="kn">import</span> <span class="n">declarative_base</span><span class="p">,</span> <span class="n">sessionmaker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.ext.hybrid</span><span class="w"> </span><span class="kn">import</span> <span class="n">hybrid_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.sql.selectable</span><span class="w"> </span><span class="kn">import</span> <span class="n">Select</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pool</span> <span class="k">as</span> <span class="n">Pool</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.buffer_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Buffer</span><span class="p">,</span> <span class="n">InvalidFileError</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;BufferMetadataCache&quot;</span><span class="p">,</span> <span class="s2">&quot;BufferMetadata&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BufferEnum</span><span class="p">(</span><span class="n">TypeDecorator</span><span class="p">):</span>
+    <span class="n">impl</span> <span class="o">=</span> <span class="n">String</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enumtype</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enumtype</span> <span class="o">=</span> <span class="n">enumtype</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_bind_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dialect</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_result_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dialect</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enumtype</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span>
+
+
+<span class="n">__Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="BufferMetadata">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BufferMetadata</span><span class="p">(</span><span class="n">__Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class acts as a template for buffer files. It&#39;s properties represent all available metadata of a buffer file.</span>
+<span class="sd">    This class is used internally as a database model and can be instantiated to provide a template for a buffer file by</span>
+<span class="sd">    populating desired properties and passing the object to the cache which will in turn create a query based on this object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;buffer_metadata&quot;</span>
+    <span class="n">properties</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;project_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;directory_path&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;filename&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;header_size&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;process&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;channel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;datamode&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;datakind&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;datatype&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;process_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;process_date_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;db_header_size&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bytes_per_sample&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;db_count&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;full_blocks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;db_size&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;db_sample_count&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;frq_bands&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;db_spec_count&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;compression_frq&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;compression_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;avg_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;avg_frq&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spec_duration&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;frq_start&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;frq_end&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;frq_per_band&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sample_count&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spec_count&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;adc_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bit_resolution&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fft_log_shift&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;streamno&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;preamp_gain&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;analyzer_version&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;partnumber&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;header_hash&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">Identity</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">project_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">directory_path</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">header_hash</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">machine_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">header_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">datamode</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+        <span class="n">BufferEnum</span><span class="p">(</span><span class="n">Buffer</span><span class="o">.</span><span class="n">DATAMODE</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>  <span class="c1"># this is an ENUM in buffer_parser</span>
+    <span class="n">datakind</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BufferEnum</span><span class="p">(</span><span class="n">Buffer</span><span class="o">.</span><span class="n">DATAKIND</span><span class="p">))</span>  <span class="c1"># this is an ENUM in buffer_parser</span>
+    <span class="n">datatype</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BufferEnum</span><span class="p">(</span><span class="n">Buffer</span><span class="o">.</span><span class="n">DATATYPE</span><span class="p">))</span>  <span class="c1"># this is an ENUM in buffer_parser</span>
+    <span class="n">process_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">)</span>
+    <span class="n">process_date_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">db_header_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">bytes_per_sample</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">db_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">full_blocks</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">db_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">db_sample_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">frq_bands</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">db_spec_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">compression_frq</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">compression_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">avg_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">avg_frq</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">spec_duration</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="n">frq_start</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">frq_end</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">frq_per_band</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="n">sample_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">)</span>
+    <span class="n">spec_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">)</span>
+    <span class="n">adc_type</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+        <span class="n">BufferEnum</span><span class="p">(</span><span class="n">Buffer</span><span class="o">.</span><span class="n">ADCTYPE</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># TODO this is an ENUM in buffer_parser</span>
+    <span class="n">bit_resolution</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">fft_log_shift</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">streamno</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">preamp_gain</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">analyzer_version</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">partnumber</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+
+    <span class="n">opening_error</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@hybrid_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory_path</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BufferMetadata.buffer_to_metadata">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadata.buffer_to_metadata">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">buffer_to_metadata</span><span class="p">(</span><span class="n">buffer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer</span>
+<span class="sd">        object putting them in the BufferMetadata object</span>
+
+<span class="sd">        :param buffer: Buffer object</span>
+<span class="sd">        :type buffer: buffer_parser.Buffer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="n">directory_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+        <span class="n">buffer_metadata</span> <span class="o">=</span> <span class="n">BufferMetadata</span><span class="p">(</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">directory_path</span><span class="o">=</span><span class="n">directory_path</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># try to map all the buffer properties and skip on error</span>
+                <span class="nb">setattr</span><span class="p">(</span>
+                    <span class="n">buffer_metadata</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span>
+                <span class="p">)</span>  <span class="c1"># get the @property method and execute it</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">return</span> <span class="n">buffer_metadata</span></div>
+</div>
+
+
+
+<span class="n">Index</span><span class="p">(</span><span class="s2">&quot;project_id_process_index&quot;</span><span class="p">,</span> <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">process</span><span class="p">)</span>
+<span class="n">Index</span><span class="p">(</span>
+    <span class="s2">&quot;project_id_process_channel_index&quot;</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">process</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">Index</span><span class="p">(</span>
+    <span class="s2">&quot;compression_time_frq_index&quot;</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">compression_time</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">compression_frq</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">Index</span><span class="p">(</span>
+    <span class="s2">&quot;project_id_compression_time_frq_index&quot;</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">compression_time</span><span class="p">,</span>
+    <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">compression_frq</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_metadata</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a metadata object from a Buffer object by trying to open</span>
+<span class="sd">    the buffer file contained in the args tuple&quot;&quot;&quot;</span>
+    <span class="n">Buffer_cls</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Buffer_cls</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span> <span class="k">as</span> <span class="n">buffer</span><span class="p">:</span>
+            <span class="n">buffer_metadata</span> <span class="o">=</span> <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">buffer_to_metadata</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">buffer_metadata</span>
+    <span class="k">except</span> <span class="n">InvalidFileError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">directory_path</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">parent</span><span class="p">),</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One or more Buffers couldn&#39;t be opened </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BufferMetadata</span><span class="p">(</span>
+            <span class="n">directory_path</span><span class="o">=</span><span class="n">directory_path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">opening_error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="BufferMetadataCache">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BufferMetadataCache</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class acts as a Cache for Buffer Metadata. It uses a database session with a buffer_metadata table to map</span>
+<span class="sd">    metadata to files on the disk. The cache can be queried a lot faster than manually opening a lot of buffer files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">BufferMetadata</span> <span class="o">=</span> <span class="n">BufferMetadata</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_url</span><span class="o">=</span><span class="s2">&quot;sqlite:///:memory:&quot;</span><span class="p">,</span> <span class="n">Buffer_cls</span><span class="o">=</span><span class="n">Buffer</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">db_url</span><span class="p">)</span>
+        <span class="n">BufferMetadata</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Buffer_cls</span> <span class="o">=</span> <span class="n">Buffer_cls</span>
+
+<div class="viewcode-block" id="BufferMetadataCache.synchronize_directory">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.synchronize_directory">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_directory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">paths</span><span class="p">,</span>
+        <span class="n">sync_subdirectories</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">regex_pattern</span><span class="o">=</span><span class="s2">&quot;^.*[p][0-9]*[c][0-9]</span><span class="si">{1}</span><span class="s2">[b][0-9]</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">delete_stale_entries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">machine_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">glob_pattern</span><span class="o">=</span><span class="s2">&quot;*p*c?b*&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;synchronize the buffer files in the given paths with the database matching the regex pattern</span>
+
+<span class="sd">        :param paths: The absolute paths to the directory</span>
+<span class="sd">        :type paths: str</span>
+<span class="sd">        :param recursive: When True synchronize all of the subdirectories recursively, defaults to True</span>
+<span class="sd">        :type recursive: bool, optional</span>
+<span class="sd">        :param regex_pattern: The regex pattern validating the buffer naming format (matched on file.name)</span>
+<span class="sd">        :type regex_pattern: string, optional</span>
+<span class="sd">        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar</span>
+<span class="sd">        :type verbose: int, optional</span>
+<span class="sd">        :param machine_id: An optional identifier for a certain machine to enable synchronization of different platforms</span>
+<span class="sd">        :type machine_id: string, optional</span>
+<span class="sd">        :param glob_pattern: The pattern forwarded to Path.glob. This pattern acts as a preselection for the</span>
+<span class="sd">            files retrieved for the regex pattern</span>
+<span class="sd">        :type glob_pattern: string, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex_pattern</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sync_subdirectories</span><span class="p">:</span>
+                <span class="n">files</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">file</span>
+                    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="n">glob_pattern</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">files</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">file</span>
+                    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">glob_pattern</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="n">unsynchronized_files</span><span class="p">,</span> <span class="n">synchronized_missing_buffers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_non_synchronized_files</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">machine_id</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">delete_stale_entries</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remove_files_from_cache</span><span class="p">(</span>
+                    <span class="n">synchronized_missing_buffers</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_files_to_cache</span><span class="p">(</span>
+                <span class="n">unsynchronized_files</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="n">machine_id</span><span class="o">=</span><span class="n">machine_id</span><span class="p">,</span>
+                <span class="n">check_synced</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.get_matching_metadata">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matching_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">Select</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BufferMetadata</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Query the cache for all BufferMetadata database entries matching</span>
+
+<span class="sd">        :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects</span>
+<span class="sd">        :type query: Select</span>
+<span class="sd">        :return: A list with the matching BufferMetadata objects</span>
+<span class="sd">        :rtype: list[BufferMetadata]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">matching_metadata</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">scalars</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">matching_metadata</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.get_matching_files">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matching_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">Select</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Query the Cache for all files matching the properties that selected by the query object.</span>
+<span class="sd">        The usage of the buffer_metadata, filter_functions and sort_key is deprecated and will be removed in</span>
+<span class="sd">        two minor versions. Use the sqlalchemy query parameter instead.</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+
+<span class="sd">                BufferMetadataCache.get_matching_files(</span>
+<span class="sd">                    select(BM).filter(BM.channel==1, BM.compression_freq==4, BM.process &gt; 100)</span>
+<span class="sd">                )</span>
+<span class="sd">                # Returns all buffer filepaths with channel = 1, A frequency compression of 4,</span>
+<span class="sd">                # processes above 100 sorted by the process number</span>
+
+<span class="sd">        :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects</span>
+<span class="sd">        :type query: Select</span>
+<span class="sd">        :return: A list with the paths to the buffer files that match the buffer_metadata</span>
+<span class="sd">        :rtype: list[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">matching_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matching_metadata</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matching_metadata</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.get_matching_buffers">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_matching_buffers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matching_buffers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">Select</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Buffer</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls get_matching_files and converts the result to Buffer objects</span>
+
+<span class="sd">        :return: List of Buffer objects</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matching_files</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">buffers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">Buffer_cls</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">buffer</span><span class="p">:</span>
+                    <span class="n">buffers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">buffers</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.get_non_synchronized_files">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_non_synchronized_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_non_synchronized_files</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">files</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
+        <span class="n">machine_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;calculate the difference between the set of files and the set of synchronized files</span>
+
+<span class="sd">        :param files: filenames</span>
+<span class="sd">        :type files: Sequence[Path]</span>
+<span class="sd">        :param machine_id: machine identifier</span>
+<span class="sd">        :type machine_id: Union[str, None]</span>
+<span class="sd">        :return: The set of files that are not synchronized, and the database entries that exist but the file is not present anymore</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">synchronized_buffers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">filepath</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">buffer</span> <span class="ow">in</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BufferMetadata</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">BufferMetadata</span><span class="o">.</span><span class="n">machine_id</span> <span class="o">==</span> <span class="n">machine_id</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="n">unsynchronized_files</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">file_set</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">synchronized_buffers</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">synchronized_missing_buffers</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">synchronized_buffers</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">file_set</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">unsynchronized_files</span><span class="p">,</span> <span class="n">synchronized_missing_buffers</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.add_files_to_cache">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.add_files_to_cache">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_files_to_cache</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">files</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">machine_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_synced</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add buffer files to the cache by providing the complete filepaths</span>
+<span class="sd">        If a file (determined by filename and directory) is already synchronized it will be skipped</span>
+
+<span class="sd">        :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.</span>
+<span class="sd">        :type files: list, tuple of str</span>
+<span class="sd">        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar</span>
+<span class="sd">        :type verbose: int, optional</span>
+<span class="sd">        :param batch_size: The batch size after which the cache will commit a batch to the database</span>
+<span class="sd">        :type batch_size: int, optional</span>
+<span class="sd">        :param machine_id: A unique identifier for a different machine</span>
+<span class="sd">        :type machine_id: str, optional</span>
+<span class="sd">        :param check_synced: Whether to check if the files that are about to be added are already synced to the cache</span>
+<span class="sd">        :type check_synced: bool, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">check_synced</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_non_synchronized_files</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">machine_id</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Pool</span><span class="p">()</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">Buffer_cls</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+                <span class="n">f_gen</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">_create_metadata</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                <span class="n">f_gen</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">tqdm</span><span class="p">(</span><span class="n">f_gen</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Adding Buffers&quot;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="k">else</span> <span class="n">f_gen</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_gen</span><span class="p">)):</span>
+                    <span class="n">metadata</span><span class="p">:</span> <span class="n">BufferMetadata</span>
+                    <span class="k">assert</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;BufferMetadata object is None&quot;</span>
+                    <span class="n">metadata</span><span class="o">.</span><span class="n">machine_id</span> <span class="o">=</span> <span class="n">machine_id</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.remove_files_from_cache">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.remove_files_from_cache">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_files_from_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove synchronized files from the cache</span>
+
+<span class="sd">        :param files: complete filepaths that are present in the cache</span>
+<span class="sd">        :type files: list, tuple of Path</span>
+<span class="sd">        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar</span>
+<span class="sd">        :type verbose: int, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">file_iter</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">tqdm</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Removing File Entries&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">else</span> <span class="n">files</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_iter</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">Buffer_cls</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">b</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BufferMetadata</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BufferMetadata</span><span class="o">.</span><span class="n">header_hash</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">header_hash</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">one</span><span class="p">()</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BufferMetadataCache.get_buffer_metadata_query">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache.get_buffer_metadata_query">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_buffer_metadata_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_metadata</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a .. py:class:: BufferMetadata object to a complete query. Every property of the object will be converted into</span>
+<span class="sd">        SQL and returned as a ..py:class:: sqlalchemy.orm.query.FromStatement object</span>
+
+<span class="sd">        :param buffer_metadata: The template BufferMetadata object.</span>
+<span class="sd">        :type buffer_metadata: BufferMetadata</span>
+<span class="sd">        :return: The sqlalchemy query object</span>
+<span class="sd">        :rtype: sqlalchemy.orm.query.FromStatement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM buffer_metadata WHERE opening_error IS NULL AND &quot;</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">BufferMetadata</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
+            <span class="n">prop_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">buffer_metadata</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prop_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop_value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">prop_value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">prop_value</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop_value</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+                    <span class="n">prop_value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">prop_value</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                <span class="n">q</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">prop_value</span><span class="si">}</span><span class="s2"> AND &quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">q</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>  <span class="c1"># prune the last AND</span>
+        <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">BufferMetadata</span><span class="p">)</span><span class="o">.</span><span class="n">from_statement</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">q</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_declarative_base">
+<a class="viewcode-back" href="../../../../buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.get_declarative_base">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_declarative_base</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Getter for the declarative Base that is used by the :py:class:`BufferMetadataCache`.</span>
+
+<span class="sd">    :return: declarative base class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">__Base</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, QASS GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

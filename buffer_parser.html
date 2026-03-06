@@ -1,0 +1,1304 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview &mdash; Qass Tools Analyzer 2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f35be339"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Overview" href="buffer_metadata_cache.html" />
+    <link rel="prev" title="Welcome to Qass Tools Analyzer’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Qass Tools Analyzer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Reading Buffer files</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#buffer">Buffer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer"><code class="docutils literal notranslate"><span class="pre">Buffer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.ADCTYPE"><code class="docutils literal notranslate"><span class="pre">Buffer.ADCTYPE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.DATAKIND"><code class="docutils literal notranslate"><span class="pre">Buffer.DATAKIND</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.DATAMODE"><code class="docutils literal notranslate"><span class="pre">Buffer.DATAMODE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.DATATYPE"><code class="docutils literal notranslate"><span class="pre">Buffer.DATATYPE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.adc_type"><code class="docutils literal notranslate"><span class="pre">Buffer.adc_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.analyzer_version"><code class="docutils literal notranslate"><span class="pre">Buffer.analyzer_version</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.avg_frq"><code class="docutils literal notranslate"><span class="pre">Buffer.avg_frq</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.avg_time"><code class="docutils literal notranslate"><span class="pre">Buffer.avg_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.bit_resolution"><code class="docutils literal notranslate"><span class="pre">Buffer.bit_resolution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.block_infos"><code class="docutils literal notranslate"><span class="pre">Buffer.block_infos()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.bytes_per_sample"><code class="docutils literal notranslate"><span class="pre">Buffer.bytes_per_sample</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.channel"><code class="docutils literal notranslate"><span class="pre">Buffer.channel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.compression_frq"><code class="docutils literal notranslate"><span class="pre">Buffer.compression_frq</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.compression_time"><code class="docutils literal notranslate"><span class="pre">Buffer.compression_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.datakind"><code class="docutils literal notranslate"><span class="pre">Buffer.datakind</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.datamode"><code class="docutils literal notranslate"><span class="pre">Buffer.datamode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.datatype"><code class="docutils literal notranslate"><span class="pre">Buffer.datatype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_count"><code class="docutils literal notranslate"><span class="pre">Buffer.db_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_header"><code class="docutils literal notranslate"><span class="pre">Buffer.db_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_header_size"><code class="docutils literal notranslate"><span class="pre">Buffer.db_header_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_header_spec"><code class="docutils literal notranslate"><span class="pre">Buffer.db_header_spec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_sample_count"><code class="docutils literal notranslate"><span class="pre">Buffer.db_sample_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_size"><code class="docutils literal notranslate"><span class="pre">Buffer.db_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_spec_count"><code class="docutils literal notranslate"><span class="pre">Buffer.db_spec_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.db_value"><code class="docutils literal notranslate"><span class="pre">Buffer.db_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.delog"><code class="docutils literal notranslate"><span class="pre">Buffer.delog()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.fft_log_shift"><code class="docutils literal notranslate"><span class="pre">Buffer.fft_log_shift</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.file_size"><code class="docutils literal notranslate"><span class="pre">Buffer.file_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.filepath"><code class="docutils literal notranslate"><span class="pre">Buffer.filepath</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_bands"><code class="docutils literal notranslate"><span class="pre">Buffer.frq_bands</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_end"><code class="docutils literal notranslate"><span class="pre">Buffer.frq_end</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_per_band"><code class="docutils literal notranslate"><span class="pre">Buffer.frq_per_band</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_start"><code class="docutils literal notranslate"><span class="pre">Buffer.frq_start</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.full_blocks"><code class="docutils literal notranslate"><span class="pre">Buffer.full_blocks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.getArray"><code class="docutils literal notranslate"><span class="pre">Buffer.getArray()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.getRealSpecCount"><code class="docutils literal notranslate"><span class="pre">Buffer.getRealSpecCount()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.getSpecDuration"><code class="docutils literal notranslate"><span class="pre">Buffer.getSpecDuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.get_data"><code class="docutils literal notranslate"><span class="pre">Buffer.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.header_hash"><code class="docutils literal notranslate"><span class="pre">Buffer.header_hash</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.header_size"><code class="docutils literal notranslate"><span class="pre">Buffer.header_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.io_ports"><code class="docutils literal notranslate"><span class="pre">Buffer.io_ports()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.io_ports_spec"><code class="docutils literal notranslate"><span class="pre">Buffer.io_ports_spec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.last_modification_time"><code class="docutils literal notranslate"><span class="pre">Buffer.last_modification_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.log"><code class="docutils literal notranslate"><span class="pre">Buffer.log()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.max_amplitude_level"><code class="docutils literal notranslate"><span class="pre">Buffer.max_amplitude_level</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.metainfo"><code class="docutils literal notranslate"><span class="pre">Buffer.metainfo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.partnumber"><code class="docutils literal notranslate"><span class="pre">Buffer.partnumber</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.preamp_gain"><code class="docutils literal notranslate"><span class="pre">Buffer.preamp_gain</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.process"><code class="docutils literal notranslate"><span class="pre">Buffer.process</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.process_date_time"><code class="docutils literal notranslate"><span class="pre">Buffer.process_date_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.process_measure_time_string"><code class="docutils literal notranslate"><span class="pre">Buffer.process_measure_time_string</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.process_measure_timestamp"><code class="docutils literal notranslate"><span class="pre">Buffer.process_measure_timestamp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.process_time"><code class="docutils literal notranslate"><span class="pre">Buffer.process_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.refEnergy"><code class="docutils literal notranslate"><span class="pre">Buffer.refEnergy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.ref_energy"><code class="docutils literal notranslate"><span class="pre">Buffer.ref_energy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.sample_count"><code class="docutils literal notranslate"><span class="pre">Buffer.sample_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.spec_count"><code class="docutils literal notranslate"><span class="pre">Buffer.spec_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.spec_duration"><code class="docutils literal notranslate"><span class="pre">Buffer.spec_duration</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.spec_to_time_ns"><code class="docutils literal notranslate"><span class="pre">Buffer.spec_to_time_ns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.streamno"><code class="docutils literal notranslate"><span class="pre">Buffer.streamno</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.time_to_spec"><code class="docutils literal notranslate"><span class="pre">Buffer.time_to_spec()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#filter-buffers">Filter buffers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#qass.tools.analyzer.buffer_parser.filter_buffers"><code class="docutils literal notranslate"><span class="pre">filter_buffers()</span></code></a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Cache and Search Metadata</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buffer_metadata_cache.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer_metadata_cache.html#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer_metadata_cache.html#buffermetadatacache">BufferMetadataCache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer_metadata_cache.html#buffermetadata">BufferMetadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Testing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">MockBuffer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Changelog</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#id1">2.2</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Qass Tools Analyzer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/buffer_parser.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code> class can be used to open measurement data files that are generated by the Analyzer4D software.
+It can be used to access the Metadata of those files like process number, channel etc. and the actual measurement data.
+It can be used together with the <code class="xref py py-class docutils literal notranslate"><span class="pre">BufferMetadataCache</span></code> to organize large amounts of buffer files.</p>
+</section>
+<section id="example">
+<h1>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h1>
+<p>In the example we provide the path to a buffer file to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code> class and use the with-statement to open it to read the process number.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">qass.tools.analyzer.buffer_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Buffer</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span> <span class="n">buffer_file</span> <span class="o">=</span> <span class="s2">&quot;path/to/my/buffer_file&quot;</span>
+<span class="linenos">4</span> <span class="k">with</span> <span class="n">Buffer</span><span class="p">(</span><span class="n">buffer_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">buff</span><span class="p">:</span>
+<span class="linenos">5</span>    <span class="nb">print</span><span class="p">(</span><span class="n">buff</span><span class="o">.</span><span class="n">process</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="buffer">
+<h1>Buffer<a class="headerlink" href="#buffer" title="Link to this heading"></a></h1>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code> can be used to open measurement files created by the analyzer4D software</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qass.tools.analyzer.buffer_parser.</span></span><span class="sig-name descname"><span class="pre">Buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer" title="Link to this definition"></a></dt>
+<dd><dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.ADCTYPE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ADCTYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.ADCTYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.ADCTYPE" title="Link to this definition"></a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.DATAKIND">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DATAKIND</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.DATAKIND"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.DATAKIND" title="Link to this definition"></a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.DATAMODE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DATAMODE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.DATAMODE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.DATAMODE" title="Link to this definition"></a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.DATATYPE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DATATYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.DATATYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.DATATYPE" title="Link to this definition"></a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.adc_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">adc_type</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.adc_type" title="Link to this definition"></a></dt>
+<dd><p>The type of analog/digital converter. The types are defined in class
+ADC_TYPE with the most important being ADC_16BIT and ADC_24BIT. If
+you want to obtain the name of the constant, use <cite>adc_type.name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The ADCTYPE constant</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>enum class reference <a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.ADCTYPE" title="qass.tools.analyzer.buffer_parser.Buffer.ADCTYPE"><code class="xref py py-class docutils literal notranslate"><span class="pre">ADCTYPE</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.analyzer_version">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">analyzer_version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.analyzer_version" title="Link to this definition"></a></dt>
+<dd><p>The analyzer4D version as a dot separated string consisting of major.minor.micro.patch
+:rtype: str, None</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.avg_frq">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_frq</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.avg_frq" title="Link to this definition"></a></dt>
+<dd><p>Property which returns the moving average factor along the
+frequency axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Factor of the moving average.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.avg_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_time</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.avg_time" title="Link to this definition"></a></dt>
+<dd><p>Property which returns the moving average factor along the
+time axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Factor of the moving average.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.bit_resolution">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_resolution</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.bit_resolution" title="Link to this definition"></a></dt>
+<dd><p>this is not the type of
+analog digital converter used. The usual value is 16. If no logarithm
+is applied to the data the value is 32.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The bit resolution.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The bit resolution after the FFT. Caution</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.block_infos">
+<span class="sig-name descname"><span class="pre">block_infos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['preamp_gain',</span> <span class="pre">'mux_port',</span> <span class="pre">'measure_positions',</span> <span class="pre">'inputs',</span> <span class="pre">'outputs']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">changes_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast_jump</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.block_infos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.block_infos" title="Link to this definition"></a></dt>
+<dd><p>block_infos iterates through all memory blocks of a buffer file (typically one MB) and fetches the subdata information
+each memory block has one set of metadata but e.g. 65 subdata entries for raw files
+or more than 2000 entries for a 32 times compressed file,
+where each entry contains meta information about a small time frame (15 spectrums in raw fft files)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>columns</strong> – List of columns that should be in the result_array.</p>
+</dd>
+</dl>
+<p>You can define the order of the columns here.
+Possible column names are: [‘preamp_gain’, ‘mux_port’, ‘measure_positions’, ‘inputs’, ‘outputs’, ‘times’, ‘index’, ‘spectrums’]
+:type columns: List[str]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>changes_only</strong> – Flag to enable a summarized output. If True the output does not contain all entries but only entries where the data columns changed.</p>
+</dd>
+</dl>
+<p>In the current implementation the memory consumption does not change here -&gt; in both cases the array is first completely built.
+Defaults to False.
+:type changes_only: bool</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fast_jump</strong> – If True the function uses seeking in the file instead of parsing every single datablock header.</p>
+</dd>
+</dl>
+<p>The offsets are investigated for the first datablock header and simply applied for all other datablock headers.
+Seeking is usually faster than parsing the datablock headers if they are not already in the cache.
+If the datablock headers are already cached this flag has no effect.
+Defaults to true.
+:type fast_jump: bool</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>header_infos, an array containing (spec_index), (index), (times), preamp_gain, mux_port, measure_position, 24bit input, 16bit output, (times), (index), (spec_index)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy array of int64, if times are included otherwise int32</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.bytes_per_sample">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bytes_per_sample</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.bytes_per_sample" title="Link to this definition"></a></dt>
+<dd><p>Number of bytes per sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of bytes per sample (usually 2 bytes).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.channel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">channel</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.channel" title="Link to this definition"></a></dt>
+<dd><p>The channel number used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The channel number.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.compression_frq">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compression_frq</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.compression_frq" title="Link to this definition"></a></dt>
+<dd><p>Property which returns the frequency compression factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Frequency compression factor.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.compression_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compression_time</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.compression_time" title="Link to this definition"></a></dt>
+<dd><p>Property which returns the time compression factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Time compression factor.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.datakind">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datakind</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.datakind" title="Link to this definition"></a></dt>
+<dd><p>The data kind constant is a constant which provides additional
+buffer specifications. A common value often is
+KIND_UNDEF. If you want to obtain the name of the constant, use
+<cite>datakind.name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The data kind constant.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>enum class defined in <a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.DATAKIND" title="qass.tools.analyzer.buffer_parser.Buffer.DATAKIND"><code class="xref py py-class docutils literal notranslate"><span class="pre">DATAKIND</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.datamode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datamode</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.datamode" title="Link to this definition"></a></dt>
+<dd><p>The data mode is a constant which specifies what kind of data are in
+the buffer. The most important ones are DATAMODE_FFT and
+DATAMODE_SIGNAL. If you want to obtain the name of the constant, use
+<cite>datamode.name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The data mode constant</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>enum class defined in <a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.DATAMODE" title="qass.tools.analyzer.buffer_parser.Buffer.DATAMODE"><code class="xref py py-class docutils literal notranslate"><span class="pre">DATAMODE</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.datatype">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datatype</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.datatype" title="Link to this definition"></a></dt>
+<dd><p>The data type constant is a constant which specifies different
+compression and buffer types. The most important one being
+COMP_RAW. If you want to obtain the name of the constant, use
+<cite>datatype.name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The data type constant.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>enum class defined in <a class="reference internal" href="#qass.tools.analyzer.buffer_parser.Buffer.DATATYPE" title="qass.tools.analyzer.buffer_parser.Buffer.DATATYPE"><code class="xref py py-class docutils literal notranslate"><span class="pre">DATATYPE</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">db_count</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_count" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of data blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of data blocks.</p>
+</dd>
+</dl>
+<p>:rtype int</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_header">
+<span class="sig-name descname"><span class="pre">db_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.db_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_header" title="Link to this definition"></a></dt>
+<dd><p>The data block header contains key words and their corresponding
+values. This information is retrieved and stored in a dictionary. The
+values can be accessed by providing the corresponding key. Please
+ensure that the key exists in the database prior to its use or
+use the get method to access its content.Otherwise this will
+cause a runtime error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>db_idx</strong> (<em>int</em>) – data block index</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Value_Error</strong> – The data block index is out of range.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dictionary with the keywords and values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_header_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">db_header_size</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_header_size" title="Link to this definition"></a></dt>
+<dd><p>Each data block has a header. This property provides the size of the
+data block header in bytes. The sizes of all data block headers are
+equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Size in bytes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_header_spec">
+<span class="sig-name descname"><span class="pre">db_header_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.db_header_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_header_spec" title="Link to this definition"></a></dt>
+<dd><p>The method returns the data block header as a dictionary of the data
+block containing the spectrum whose index is provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spec</strong> (<em>int</em>) – The index of a spectrum.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The data block header with keywords and values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_sample_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">db_sample_count</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_sample_count" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of samples in a completely filled data block.
+It is calculated by dividing the data block size by the number of
+bytes per sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of samples.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">db_size</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_size" title="Link to this definition"></a></dt>
+<dd><p>Returns the size of a completely filled data block in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Size of a completely filled data block.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_spec_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">db_spec_count</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_spec_count" title="Link to this definition"></a></dt>
+<dd><p>The number of spectra within a filled data block. It is calculated by
+dividing the number of samples in a data block by the number of
+frequency bands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of spectra in a filled data block.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.db_value">
+<span class="sig-name descname"><span class="pre">db_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.db_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.db_value" title="Link to this definition"></a></dt>
+<dd><p>Similar to the file header each data block has its own header. This
+method returns the value of the property specified by key in the
+specified data block. The first data block has the index 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_idx</strong> (<em>int</em>) – The index of the data block.</p></li>
+<li><p><strong>key</strong> (<em>string</em>) – The string containing the key word.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The data block value for the given key.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.delog">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fft_log_shift</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_bit_resolution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.delog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.delog" title="Link to this definition"></a></dt>
+<dd><p>Method to de-logarithmize a data array. Usually when data are measured
+with the Optimizer the data are logarithmized. The problem with
+logarithms is that adding them up constitutes a multiplication of the
+non logarithmized data. So in order to carry out calculations such as
+calculating sums etc. it is crucial to use de-logarithmized data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_arr</strong> (<em>numpy ndarray</em>) – Array with the logarithmized data.</p></li>
+<li><p><strong>fft_log_shift</strong> (<em>int</em>) – Base of the logarithm.</p></li>
+<li><p><strong>ad_bit_resolution</strong> (<em>int</em>) – The bit resolution (usually 16).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array with de-logarithmized data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy ndarray of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.fft_log_shift">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fft_log_shift</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.fft_log_shift" title="Link to this definition"></a></dt>
+<dd><p>Base of the logarithm applied to the data. Please note that a 1 needs
+to be added to the value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Base of the logarithm.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.file_size">
+<span class="sig-name descname"><span class="pre">file_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.file_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.file_size" title="Link to this definition"></a></dt>
+<dd><p>The file size of the buffer file. The value is not stored in the header
+but retrieved using the operating system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>file size in bytes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.filepath">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filepath</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.filepath" title="Link to this definition"></a></dt>
+<dd><p>Returns the complete path to the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to the file</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.frq_bands">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frq_bands</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_bands" title="Link to this definition"></a></dt>
+<dd><p>Each spectrum has a maximum sample number of 512. This is the maximum
+number of frequency bands. This figure decreases with compression along
+the frequency axis. The corresponding key word in the metainfo
+dictionary ‘s_p_fram’ (samples per frame).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of frequency bands.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.frq_end">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frq_end</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_end" title="Link to this definition"></a></dt>
+<dd><p>The property returns the highest represented frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Frequency in Hertz (Hz).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.frq_per_band">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frq_per_band</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_per_band" title="Link to this definition"></a></dt>
+<dd><p>The property returns the frequency range per band. The maximum number
+of bands is 512.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Frequency range in Hertz (Hz) for one band.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.frq_start">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frq_start</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.frq_start" title="Link to this definition"></a></dt>
+<dd><p>The property returns the lowest represented frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Frequency in Hertz (Hz).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.full_blocks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">full_blocks</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.full_blocks" title="Link to this definition"></a></dt>
+<dd><p>All but the last data block are usually completly filled. In order to
+calculate the number of those data blocks which are completely filled
+the header size of the file is substracted from the file size. This
+figure is divided by the sum of the data block header size and data
+block size and rounded down to the nearest integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of full data blocks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.getArray">
+<span class="sig-name descname"><span class="pre">getArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">specFrom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specTo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.getArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.getArray" title="Link to this definition"></a></dt>
+<dd><p>Wrapper function to ‘get_data’.
+This function provides access to the measurement data in the buffer
+file. The data are retrieved for the range of spectra and stored in a
+numpy array. The data can be logarithmized or not. The datatype of the
+array depends on the type of buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>specFrom</strong> (<em>int</em><em>, </em><em>optional</em>) – First spectrum to be retrieved (default first available spectrum).</p></li>
+<li><p><strong>specTo</strong> (<em>int</em><em>, </em><em>optional</em>) – Last spectrum to be retrieved (default last available spectrum).</p></li>
+<li><p><strong>delog</strong> (<em>boolean</em><em>, </em><em>optional</em>) – To de-logarithmize the data (default None).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>InvalidArgumentError</strong> – The specFrom value is out of range.</p></li>
+<li><p><strong>InvalidArgumentError</strong> – The specTo value is out of range.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The buffers data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy ndarray</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">qass.tools.analyzer.buffer_parser</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>
+<span class="linenos"> 2</span><span class="n">proc</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="c1"># path contains the path to a directory containing buffer files</span>
+<span class="linenos"> 4</span><span class="n">buff</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">filter_buffers</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;wanted_process&#39;</span><span class="p">:</span> <span class="n">proc</span> <span class="p">,</span> <span class="s1">&#39;datamode&#39;</span><span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">Buffer</span><span class="o">.</span><span class="n">DATAMODE</span><span class="o">.</span><span class="n">DATAMODE_FFT</span><span class="p">})</span>
+<span class="linenos"> 5</span><span class="k">for</span> <span class="n">buffer</span> <span class="ow">in</span> <span class="n">buff</span><span class="p">:</span>
+<span class="linenos"> 6</span>    <span class="n">buff_file</span> <span class="o">=</span> <span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="k">with</span> <span class="n">bp</span><span class="o">.</span><span class="n">Buffer</span><span class="p">(</span><span class="n">buff_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">buff</span><span class="p">:</span>
+<span class="linenos"> 9</span>    <span class="n">spec_start</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">10</span>    <span class="n">spec_end</span> <span class="o">=</span> <span class="p">(</span><span class="n">buff</span><span class="o">.</span><span class="n">db_count</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">buff</span><span class="o">.</span><span class="n">db_spec_count</span>
+<span class="linenos">11</span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Spec_end: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">spec_end</span><span class="p">))</span>
+<span class="linenos">12</span>    <span class="n">data</span> <span class="o">=</span> <span class="n">buff</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="n">spec_start</span><span class="p">,</span> <span class="n">spec_end</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.getRealSpecCount">
+<span class="sig-name descname"><span class="pre">getRealSpecCount</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.getRealSpecCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.getRealSpecCount" title="Link to this definition"></a></dt>
+<dd><p>Wrapper function for the property spec_count.
+The number of spectra within a filled data block. It is calculated by
+dividing the number of samples in a data block by the number of
+frequency bands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of spectra in a filled data block.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.getSpecDuration">
+<span class="sig-name descname"><span class="pre">getSpecDuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.getSpecDuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.getSpecDuration" title="Link to this definition"></a></dt>
+<dd><p>Wrapper Function for property spec_duration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">specFrom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specTo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conversion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.get_data" title="Link to this definition"></a></dt>
+<dd><p>This function provides access to the measurement data in the buffer
+file. The data are retrieved for the range of spectra and stored in a
+numpy array. The data can be logarithmized or not. The datatype of the
+array depends on the type of buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>specFrom</strong> (<em>int</em><em>, </em><em>optional</em>) – First spectrum to be retrieved (default first available spectrum)</p></li>
+<li><p><strong>specTo</strong> (<em>int</em><em>, </em><em>optional</em>) – Last spectrum to be retrieved (default last available spectrum)</p></li>
+<li><p><strong>conversion</strong> (<em>string</em><em>, </em><em>optional</em>) – Conversion (‘log’ or ‘delog’) of the data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>InvalidArgumentError</strong> – The specFrom value is out of range</p></li>
+<li><p><strong>InvalidArgumentError</strong> – The specTo value is out of range</p></li>
+<li><p><strong>InvalidArgumentError</strong> – specTo or specFrom is not of type int or None</p></li>
+<li><p><strong>ValueError</strong> – The given indices exceed the buffer file’s size</p></li>
+<li><p><strong>InvalidArgumentError</strong> – The given conversion is unknown</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The buffers data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy ndarray</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">qass.tools.analyzer.buffer_parser</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>
+<span class="linenos"> 2</span><span class="n">proc</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="c1"># path contains the path to a directory containing buffer files</span>
+<span class="linenos"> 4</span><span class="n">buff</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">filter_buffers</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;wanted_process&#39;</span><span class="p">:</span> <span class="n">proc</span> <span class="p">,</span> <span class="s1">&#39;datamode&#39;</span><span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">Buffer</span><span class="o">.</span><span class="n">DATAMODE</span><span class="o">.</span><span class="n">DATAMODE_FFT</span><span class="p">})</span>
+<span class="linenos"> 5</span><span class="k">for</span> <span class="n">buffer</span> <span class="ow">in</span> <span class="n">buff</span><span class="p">:</span>
+<span class="linenos"> 6</span>    <span class="n">buff_file</span> <span class="o">=</span> <span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="k">with</span> <span class="n">bp</span><span class="o">.</span><span class="n">Buffer</span><span class="p">(</span><span class="n">buff_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">buff</span><span class="p">:</span>
+<span class="linenos"> 9</span>    <span class="n">spec_start</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">10</span>    <span class="n">spec_end</span> <span class="o">=</span> <span class="p">(</span><span class="n">buff</span><span class="o">.</span><span class="n">db_count</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">buff</span><span class="o">.</span><span class="n">db_spec_count</span>
+<span class="linenos">11</span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Spec_end: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">spec_end</span><span class="p">))</span>
+<span class="linenos">12</span>    <span class="n">conv</span> <span class="o">=</span> <span class="s1">&#39;delog&#39;</span>
+<span class="linenos">13</span>    <span class="n">data</span> <span class="o">=</span> <span class="n">buff</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">spec_start</span><span class="p">,</span> <span class="n">spec_end</span><span class="p">,</span> <span class="n">conv</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.header_hash">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">header_hash</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.header_hash" title="Link to this definition"></a></dt>
+<dd><p>A hash value for the buffer’s header.
+The header of the buffer is almost unique for a buffer.
+A buffer should only differ in the length of the contained data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The header’s hash</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.header_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">header_size</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.header_size" title="Link to this definition"></a></dt>
+<dd><p>Each buffer file has a header. This property provides the size of the
+header in bytes (The normal value is 2000 bytes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Size in bytes.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.io_ports">
+<span class="sig-name descname"><span class="pre">io_ports</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.io_ports"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.io_ports" title="Link to this definition"></a></dt>
+<dd><p>Deprecated method!
+This method provides the state of the io ports at the time the
+dateblock (indicated by its number db_idx) is written. It does not
+provide information wether the state of any io port changes within the
+datablock. This method will be replaced by a method which analyses the
+data within the sub data block, which is part of the data block header
+and provides information regarding the state of the io ports at a
+higher accuracy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_idx</strong> (<em>int</em>) – Index of the data block</p></li>
+<li><p><strong>byte</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of io port socket [1, 2, 4]</p></li>
+<li><p><strong>bit</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bit [1, 2, 3, 4, 5, 6, 7, 8]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – The bit argument requires the byte argument.</p></li>
+<li><p><strong>ValueError</strong> – The given byte has to be one out of [1, 2, 4].</p></li>
+<li><p><strong>ValueError</strong> – The given bit is out of range.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>byte with the appropriate bits set as an int</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.io_ports_spec">
+<span class="sig-name descname"><span class="pre">io_ports_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.io_ports_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.io_ports_spec" title="Link to this definition"></a></dt>
+<dd><p>Deprecated method!
+This method provides the state of the io ports at the time the
+dateblock (indicated by the spec number within the data block) is
+written. It does not provide information wether the state of any io
+port changes within the datablock. This method will be replaced by a
+method which analyses the data within the sub data block, which is
+part of the data block header and provides information regarding the
+state of the io ports at a higher accuracy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<em>int</em>) – Index of the spectrum</p></li>
+<li><p><strong>byte</strong> (<em>int</em>) – Number of io port socket [1, 2, 4]</p></li>
+<li><p><strong>bit</strong> (<em>int</em>) – Number of bit [1, 2, 3, 4, 5, 6, 7, 8]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – The bit argument requires the byte argument.</p></li>
+<li><p><strong>ValueError</strong> – The given byte has to be one out of [1, 2, 4].</p></li>
+<li><p><strong>ValueError</strong> – The given bit is out of range.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>byte with the appropriate bits set as an int</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.last_modification_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_modification_time</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.last_modification_time" title="Link to this definition"></a></dt>
+<dd><p>Returns the Posix timestamp of last modification of the file
+in seconds since Thursday, January 1st 1970.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The timestamp as a number in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.log">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fft_log_shift</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_bit_resolution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.log" title="Link to this definition"></a></dt>
+<dd><p>Method to logarithmize a data array. Usually when data are measured
+with the Optimizer the data are logarithmized. The problem with
+logarithms is that adding them up constitutes a multiplication of the
+non logarithmized data. So in order to carry out calculations such as
+calculating sums etc. it is crucial to use de-logarithmized data.
+Sometimes it is necessary to logarithmize data which were artificially
+created or measured without a logarithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_arr</strong> (<em>numpy ndarray</em><em> of </em><em>floats</em>) – Array with non-logarithmized data.</p></li>
+<li><p><strong>fft_log_shift</strong> (<em>int</em>) – Base of the logarithm.</p></li>
+<li><p><strong>ad_bit_resolution</strong> (<em>int</em>) – The bit resolution (usually 16).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array with logarithmized data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy ndarray of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.max_amplitude_level">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_amplitude_level</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.max_amplitude_level" title="Link to this definition"></a></dt>
+<dd><p>maximum possible amplitude of the buffer, relates to the buffer’s dtype
+:rtype: int, float</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.metainfo">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metainfo</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.metainfo" title="Link to this definition"></a></dt>
+<dd><p>The buffer header properties as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The metainfo dictionary</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;qassdata&#39;</span>
+<span class="linenos"> 2</span><span class="k">def</span><span class="w"> </span><span class="nf">keyword</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="linenos"> 3</span>    <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="n">metainfo</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="c1"># The above example leads to a runtime error if the keyword is not a</span>
+<span class="linenos"> 6</span><span class="c1"># key in the dictionary. It would be better to query this beforehand</span>
+<span class="linenos"> 7</span><span class="c1"># and to provide a default value, thus:</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="k">def</span><span class="w"> </span><span class="nf">keyword</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+<span class="linenos">10</span>    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">buffer</span><span class="o">.</span><span class="n">metainfo</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
+<span class="linenos">11</span>        <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="n">metainfo</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+<span class="linenos">12</span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos">13</span>        <span class="k">return</span> <span class="n">default_value</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="c1"># or shorter:</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span><span class="k">def</span><span class="w"> </span><span class="nf">keyword</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+<span class="linenos">18</span>    <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="n">metainfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default_value</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.partnumber">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partnumber</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.partnumber" title="Link to this definition"></a></dt>
+<dd><p>The string representation of the partnumber of the measurement.
+:rtype: str</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.preamp_gain">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">preamp_gain</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.preamp_gain" title="Link to this definition"></a></dt>
+<dd><p>The preamplifier setting in the multiplexer tab of the Analyzer4D software.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.process">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.process" title="Link to this definition"></a></dt>
+<dd><p>The process number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The process number.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.process_date_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process_date_time</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.process_date_time" title="Link to this definition"></a></dt>
+<dd><p>Returns a timestamp of the creation of the file as a string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The timestamp in the form ‘yyyy-mm-dd hh:mm:ss’</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.process_measure_time_string">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process_measure_time_string</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.process_measure_time_string" title="Link to this definition"></a></dt>
+<dd><p>Returns the time in ISO format at measure start of the process. If
+epoctime (measure time) is not available due to an older buffer
+format, the creation time of the buffer is returned. Please note:
+The creation time may not be the same as epoc time. This is
+particularly true for compressed buffers which may be created
+much later!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The timestamp in the form ‘yyyy-mm-dd hh:mm:ss’.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.process_measure_timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process_measure_timestamp</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.process_measure_timestamp" title="Link to this definition"></a></dt>
+<dd><p>Returns the Posix timestamp at measure start of the process in
+milliseconds. If epoctime (measure time) is not available due to an
+older buffer format, the creation time of the buffer is returned.
+Please note: The creation time may not be the same as epoc time.
+This is particularly true for compressed buffers which may be created
+much later!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The timestamp as a number in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.process_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process_time</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.process_time" title="Link to this definition"></a></dt>
+<dd><p>Returns the Posix timestamp of creation of the file
+in seconds since Thursday, January 1st 1970. Please note that the
+creation time and measure time might be different.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The timestamp as a number of seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.refEnergy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">refEnergy</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.refEnergy" title="Link to this definition"></a></dt>
+<dd><p>refEnergy provides a normalization factor for compressions.
+This makes sums of amplitudes of different compressions comparable to each other.
+See _signalNormalizationFactor for a detailed description.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.ref_energy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ref_energy</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.ref_energy" title="Link to this definition"></a></dt>
+<dd><p>alias for refEnergy()</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.sample_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sample_count</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.sample_count" title="Link to this definition"></a></dt>
+<dd><p>The number of samples in the buffer. It is calculated by subtracting
+the header size and the data block size times the number of datablocks
+from the file size. This figure is divided by the bytes per sample to
+obtain the number of samples. The number is cast to an int as the
+division usually results in a float due to an incompletely filled
+final data block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of samples</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.spec_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spec_count</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.spec_count" title="Link to this definition"></a></dt>
+<dd><p>The number of spectra in the buffer. It is calculated by dividing
+the number of samples by the number of frequency bands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>number of spectra</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.spec_duration">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spec_duration</span></span><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.spec_duration" title="Link to this definition"></a></dt>
+<dd><p>The property returns the time for one spectrum in
+nanoseconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Time in nanoseconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.spec_to_time_ns">
+<span class="sig-name descname"><span class="pre">spec_to_time_ns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.spec_to_time_ns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.spec_to_time_ns" title="Link to this definition"></a></dt>
+<dd><p>The method calculates the time since measurement start for a given
+index of a spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spec</strong> (<em>int</em>) – The index of a spectrum</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time in nanoseconds</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.streamno">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">streamno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.streamno" title="Link to this definition"></a></dt>
+<dd><p>The index of a stream of an extra channel.</p>
+<p>Extra channels in the analyzer software can map multiple different data
+streams to the same channel of the software. This makes them only distuinguishable
+by this property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.Buffer.time_to_spec">
+<span class="sig-name descname"><span class="pre">time_to_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_ns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#Buffer.time_to_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.Buffer.time_to_spec" title="Link to this definition"></a></dt>
+<dd><p>The method calculates the index of the nearest spectrum to the time
+given since the start of the measurement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time_ns</strong> (<em>float</em>) – Time elapsed since measurement start in ns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>index of the spectrum</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="filter-buffers">
+<h1>Filter buffers<a class="headerlink" href="#filter-buffers" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="qass.tools.analyzer.buffer_parser.filter_buffers">
+<span class="sig-prename descclassname"><span class="pre">qass.tools.analyzer.buffer_parser.</span></span><span class="sig-name descname"><span class="pre">filter_buffers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qass/tools/analyzer/buffer_parser.html#filter_buffers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qass.tools.analyzer.buffer_parser.filter_buffers" title="Link to this definition"></a></dt>
+<dd><p>This function is currently part of the buffer parser module but is
+likely to be moved into a repository with tools.
+This function takes a directory with buffer files and a dictionary with
+fiter criteria and returns a list of buffer objects from this
+dictionary which fulfill the filter criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>directory</strong> – path to a directory with buffer files</p>
+</dd>
+</dl>
+<p>:type string
+:param filters: dictionary with filters
+:type dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of buffer objects</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">qass.tools.analyzer</span><span class="w"> </span><span class="kn">import</span> <span class="n">buffer_parser</span> <span class="k">as</span> <span class="n">bp</span>
+<span class="linenos">2</span><span class="n">proc</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">3</span><span class="c1"># path contains the path to a directory containing buffer files</span>
+<span class="linenos">4</span><span class="n">buff</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">filter_buffers</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;wanted_process&#39;</span><span class="p">:</span> <span class="n">proc</span> <span class="p">,</span> <span class="s1">&#39;datamode&#39;</span><span class="p">:</span> <span class="n">bp</span><span class="o">.</span><span class="n">Buffer</span><span class="o">.</span><span class="n">DATAMODE</span><span class="o">.</span><span class="n">DATAMODE_FFT</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is deprecated! It’s highly recommended to use the <a class="reference internal" href="buffer_metadata_cache.html#qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache" title="qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache"><code class="xref py py-class docutils literal notranslate"><span class="pre">qass.tools.analyzer.buffer_metadata_cache.BufferMetadataCache</span></code></a> instead.</p>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Qass Tools Analyzer’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="buffer_metadata_cache.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, QASS GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
