@@ -9,3 +9,4 @@
 - [ ] **Code style:** I followed the coding style guidelines using the internal `ruff` configuration. I only made exceptions to the coding style guidelines if absolutely necessary. I checked the code style using `ruff` and no rules were violated.
 - [ ] **Commit messages:** I wrote all commit messages relevant for the changelog following the conventional commits specification. I verified that all relevant changes occur in the correct category in the changelog by building it using `git cliff`. I checked that the changelog doesn't contain any duplicates or unneccesary changes. Where needed, I edited the commit messages to match the Definition of Done. 
 - [ ] **CI/CD:** I adapted the CI/CD pipeline where necessary and checked that all jobs run succesfully. The CI/CD pipeline includes building the package, building the documentation and running tests for all supported Python versions.
+- [ ] **Github Workflows:** I adapted the Github workflows where necessary.
