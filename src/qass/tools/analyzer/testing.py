@@ -11,30 +11,35 @@ class MockBuffer:
     """Mock buffer class that is able to parse JSON encoded files.
     All attributes in the JSON are added as fields in the object.
 
-    .. note::
-        Currently this only allows the mocking of header attributes
+    Note
+    ----
+    Currently this only allows the mocking of header attributes
 
-    Creating a Mock Metadata Object::
+    Example
+    -------
+    ```py
+    # This object can either be created using the constructor
+    from qass.tools.analyzer.testing import MockBuffer
+    buffer = MockBuffer("/my/path/to/file", header_hash="0", process=1)
+    ```
 
-        # This object can either be created using the constructor
-        from qass.tools.analyzer.testing import MockBuffer
-        buffer = MockBuffer("/my/path/to/file", header_hash="0", process=1)
+    Example
+    -------
+    ```py
+    # By writing the desired attributes to a json file
+    import json
+    from pathlib import Path
 
-    Loading a file::
+    from qass.tools.analyzer.testing import MockBuffer
 
-        # By writing the desired attributes to a json file
-        import json
-        from pathlib import Path
-
-        from qass.tools.analyzer.testing import MockBuffer
-
-        file = Path("testfile.json")
-        with open("file", "w") as f:
-            json.dump({"header_hash": "0", "process": 1})
-        buffer = MockBuffer(file)
-        # this step will load the json file into the dataclass
-        with buffer:
-            pass
+    file = Path("testfile.json")
+    with open("file", "w") as f:
+        json.dump({"header_hash": "0", "process": 1})
+    buffer = MockBuffer(file)
+    # this step will load the json file into the dataclass
+    with buffer:
+        pass
+    ```
     """
 
     def __init__(self, filepath: Union[Path, str], **kwargs):
@@ -50,18 +55,27 @@ class MockBuffer:
 
         :returns: The instance itself with attributes populated from the file.
         :rtype: self
-        :raises InvalidFileError: If the file is not a valid Buffer JSON file.
-        :raises FileNotFoundError: If the specified filepath does not exist.
-        :raises PermissionError: If there are insufficient permissions to read the file.
 
-        .. note::
-           This method is automatically called when entering a ``with`` statement.
+        Raises
+        ------
+        InvalidFileError
+            If the file is not a valid Buffer JSON file.
+        FileNotFoundError
+            If the specified filepath does not exist.
+        PermissionError
+            If there are insufficient permissions to read the file.
 
-        .. code-block:: python
-            :linenos:
-            with BufferObject() as buffer:
-                # buffer attributes are now loaded from file
-                print(buffer.data)
+        Note
+        ----
+        This method is automatically called when entering a ``with`` statement.
+
+        Example
+        -------
+        ```py
+        with BufferObject() as buffer:
+            # buffer attributes are now loaded from file
+            print(buffer.data)
+        ```
         """
         with open(self.filepath, "r") as f:
             try:
