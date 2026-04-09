@@ -33,7 +33,7 @@ from Analyzer.Devices import VirtDeviceInterface
 from Analyzer.Core import Log_IF
 
 # to not block the Analyzer4D software when reading data each virtual device works in its own thread.
-from PySide2.QtCore import QThread, QByteArray, Slot, QElapsedTimer
+from PySide2.QtCore import QThread, QByteArray, QElapsedTimer
 from PySide2.QtWidgets import QDialog
 from threading import Lock
 
@@ -43,8 +43,9 @@ from typing import List, Dict, Tuple
 import json
 
 from sys import version_info
+
 if version_info.major != 3:
-    raise RuntimeError('Expected Python3')
+    raise RuntimeError("Expected Python3")
 if version_info.minor <= 6:
     from collections import Sequence
 else:
@@ -61,46 +62,46 @@ class VirtualInputDevice(ABC):
     The device handler implements the actual Analyzer4D interface class while using instances of this class for the communication.
     """
 
-    def __init__(self,
-                 name: str,
-                 sample_rate: float,
-                 normal_amp: float,
-                 request_rate: float=100,
-                 dont_close: bool=False):
+    def __init__(
+        self,
+        name: str,
+        sample_rate: float,
+        normal_amp: float,
+        request_rate: float = 100,
+        dont_close: bool = False,
+    ):
         """instantiate a VirtualInputDevice.
         This class is an abstract base class.
         You must derive from this class and implement the abstract funtions to create a custom device.
 
-        :param name: This is the name of the device that will also be displayed in the GUI.
-        The name is used as an identifier and thus it must be unique inside one DeviceTypeCollection.
-        :type name: str
-
-        :param sample_rate: This is the sample rate that is used by the Analyzer4D software to build the Data signal stream.
-        All values are assumed to have the same distance in time.
-        :type sample_rate: float
-
-        :param normal_amp: This is the maximum value that this device will provide.
-        This is used by the Analyzer4D software for the correct scaling.
-        :type normal_amp: float
-
-        :param request_rate: How often the get_data() should be called?, defaults to 100 - meaning 100 calls of get_data() in a second.
-        If zero or None the device communication thread will not sleep but only yieldCurrentThread.
-        This might cause issues since the python interpreter is heavily used by this interface.
-        :type request_rate: float, optional
-
-        :param dont_close: If True the function open_connection() will be called as early as possible and close_connection() will be called as late as possible.
-        The device connection will not be closed between different processes.
-        If False the method open_connection() will be called at the beginning of each measurement and close_connection() will be called at the end of each measurement.
-        Defaults to False.
-        :type dont_close: bool, optional
+        Parameters
+        ----------
+        name : str
+            This is the name of the device that will also be displayed in the GUI.
+            The name is used as an identifier and thus it must be unique inside one DeviceTypeCollection.
+        sample_rate : float
+            This is the sample rate that is used by the Analyzer4D software to build the Data signal stream.
+            All values are assumed to have the same distance in time.
+        normal_amp : float
+            This is the maximum value that this device will provide.
+            This is used by the Analyzer4D software for the correct scaling.
+        request_rate : float, optional
+            How often the get_data() should be called?, defaults to 100 - meaning 100 calls of get_data() in a second.
+            If zero or None the device communication thread will not sleep but only yieldCurrentThread.
+            This might cause issues since the python interpreter is heavily used by this interface.
+        dont_close : bool, optional
+            If True the function open_connection() will be called as early as possible and close_connection() will be called as late as possible.
+            The device connection will not be closed between different processes.
+            If False the method open_connection() will be called at the beginning of each measurement and close_connection() will be called at the end of each measurement.
+            Defaults to False.
         """
 
         self._config = {
-            'sample_rate': sample_rate,
-            'normal_amp': normal_amp,
-            'request_rate': request_rate,
-            'dont_close': dont_close
-            }
+            "sample_rate": sample_rate,
+            "normal_amp": normal_amp,
+            "request_rate": request_rate,
+            "dont_close": dont_close,
+        }
 
         self._name = name
 
@@ -108,8 +109,10 @@ class VirtualInputDevice(ABC):
     def is_available(self) -> bool:
         """is_available should indicate whether its possible to establish a connection to the device.
 
-        :return: True if the device is available and ready for measurements, False otherwise.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True if the device is available and ready for measurements, False otherwise.
         """
         ...
 
@@ -163,19 +166,19 @@ class VirtualInputDevice(ABC):
 
     @property
     def requests_per_sec(self):
-        return self._config['request_rate']
+        return self._config["request_rate"]
 
     @property
     def sample_rate(self):
-        return self._config['sample_rate']
+        return self._config["sample_rate"]
 
     @property
     def normal_amplitude(self):
-        return self._config['normal_amp']
+        return self._config["normal_amp"]
 
     @property
     def dont_close(self):
-        return self._config['dont_close']
+        return self._config["dont_close"]
 
     @property
     def name(self):
@@ -183,11 +186,19 @@ class VirtualInputDevice(ABC):
 
     @property
     def stream_count(self):
-        return 1 if 'stream_configs' not in self._config else len(self._config['stream_configs'])
+        return (
+            1
+            if "stream_configs" not in self._config
+            else len(self._config["stream_configs"])
+        )
 
     @property
     def stream_configs(self):
-        return None if 'stream_configs' not in self._config else self._config['stream_configs']
+        return (
+            None
+            if "stream_configs" not in self._config
+            else self._config["stream_configs"]
+        )
 
     def get_config(self):
         return self._config
@@ -204,37 +215,38 @@ class VirtualInputDevice(ABC):
 
 
 class MultiStreamVirtualInputDevice(VirtualInputDevice):
-    def __init__(self,
-                 name: str,
-                 stream_configs: Tuple[Dict[str, int]],
-                 request_rate: float=100,
-                 dont_close: bool=False):
+    def __init__(
+        self,
+        name: str,
+        stream_configs: Tuple[Dict[str, int]],
+        request_rate: float = 100,
+        dont_close: bool = False,
+    ):
         """instantiate a MultiStreamVirtualInputDevice.
         This class is an abstract base class and inherits from VirtualInputDevice.
         You must derive from this class and implement the abstract funtions to create a custom device.
 
-        :param name: This is the name of the device that will also be displayed in the GUI.
-        The name is used as an identifier and thus it must be unique inside one DeviceTypeCollection.
-        :type name: str
-
-        :param stream_configs: This is a list of configs for each stream.
-        The list's length defines the number of streams provided by this device.
-        The config must include at least the following keywords:
-        "stream_name": A string to identify the stream (displayed)
-        "sample_rate": float: The streams sample rate in Hz
-        "normal_amp": The maximum expected value (used for display scaling)
-        :type stream_configs: Tuple[Dict[str, int]]
-
-        :param request_rate: How often the get_data() should be called?, defaults to 100 - meaning 100 calls of get_data() in a second.
-        If zero or None the device communication thread will not sleep but only yieldCurrentThread.
-        This might cause issues since the python interpreter is heavily used by this interface.
-        :type request_rate: float, optional
-
-        :param dont_close: If True the function open_connection() will be called as early as possible and close_connection() will be called as late as possible.
-        The device connection will not be closed between different processes.
-        If False the method open_connection() will be called at the beginning of each measurement and close_connection() will be called at the end of each measurement.
-        Defaults to False.
-        :type dont_close: bool, optional
+        Parameters
+        ----------
+        name : str
+            This is the name of the device that will also be displayed in the GUI.
+            The name is used as an identifier and thus it must be unique inside one DeviceTypeCollection.
+        stream_configs : tuple[dict[str, int]]
+            This is a list of configs for each stream.
+            The list's length defines the number of streams provided by this device.
+            The config must include at least the following keywords:
+            "stream_name": A string to identify the stream (displayed)
+            "sample_rate": float: The streams sample rate in Hz
+            "normal_amp": The maximum expected value (used for display scaling)
+        request_rate : float, optional
+            How often the get_data() should be called?, defaults to 100 - meaning 100 calls of get_data() in a second.
+            If zero or None the device communication thread will not sleep but only yieldCurrentThread.
+            This might cause issues since the python interpreter is heavily used by this interface.
+        dont_close : bool, optional
+            If True the function open_connection() will be called as early as possible and close_connection() will be called as late as possible.
+            The device connection will not be closed between different processes.
+            If False the method open_connection() will be called at the beginning of each measurement and close_connection() will be called at the end of each measurement.
+            Defaults to False.
         """
 
         # The sample rate must not be 0 even if it is not used!
@@ -246,9 +258,11 @@ class MultiStreamVirtualInputDevice(VirtualInputDevice):
         for sc in stream_configs:
             filtered_keys = list(filter(filter_req, sc))
             if filtered_keys:
-                raise ValueError(f'At least one entry of stream_configs does not contain required keys {",".join(filtered_keys)}')
+                raise ValueError(
+                    f"At least one entry of stream_configs does not contain required keys {','.join(filtered_keys)}"
+                )
 
-        self._config['stream_configs'] = stream_configs
+        self._config["stream_configs"] = stream_configs
 
     @abstractmethod
     def get_data(self) -> Tuple[List[float]]:
@@ -258,9 +272,11 @@ class MultiStreamVirtualInputDevice(VirtualInputDevice):
         This method should always clear the device's buffer containing the data when it's called.
         This is to prevent old data from persisting.
 
-        :return: The lists of new values for all streams, packed into one tuple.
-        The list must not contain old values!
-        :rtype: Tuple[List[float]]
+        Returns
+        -------
+        tuple[list[float]]
+            The lists of new values for all streams, packed into one tuple.
+            The list must not contain old values!
         """
         ...
 
@@ -270,6 +286,7 @@ class _DeviceThread(QThread):
     The thread is startet when a measurement starts.
     Inside this thread communication to the device takes place.
     """
+
     def __init__(self, device: VirtualInputDevice):
         super().__init__()
 
@@ -282,8 +299,10 @@ class _DeviceThread(QThread):
         """fetch_values is called by the interface from the reading thread in the Analyzer4D software.
         It first aqcuires the lock to prevent race conditions when fetching the values.
 
-        :return: The list of currently available values.
-        :rtype: List[float]
+        Returns
+        -------
+        list[float]
+            The list of currently available values.
         """
         with self.lock:
             vals = self.values[stream].copy()
@@ -320,17 +339,20 @@ class _DeviceThread(QThread):
             if self.device.dont_close:
                 self.device.get_data()
 
-
             while not self.should_stop:
                 new_data = self.device.get_data()
                 if not isinstance(new_data, Sequence):
-                    raise ValueError(f'Device {self.device.name} get_data must return a Sequence but returned {type(new_data)}')
+                    raise ValueError(
+                        f"Device {self.device.name} get_data must return a Sequence but returned {type(new_data)}"
+                    )
 
                 if new_data:
                     first_elem = new_data[0]
                     if not isinstance(first_elem, Sequence):
                         if self.device.stream_count != 1:
-                            raise ValueError(f'Device {self.device.name} get_data must return a Sequence of Sequences since it has multiple streams.')
+                            raise ValueError(
+                                f"Device {self.device.name} get_data must return a Sequence of Sequences since it has multiple streams."
+                            )
                         with self.lock:
                             self.values[0].extend(new_data)
                     else:
@@ -340,7 +362,7 @@ class _DeviceThread(QThread):
 
                 if request_rate:
                     read_counter += 1
-                    elapsed_should = 1/request_rate * 1e9 * read_counter
+                    elapsed_should = 1 / request_rate * 1e9 * read_counter
                     elapsed_is = elapsed.nsecsElapsed()
                     wait_time = int((elapsed_should - elapsed_is) / 1e3)
                     if wait_time > 0:
@@ -351,7 +373,9 @@ class _DeviceThread(QThread):
             if not self.device.dont_close:
                 self.device.close_connection()
         except Exception:
-            Log_IF.popupError(f'Exception caught in device thread:\n{traceback.format_exc()}')
+            Log_IF.popupError(
+                f"Exception caught in device thread:\n{traceback.format_exc()}"
+            )
 
 
 class DeviceTypeCollection(VirtDeviceInterface):
@@ -362,17 +386,22 @@ class DeviceTypeCollection(VirtDeviceInterface):
     A DeviceClass is a class of hardware devices.
     Usually all devices handled by this class work similar to each other and support the same features.
     """
-    def __init__(self, devices: List[VirtualInputDevice], name:str='', version:str=''):
+
+    def __init__(
+        self, devices: List[VirtualInputDevice], name: str = "", version: str = ""
+    ):
         """
         The constructor expects a .
         The devices are expected to be of the type VirtualInputDevice.
 
-        :param devices: List of the device. Their names are used as identifiers and have to be unique inside this DeviceTypeCollection.
-        :type devices: List[VirtualInputDevice]
-        :param name: The name of this device class, defaults to ''
-        :type name: str, optional
-        :param version: The version string of this device class implementation, defaults to ''
-        :type version: str, optional
+        Parameters
+        ----------
+        devices : list[VirtualInputDevice]
+            List of the device. Their names are used as identifiers and have to be unique inside this DeviceTypeCollection.
+        name : str, optional
+            The name of this device class, defaults to ''
+        version : str, optional
+            The version string of this device class implementation, defaults to ''
         """
         super().__init__()
 
@@ -382,7 +411,9 @@ class DeviceTypeCollection(VirtDeviceInterface):
         self._devices = {}
         for dev in devices:
             if dev.name in self._devices:
-                raise ValueError('The devices` names have to be unique, but got multiple devices with the same name')
+                raise ValueError(
+                    "The devices` names have to be unique, but got multiple devices with the same name"
+                )
             self._devices[dev.name] = dev
 
         self._device_threads: Dict[_DeviceThread] = {}
@@ -405,8 +436,10 @@ class DeviceTypeCollection(VirtDeviceInterface):
         The 'configdialog' is a boolean indicating whether a QDialog will be displayed
         Missing keys in the config will
 
-        :return: A dictionary containing information about this device class and the devices themselves.
-        :rtype: Dict
+        Returns
+        -------
+        dict
+            A dictionary containing information about this device class and the devices themselves.
         """
         interfaces_conf = []
 
@@ -416,49 +449,53 @@ class DeviceTypeCollection(VirtDeviceInterface):
                 has_config = True
 
             int_conf = {
-                'ifaceName': name,
-                'sampleRate': dev.sample_rate,
-                'normalAmplitude': dev.normal_amplitude,
-                'streamcount': dev.stream_count
+                "ifaceName": name,
+                "sampleRate": dev.sample_rate,
+                "normalAmplitude": dev.normal_amplitude,
+                "streamcount": dev.stream_count,
             }
 
             if dev.stream_configs:
                 for idx, sc in enumerate(dev.stream_configs):
-                    int_conf[f'streamname{idx}'] = sc["stream_name"]
-                    int_conf[f'streamrate{idx}'] = sc["sample_rate"]
-                    int_conf[f'streamampl{idx}'] = sc["normal_amp"]
+                    int_conf[f"streamname{idx}"] = sc["stream_name"]
+                    int_conf[f"streamrate{idx}"] = sc["sample_rate"]
+                    int_conf[f"streamampl{idx}"] = sc["normal_amp"]
 
             interfaces_conf.append(int_conf)
 
-        config = {
-            'inputs': interfaces_conf,
-            'configdialog': has_config
-        }
+        config = {"inputs": interfaces_conf, "configdialog": has_config}
         return config
 
     def versionString(self) -> str:
         """versionString
 
-        :return: The version of this device class implementation.
-        :rtype: str
+        Returns
+        -------
+        str
+            The version of this device class implementation.
         """
         return self._version
 
     def name(self) -> str:
         """name
 
-        :return: This device class' name.
-        :rtype: str
+        str
+            This device class' name.
         """
         return self._name
 
     def isInputAvailable(self, name: str) -> bool:
         """isInputAvailable requests to check whether the given device is available and ready for measurements.
 
-        :param name: The device's identifier string
-        :type name: str
-        :return: True if the device is available and ready. False otherwise.
-        :rtype: bool
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+
+        Returns
+        -------
+        bool
+            True if the device is available and ready. False otherwise.
         """
         if name not in self._devices:
             return False
@@ -474,54 +511,72 @@ class DeviceTypeCollection(VirtDeviceInterface):
         This function starts the device's thread.
         All communication to the device and the data collection is done inside this thread.
 
-        :param name: The device's identifier string
-        :type name: str
-        :return: True on success, False otherwise
-        :rtype: bool
+        name : str
+            The device's identifier string
+
+        Returns
+        -------
+        bool
+            True on success, False otherwise
         """
         try:
             if not self._device_threads[name].isRunning():
                 self._device_threads[name].start()
             return True
-        except Exception as e:
-            Log_IF.popupError(f'Exception caught during opening virtual device {name}:\n{traceback.format_exc()}')
+        except Exception:
+            Log_IF.popupError(
+                f"Exception caught during opening virtual device {name}:\n{traceback.format_exc()}"
+            )
             return False
 
-    def closeInput(self, name: str, prepareRestart = False) -> bool:
+    def closeInput(self, name: str, prepareRestart=False) -> bool:
         """closeInput requests to stop the data collection for the given device.
         In this implementation this causes the device's thread to terminate.
 
-        :param name: The device's identifier string
-        :type name: str
-        :param prepareRestart: defaults to False
-        :type prepareRestart: bool, optional
-        :return: True on success, False otherwise
-        :rtype: bool
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+        prepareRestart : bool, optional
+            defaults to False
+
+        Returns
+        -------
+        bool
+            True on success, False otherwise
         """
         if prepareRestart and self._device_threads[name].isRunning():
             return True
 
         try:
             self._device_threads[name].stop()
-            deadline = 100 # ms
+            deadline = 100  # ms
             if not self._device_threads[name].wait(deadline):
-                Log_IF.popupError(f'Failed to close virtual device {name} within {deadline} ms - Timeout.')
+                Log_IF.popupError(
+                    f"Failed to close virtual device {name} within {deadline} ms - Timeout."
+                )
                 return False
 
             return True
-        except Exception as e:
-            Log_IF.popupError(f'Exception caught during closing virtual device {name}:\n{traceback.format_exc()}')
+        except Exception:
+            Log_IF.popupError(
+                f"Exception caught during closing virtual device {name}:\n{traceback.format_exc()}"
+            )
             return False
 
     def readInput(self, name: str, stream: int) -> List[float]:
         """readInput fetches and returns the currently available data from the given device's thread.
 
-        :param name: The device's identifier string
-        :type name: str
-        :param stream:
-        :type stream: int, optional
-        :return: List of available new values.
-        :rtype: List[float]
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+        stream : int, optional
+
+        Returns
+        -------
+        list[float]
+            List of available new values.
         """
         vals = self._device_threads[name].fetch_values(stream)
         return vals
@@ -530,35 +585,47 @@ class DeviceTypeCollection(VirtDeviceInterface):
         """The Analyzer4D software calls this function to make settings persistent in the database.
         This implementation converts a dictionary based configuration from the device to the QByteArray that is expected by the Analyzer4D software.
 
-        :param name: The device's identifier string
-        :type name: str
-        :return: The byte array - the configuration's textual representation
-        :rtype: QByteArray
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+
+        Returns
+        -------
+        QByteArray
+            The byte array - the configuration's textual representation
         """
         try:
             config_dict = self._devices[name].get_config()
             json_str = json.dumps(config_dict)
             return json_str.encode()
-        except Exception as e:
-            Log_IF.popupError(f'Exception caught during getting config from virtual device {name}:\n{traceback.format_exc()}')
+        except Exception:
+            Log_IF.popupError(
+                f"Exception caught during getting config from virtual device {name}:\n{traceback.format_exc()}"
+            )
 
     def setConfig(self, name: str, data: QByteArray) -> bool:
         """setConfig is called after the device initialization to propagate saved settings from the database to the devices themselves.
         This function translates the settings from a QByteArray representation to a json dictionary.
 
-        :param name: The device's identifier string
-        :type name: str
-        :param data: The byte array containing the textual representation of the device.
-        :type data: QByteArray
-        :return: True on success, False otherwise (if an exception has been raised)
-        :rtype: bool
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+        data : QByteArray
+            The byte array containing the textual representation of the device.
+
+        Returns
+        -------
+        bool
+            True on success, False otherwise (if an exception has been raised)
         """
         try:
             # There is a very nasty bug in older PySide2 / Python versions - The following crashes!
             # We have to do the conversion differently.
-            #json_str = bytes(data).decode()
+            # json_str = bytes(data).decode()
 
-            json_str = ''
+            json_str = ""
             for c in data:
                 json_str += c.decode()
 
@@ -566,24 +633,33 @@ class DeviceTypeCollection(VirtDeviceInterface):
                 config_dict = json.loads(json_str)
                 self._devices[name].set_config(config_dict)
             return True
-        except Exception as e:
-            Log_IF.popupError(f'Exception caught during setting config to virtual device {name}:\n{traceback.format_exc()}')
+        except Exception:
+            Log_IF.popupError(
+                f"Exception caught during setting config to virtual device {name}:\n{traceback.format_exc()}"
+            )
             return False
 
     def applyConfig(self, name: str) -> bool:
         """applyConfig is called by the Analyzer4D software to request the device to apply the config.
         This might include to communicate settings to a device.
 
-        :param name: The device's identifier string
-        :type name: str
-        :return: True on success, False otherwise (if an exception has been raised)
-        :rtype: bool
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+
+        Returns
+        -------
+        bool
+            True on success, False otherwise (if an exception has been raised)
         """
         try:
             self._devices[name].apply_config()
             return True
-        except Exception as e:
-            Log_IF.popupError(f'Exception caught during config application of virtual device {name}:\n{traceback.format_exc()}')
+        except Exception:
+            Log_IF.popupError(
+                f"Exception caught during config application of virtual device {name}:\n{traceback.format_exc()}"
+            )
             return False
 
     def createPluginDialog(self) -> QDialog:
@@ -591,8 +667,10 @@ class DeviceTypeCollection(VirtDeviceInterface):
         This implementation does not use this feature.
         But you can override this function by subclassing this class...
 
-        :return: A QDialog instance.
-        :rtype: QDialog
+        Returns
+        -------
+        QDialog
+            A QDialog instance.
         """
         return None
 
@@ -602,13 +680,20 @@ class DeviceTypeCollection(VirtDeviceInterface):
         If the device implementation supports this feature it must return a QDialog instance in its implementation of config_dialog().
         This dialog is just forwarded here.
 
-        :param name: The device's identifier string
-        :type name: str
-        :return: The configuration QDialog instance.
-        :rtype: QDialog
+        Parameters
+        ----------
+        name : str
+            The device's identifier string
+
+        Returns
+        -------
+        QDialog
+            The configuration QDialog instance.
         """
         try:
             return self._devices[name].config_dialog()
-        except Exception as e:
-            Log_IF.popupError(f'Exception caught during creation of config dialog for virtual device {name}:\n{traceback.format_exc()}')
+        except Exception:
+            Log_IF.popupError(
+                f"Exception caught during creation of config dialog for virtual device {name}:\n{traceback.format_exc()}"
+            )
             return None

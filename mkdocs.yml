@@ -1,0 +1,100 @@
+site_name: Qass Tools Analyzer
+
+nav:
+  - Home: index.md
+  - API Documentation:
+    - Buffer Parser: api/buffer_parser.md
+    - Buffer Metadata Cache: api/buffer_metadata_cache.md
+    - Virtual Devices: api/virtual_devices.md
+    - Deleting Process: api/deleting_process.md
+    - Input Observer: api/input_observer.md
+    - Mainthread Hook: api/mainthread_hook.md
+    - Search Indicator: api/search_indicator.md
+    - Testing: api/testing.md
+  - Cookbook:
+    - Buffer Parser: cookbook/buffer_parser.md
+
+
+theme:
+  name: material
+  logo: assets/QASS_Logo_white_big_rgb.png
+  features:
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - navigation.path
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  palette:
+      - scheme: default
+        toggle:
+          icon: material/toggle-switch-off-outline 
+          name: Switch to dark mode
+        primary: blue
+        accent: purple 
+      - scheme: slate 
+        toggle:
+          icon: material/toggle-switch
+          name: Switch to light mode    
+        primary: blue
+        accent: white
+markdown_extensions:
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.mark
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - def_list
+
+
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      enabled: true
+      default_handler: python
+      handlers:
+        python:
+          paths: 
+            - src 
+          options:
+            show_source: true
+            docstring_style: numpy
+            inherited_members: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
+            backlinks: tree
+            separate_signature: true
+            show_if_no_docstring: true
+            heading_level: 1
+            filters: "public"
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - css/mkdocstrings.css

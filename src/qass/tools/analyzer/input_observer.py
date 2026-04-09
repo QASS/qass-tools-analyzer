@@ -19,12 +19,12 @@
 #
 from Analyzer.Core import Buffer_Py_IF
 from Analyzer.OpNet import RunTimeInfo_IF
-from typing import Tuple, List
+from typing import Tuple, List, Union
 import numpy as np
 
 
 class InputObserver:
-    """"
+    """
     The InputObserver class can observe a Analyzer4D data stream for toggles of input bits.
     Its configuration is a list of tuples to observe different input bits.
     Input bits can be observed for high or low states (True/False).
@@ -37,21 +37,27 @@ class InputObserver:
     process_end() is called to finish all currently detected periods. The callback is then called even if the delay did not expire.
     """
 
-    def __init__(self, rti: RunTimeInfo_IF, inputs: List[Tuple[int, int, bool, int]], callback, update_time_ms: int = None):
+    def __init__(
+        self,
+        rti: RunTimeInfo_IF,
+        inputs: List[Tuple[int, int, bool, int]],
+        callback,
+        update_time_ms: Union[int, None] = None,
+    ):
         """
-        :param rti: Operator network's runtime info object. This object contains information about the current analysis.
-        :type rti: RunTimeInfo_IF
-
-        :param inputs: list of input oberserver configurations.
-        Each tuple in the list must habe the following form: (byte, bit, state [True/False], delay [in nanoseconds])
-        :type inputs: List[Tuple[int, int, bool, int]]
-
-        :param callback: The callback function is called.
-        Its signature must be: ((byte, bit, state, delay), start_time, end_time).
-        The times are provided in nanoseconds.
-        
-        :param update_time_ns: declares how often the IO input state is checked for changes.
-        :type: int
+        Parameters
+        ----------
+        rti : RunTimeInfo_IF
+            Operator network's runtime info object. This object contains information about the current analysis.
+        inputs : List[Tuple[int, int, bool, int]]
+            list of input oberserver configurations.
+            Each tuple in the list must habe the following form: (byte, bit, state [True/False], delay [in nanoseconds])
+        callback : Callable[[tuple[int, int, bool, int], int, int]]
+            The callback function is called.
+            Its signature must be: ((byte, bit, state, delay), start_time, end_time).
+            The times are provided in nanoseconds.
+        update_time_ms : int
+            declares how often the IO input state is checked for changes.
         """
         self._rti = rti
         self._inputs = inputs
@@ -69,8 +75,11 @@ class InputObserver:
         """
         The function process_start must be called in the phase eval_process_init() of the operator network.
 
-        :param stream: The stream that should be monitored for input changes.
-        Ensure that the stream has an appropriate resolution for your demands.
+        Parameters
+        ----------
+        stream : Buffer_Py_IF
+            The stream that should be monitored for input changes.
+            Ensure that the stream has an appropriate resolution for your demands.
         """
         self._stream = stream
         self._current_input_times = [None for _ in self._inputs]
@@ -80,28 +89,32 @@ class InputObserver:
         self._frq_band_count = stream.getFrqBandCount()
         if self._update_time_ms is None:
             io_specs_updates_raw = 15  # For hardware reasons the Optimizer4D records io changes every 15 raw specs.
-            self._stream_update_specs = max(1, io_specs_updates_raw / stream.getCompressionTime())
+            self._stream_update_specs = max(
+                1, io_specs_updates_raw / stream.getCompressionTime()
+            )
         else:
-            self._stream_update_specs = self._update_time_ms * 1e6 / self._spec_duration()
+            self._stream_update_specs = (
+                self._update_time_ms * 1e6 / self._spec_duration()
+            )
 
     def tick(self, ignore_getIO_exception: bool = False) -> None:
         """
         This function must be called in the phase eval_process_run() of the operator network.
         It is called for every single spectrum and checks the current input state.
-        
-        :param ignore_getIO_exception:
-        If True exceptions raised by missing IO information in the last specs of a buffer are ignored.
-        Otherwise they will be reraised.
-        
-        :type ignore_getIO_exception: bool
+
+        Parameters
+        ----------
+        ignore_getIO_exception : bool
+            If True exceptions raised by missing IO information in the last specs of a buffer are ignored.
+            Otherwise they will be reraised.
         """
         spec_duration = self._spec_duration
         curr_spec = int(self._rti.getCurrentTime() // spec_duration)
-        
+
         specs = np.arange(self._last_spec, curr_spec, self._stream_update_specs)
         if len(specs):
             self._last_spec = float(specs[-1])
-        specs = specs.astype(int)#[int(s) for s in specs]
+        specs = specs.astype(int)  # [int(s) for s in specs]
         for spec in specs:
             stream_pos = spec * self._frq_band_count
             for idx, (byte, bit, state, delay) in enumerate(self._inputs):
@@ -116,16 +129,26 @@ class InputObserver:
                 if curr_state == state and self._current_input_times[idx] is None:
                     self._current_input_times[idx] = spec * spec_duration
                 elif curr_state != state and self._current_input_times[idx] is not None:
-                    self._finished_ranges.append((
-                        (byte, bit, state, delay),
-                        self._current_input_times[idx],
-                        spec * spec_duration + delay
-                        ))
+                    self._finished_ranges.append(
+                        (
+                            (byte, bit, state, delay),
+                            self._current_input_times[idx],
+                            spec * spec_duration + delay,
+                        )
+                    )
                     self._current_input_times[idx] = None
 
-            exec_ranges = [(cfg, start, end) for cfg, start, end in self._finished_ranges if end <= spec * spec_duration]
+            exec_ranges = [
+                (cfg, start, end)
+                for cfg, start, end in self._finished_ranges
+                if end <= spec * spec_duration
+            ]
             if exec_ranges:
-                self._finished_ranges = [(cfg, start, end) for cfg, start, end in self._finished_ranges if end > spec * spec_duration]
+                self._finished_ranges = [
+                    (cfg, start, end)
+                    for cfg, start, end in self._finished_ranges
+                    if end > spec * spec_duration
+                ]
 
             for cfg, start, end in exec_ranges:
                 self._callback(cfg, start, end)
@@ -142,4 +165,8 @@ class InputObserver:
 
         for idx, (byte, bit, state, delay) in enumerate(self._inputs):
             if self._current_input_times[idx] is not None:
-                self._callback((byte, bit, state, delay), self._current_input_times[idx], self._rti.getCurrentTime())
+                self._callback(
+                    (byte, bit, state, delay),
+                    self._current_input_times[idx],
+                    self._rti.getCurrentTime(),
+                )

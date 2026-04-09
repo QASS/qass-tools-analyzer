@@ -24,7 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "pytest-pretty"]
-docs = ["sphinx", "sphinx_rtd_theme"]
+docs = ["mkdocs<2", "mkdocs-material", "mkdocstrings[python]"]
 
 [project.urls]
 Homepage = "https://github.com/QASS/qass-tools-analyzer"

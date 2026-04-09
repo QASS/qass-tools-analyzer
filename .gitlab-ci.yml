@@ -27,8 +27,7 @@ test-docs:
   stage: test
   script:
     - pip install .[docs]
-    - mkdir ./docs/source/_static
-    - sphinx-build -b html ./docs/source public
+    - mkdocs build --site-dir public
   only:
     - tags
     - merge_requests
@@ -59,11 +58,8 @@ build-package:
 pages:
   stage: deploy
   script:
-    - pip install sphinx
-    - pip install sphinx_rtd_theme sqlalchemy numpy tqdm
-    - pip install --no-deps .
-    - mkdir ./docs/source/_static
-    - sphinx-build -b html ./docs/source public
+    - pip install .[docs]
+    - mkdocs build --site-dir public
   artifacts:
     paths:
       - public

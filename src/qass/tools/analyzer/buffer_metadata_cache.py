@@ -172,8 +172,13 @@ class BufferMetadata(__Base):
         """Converts a Buffer object to a BufferMetadata database object by copying all the @properties from the Buffer
         object putting them in the BufferMetadata object
 
-        :param buffer: Buffer object
-        :type buffer: buffer_parser.Buffer
+        Parameters
+        ----------
+        buffer : Buffer
+
+        Returns
+        -------
+        buffer_metadata: BufferMetadata
         """
         file = Path(buffer.filepath)
         directory_path = str(file.parent)
@@ -253,19 +258,21 @@ class BufferMetadataCache:
     ):
         """synchronize the buffer files in the given paths with the database matching the regex pattern
 
-        :param paths: The absolute paths to the directory
-        :type paths: str
-        :param recursive: When True synchronize all of the subdirectories recursively, defaults to True
-        :type recursive: bool, optional
-        :param regex_pattern: The regex pattern validating the buffer naming format (matched on file.name)
-        :type regex_pattern: string, optional
-        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
-        :type verbose: int, optional
-        :param machine_id: An optional identifier for a certain machine to enable synchronization of different platforms
-        :type machine_id: string, optional
-        :param glob_pattern: The pattern forwarded to Path.glob. This pattern acts as a preselection for the
+        Parameters
+        ----------
+        paths: str
+            The absolute paths to the directory
+        sync_subdirectories: bool, optional
+            When True synchronize all of the subdirectories recursively, defaults to True
+        regex_pattern: str, optional
+            The regex pattern validating the buffer naming format (matched on file.name)
+        verbose: int, optional
+            verbosity level. 0 = no feedback, 1 = progress bar
+        machine_id: str, optional
+            An optional identifier for a certain machine to enable synchronization of different platforms
+        glob_pattern: str, optional
+            The pattern forwarded to Path.glob. This pattern acts as a preselection for the
             files retrieved for the regex pattern
-        :type glob_pattern: string, optional
         """
         pattern = re.compile(regex_pattern)
         for path in paths:
@@ -298,13 +305,18 @@ class BufferMetadataCache:
     def get_matching_metadata(self, query: Select) -> List[BufferMetadata]:
         """Query the cache for all BufferMetadata database entries matching
 
-        :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
-        :type query: Select
-        :return: A list with the matching BufferMetadata objects
-        :rtype: list[BufferMetadata]
+        Parameters
+        ----------
+        query: Select
+            A sqlalchemy select statement specifying the properties of the BufferMetadata objects
+
+        Returns
+        -------
+        list[BufferMetadata]
+            A list with the matching BufferMetadata objects
         """
         with self.Session() as session:
-            matching_metadata = session.scalars(query).all()
+            matching_metadata = list(session.scalars(query).all())
         return matching_metadata
 
     def get_matching_files(self, query: Select) -> List[str]:
@@ -312,19 +324,25 @@ class BufferMetadataCache:
         The usage of the buffer_metadata, filter_functions and sort_key is deprecated and will be removed in
         two minor versions. Use the sqlalchemy query parameter instead.
 
-        .. code-block:: python
-                :linenos:
+        Example
+        -------
+        Returns all buffer filepaths with channel = 1, A frequency compression of 4,
+        processes above 100 sorted by the process number
+        ```py
+        BufferMetadataCache.get_matching_files(
+            select(BM).filter(BM.channel==1, BM.compression_freq==4, BM.process > 100)
+        )
+        ```
 
-                BufferMetadataCache.get_matching_files(
-                    select(BM).filter(BM.channel==1, BM.compression_freq==4, BM.process > 100)
-                )
-                # Returns all buffer filepaths with channel = 1, A frequency compression of 4,
-                # processes above 100 sorted by the process number
+        Parameters
+        ----------
+        query: Select
+            A sqlalchemy select statement specifying the properties of the BufferMetadata objects
 
-        :param query: A sqlalchemy select statement specifying the properties of the BufferMetadata objects
-        :type query: Select
-        :return: A list with the paths to the buffer files that match the buffer_metadata
-        :rtype: list[str]
+        Returns
+        -------
+        list[str]
+            A list with the paths to the buffer files that match the buffer_metadata
         """
         matching_metadata = self.get_matching_metadata(query)
         return [str(m.filepath) for m in matching_metadata]
@@ -332,8 +350,10 @@ class BufferMetadataCache:
     def get_matching_buffers(self, query: Select) -> List[Buffer]:
         """Calls get_matching_files and converts the result to Buffer objects
 
-        :return: List of Buffer objects
-        :rtype: list
+        Returns
+        -------
+        list[Buffer]
+            List of Buffer objects
         """
         files = self.get_matching_files(query)
         buffers = []
@@ -352,11 +372,17 @@ class BufferMetadataCache:
     ) -> Tuple[List[Path], List[Path]]:
         """calculate the difference between the set of files and the set of synchronized files
 
-        :param files: filenames
-        :type files: Sequence[Path]
-        :param machine_id: machine identifier
-        :type machine_id: Union[str, None]
-        :return: The set of files that are not synchronized, and the database entries that exist but the file is not present anymore
+        Parameters
+        ----------
+        files: Sequence[Path]
+            Sequence of files to check whether they are already in the cache
+        machine_id: Union[str, None]
+            machine identifier to provide extra context for the location of the files
+
+        Returns
+        -------
+        tuple[list[Path], list[Path]]
+            The set of files that are not synchronized, and the database entries that exist but the file is not present anymore
         """
         file_set = set(files)
         with self.Session() as session:
@@ -385,16 +411,18 @@ class BufferMetadataCache:
         """Add buffer files to the cache by providing the complete filepaths
         If a file (determined by filename and directory) is already synchronized it will be skipped
 
-        :param files: complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
-        :type files: list, tuple of str
-        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
-        :type verbose: int, optional
-        :param batch_size: The batch size after which the cache will commit a batch to the database
-        :type batch_size: int, optional
-        :param machine_id: A unique identifier for a different machine
-        :type machine_id: str, optional
-        :param check_synced: Whether to check if the files that are about to be added are already synced to the cache
-        :type check_synced: bool, optional
+        Parameters
+        ----------
+        files: Sequence[Path]
+            complete filepaths that are added to the cache. The filepath is used with the Buffer class to open a buffer and extract the header information.
+        verbose: int, optional
+            verbosity level. 0 = no feedback, 1 = progress bar
+        batch_size: int, optional
+            The batch size after which the cache will commit a batch to the database
+        machine_id: str, optional
+            A unique identifier for a different machine
+        check_synced: bool, optional
+            Whether to check if the files that are about to be added are already synced to the cache
         """
         if check_synced:
             files, _ = self.get_non_synchronized_files(files, machine_id)
@@ -419,10 +447,12 @@ class BufferMetadataCache:
     def remove_files_from_cache(self, files: List[Path], verbose=0):
         """Remove synchronized files from the cache
 
-        :param files: complete filepaths that are present in the cache
-        :type files: list, tuple of Path
-        :param verbose: verbosity level. 0 = no feedback, 1 = progress bar
-        :type verbose: int, optional
+        Parameters
+        ----------
+        files: list[Path]
+            complete filepaths that are present in the cache
+        verbose: int, optional
+            verbosity level. 0 = no feedback, 1 = progress bar
         """
         with self.Session() as session:
             file_iter = (
@@ -448,13 +478,18 @@ class BufferMetadataCache:
             session.commit()
 
     def get_buffer_metadata_query(self, buffer_metadata):
-        """Converts a .. py:class:: BufferMetadata object to a complete query. Every property of the object will be converted into
-        SQL and returned as a ..py:class:: sqlalchemy.orm.query.FromStatement object
+        """Converts a `BufferMetadata` object to a complete query. Every property of the object will be converted into
+        SQL and returned as a `sqlalchemy.orm.query.FromStatement` object
 
-        :param buffer_metadata: The template BufferMetadata object.
-        :type buffer_metadata: BufferMetadata
-        :return: The sqlalchemy query object
-        :rtype: sqlalchemy.orm.query.FromStatement
+        Parameters
+        ----------
+        buffer_metadata : BufferMetadata
+            The template BufferMetadata object.
+
+        Returns
+        -------
+        sqlalchemy.orm.query.FromStatement
+            The sqlalchemy query object
         """
         q = "SELECT * FROM buffer_metadata WHERE opening_error IS NULL AND "
         for prop in self.BufferMetadata.properties:
@@ -472,6 +507,8 @@ class BufferMetadataCache:
 def get_declarative_base():
     """Getter for the declarative Base that is used by the :py:class:`BufferMetadataCache`.
 
-    :return: declarative base class
+    Returns
+    -------
+    declarative base class
     """
     return __Base
