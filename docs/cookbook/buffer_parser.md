@@ -21,7 +21,7 @@ from qass.tools.analyzer.buffer_parser import Buffer
 
 my_file = "file"
 with Buffer(my_file) as stream:
-    assert stream.datamode = Buffer.DATAMODE.DATAMODE_FFT, "Not an spectrogram"
+    assert stream.datamode = Buffer.DATAMODE.DATAMODE_FFT, "Not a spectrogram"
     data = stream.get_data()
 
 fig, ax = plt.subplots()
@@ -45,7 +45,7 @@ END_FRQ_KHZ = 700
 
 my_file = "file"
 with Buffer(my_file) as stream:
-    assert stream.datamode = Buffer.DATAMODE.DATAMODE_FFT, "Not an spectrogram"
+    assert stream.datamode = Buffer.DATAMODE.DATAMODE_FFT, "Not a spectrogram"
     data = stream.get_data()
 
 HIGH_PASS = int(START_FRQ_KHZ * 1000 / stream.frq_per_band)
