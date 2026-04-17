@@ -158,6 +158,7 @@ class Buffer:
         import numpy as np
 
         int(np.uintc())
+        self.__header_hash = None
         self.__keywords = [
             ("qassdata----", HeaderDtype.INT32),
             ("filevers----", HeaderDtype.INT32),
