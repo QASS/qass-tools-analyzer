@@ -5,6 +5,7 @@ nav:
   - API Documentation:
     - Buffer Parser: api/buffer_parser.md
     - Buffer Metadata Cache: api/buffer_metadata_cache.md
+    - Consecutive Stream: api/consecutive_stream.md
     - Virtual Devices: api/virtual_devices.md
     - Deleting Process: api/deleting_process.md
     - Input Observer: api/input_observer.md
@@ -13,6 +14,7 @@ nav:
     - Testing: api/testing.md
   - Cookbook:
     - Buffer Parser: cookbook/buffer_parser.md
+    - Consecutive Stream: cookbook/consecutive_stream.md
 
 
 theme:

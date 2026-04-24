@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import os
-from typing import Any, List, Union, Tuple
+from typing import Any, List, Union, Tuple, Literal
 import numpy as np
 from enum import IntEnum, auto
 from struct import unpack
@@ -27,13 +27,10 @@ import warnings
 import codecs
 import hashlib
 
-
-class InvalidArgumentError(ValueError):
-    pass
+from .error import InvalidArgumentError, InvalidFileError
 
 
-class InvalidFileError(Exception):
-    pass
+DataConversion = Literal["log", "delog"]
 
 
 class HeaderDtype(IntEnum):
@@ -466,7 +463,13 @@ class Buffer:
     def _delog(self, data_arr):
         return self.delog(data_arr, self.fft_log_shift, self.ad_bit_resolution)
 
-    def _get_data(self, specFrom, specTo, frq_bands, conversion: str = None):
+    def _get_data(
+        self,
+        specFrom,
+        specTo,
+        frq_bands,
+        conversion: Union[DataConversion, None] = None,
+    ):
         pos_start = specFrom * self.__frq_bands * self.__bytes_per_sample
         pos_end = specTo * self.__frq_bands * self.__bytes_per_sample
 
@@ -1598,7 +1601,7 @@ class Buffer:
         return math.floor(self.__db_size / self.__bytes_per_sample)
 
     @property
-    def frq_bands(self):
+    def frq_bands(self) -> int:
         """
         Each spectrum has a maximum sample number of 512. This is the maximum
         number of frequency bands. This figure decreases with compression along
